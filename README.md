@@ -1,0 +1,2 @@
+# NO-MONEY-NO-LIFE-
+ブラウザ版のNO MONEY, NO LIFE
