@@ -1,0 +1,71 @@
+{
+  "snow-a": {
+    "source": "C:\\Users\\uronw\\.codex\\generated_images\\01a16876-1e4e-75e2-a55e-d4ed39c34a2e\\exec-ea4f2d4d-88a8-4bfa-bd28-1162de15c721.png",
+    "family": "snow",
+    "horizontalRange": [
+      0.0,
+      0.3333333333333333
+    ],
+    "worldWidth": 192
+  },
+  "snow-b": {
+    "source": "C:\\Users\\uronw\\.codex\\generated_images\\01a16876-1e4e-75e2-a55e-d4ed39c34a2e\\exec-ea4f2d4d-88a8-4bfa-bd28-1162de15c721.png",
+    "family": "snow",
+    "horizontalRange": [
+      0.3333333333333333,
+      0.6666666666666666
+    ],
+    "worldWidth": 192
+  },
+  "snow-c": {
+    "source": "C:\\Users\\uronw\\.codex\\generated_images\\01a16876-1e4e-75e2-a55e-d4ed39c34a2e\\exec-ea4f2d4d-88a8-4bfa-bd28-1162de15c721.png",
+    "family": "snow",
+    "horizontalRange": [
+      0.6666666666666666,
+      1.0
+    ],
+    "worldWidth": 192
+  },
+  "sand-a": {
+    "source": "C:\\Users\\uronw\\.codex\\generated_images\\01a16876-1e4e-75e2-a55e-d4ed39c34a2e\\exec-20ace991-cb23-4786-b3f4-23f95081dcdf.png",
+    "family": "sand"
+  },
+  "sand-b": {
+    "source": "C:\\Users\\uronw\\.codex\\generated_images\\01a16876-1e4e-75e2-a55e-d4ed39c34a2e\\exec-6bf9c061-79bd-451e-8812-f66c282fb178.png",
+    "family": "sand"
+  },
+  "grass-a": {
+    "source": "C:\\Users\\uronw\\.codex\\generated_images\\01a16876-1e4e-75e2-a55e-d4ed39c34a2e\\exec-1d86f29c-0301-4759-b04f-f6eba327e021.png",
+    "family": "grass",
+    "horizontalRange": [
+      0.0,
+      0.5
+    ],
+    "worldWidth": 256
+  },
+  "grass-b": {
+    "source": "C:\\Users\\uronw\\.codex\\generated_images\\01a16876-1e4e-75e2-a55e-d4ed39c34a2e\\exec-1d86f29c-0301-4759-b04f-f6eba327e021.png",
+    "family": "grass",
+    "horizontalRange": [
+      0.5,
+      1.0
+    ],
+    "worldWidth": 256
+  },
+  "stone-a": {
+    "source": "C:\\Users\\uronw\\.codex\\generated_images\\01a16876-1e4e-75e2-a55e-d4ed39c34a2e\\exec-5da423a5-2d26-445d-8542-909958f61e20.png",
+    "family": "stone"
+  },
+  "stone-b": {
+    "source": "C:\\Users\\uronw\\.codex\\generated_images\\01a16876-1e4e-75e2-a55e-d4ed39c34a2e\\exec-62c4beb1-9e60-4fd5-bade-f7588eee4ae8.png",
+    "family": "stone"
+  },
+  "basalt-a": {
+    "source": "C:\\Users\\uronw\\.codex\\generated_images\\01a16876-1e4e-75e2-a55e-d4ed39c34a2e\\exec-88d5a674-d3ed-4bbc-b657-9ae06da66adf.png",
+    "family": "basalt"
+  },
+  "shore-a": {
+    "source": "C:\\Users\\uronw\\.codex\\generated_images\\01a16876-1e4e-75e2-a55e-d4ed39c34a2e\\exec-0f9e5a9a-b285-496b-a997-374c21f57b06.png",
+    "family": "shore"
+  }
+}

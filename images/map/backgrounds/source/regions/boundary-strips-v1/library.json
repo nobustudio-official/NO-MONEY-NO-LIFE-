@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "enabled": true,
+  "spacingRatio": 0.58,
+  "assets": [
+    {
+      "id": "snow-a",
+      "family": "snow",
+      "image": "images/map/backgrounds/world/regions/boundary-strips-v1/snow-a.webp",
+      "pixelWidth": 768,
+      "pixelHeight": 203,
+      "width": 192,
+      "height": 50.75,
+      "anchorY": 20.3,
+      "bytes": 49442
+    },
+    {
+      "id": "snow-b",
+      "family": "snow",
+      "image": "images/map/backgrounds/world/regions/boundary-strips-v1/snow-b.webp",
+      "pixelWidth": 768,
+      "pixelHeight": 213,
+      "width": 192,
+      "height": 53.25,
+      "anchorY": 21.3,
+      "bytes": 51238
+    },
+    {
+      "id": "snow-c",
+      "family": "snow",
+      "image": "images/map/backgrounds/world/regions/boundary-strips-v1/snow-c.webp",
+      "pixelWidth": 768,
+      "pixelHeight": 193,
+      "width": 192,
+      "height": 48.25,
+      "anchorY": 19.3,
+      "bytes": 53190
+    },
+    {
+      "id": "sand-a",
+      "family": "sand",
+      "image": "images/map/backgrounds/world/regions/boundary-strips-v1/sand-a.webp",
+      "pixelWidth": 768,
+      "pixelHeight": 58,
+      "width": 384,
+      "height": 29.0,
+      "anchorY": 11.600000000000001,
+      "bytes": 33928
+    },
+    {
+      "id": "sand-b",
+      "family": "sand",
+      "image": "images/map/backgrounds/world/regions/boundary-strips-v1/sand-b.webp",
+      "pixelWidth": 768,
+      "pixelHeight": 86,
+      "width": 384,
+      "height": 43.0,
+      "anchorY": 17.2,
+      "bytes": 37722
+    },
+    {
+      "id": "grass-a",
+      "family": "grass",
+      "image": "images/map/backgrounds/world/regions/boundary-strips-v1/grass-a.webp",
+      "pixelWidth": 768,
+      "pixelHeight": 126,
+      "width": 256,
+      "height": 42.0,
+      "anchorY": 16.8,
+      "bytes": 54584
+    },
+    {
+      "id": "grass-b",
+      "family": "grass",
+      "image": "images/map/backgrounds/world/regions/boundary-strips-v1/grass-b.webp",
+      "pixelWidth": 768,
+      "pixelHeight": 129,
+      "width": 256,
+      "height": 43.0,
+      "anchorY": 17.2,
+      "bytes": 53208
+    },
+    {
+      "id": "stone-a",
+      "family": "stone",
+      "image": "images/map/backgrounds/world/regions/boundary-strips-v1/stone-a.webp",
+      "pixelWidth": 768,
+      "pixelHeight": 63,
+      "width": 384,
+      "height": 31.5,
+      "anchorY": 12.600000000000001,
+      "bytes": 31258
+    },
+    {
+      "id": "stone-b",
+      "family": "stone",
+      "image": "images/map/backgrounds/world/regions/boundary-strips-v1/stone-b.webp",
+      "pixelWidth": 768,
+      "pixelHeight": 81,
+      "width": 384,
+      "height": 40.5,
+      "anchorY": 16.2,
+      "bytes": 36880
+    },
+    {
+      "id": "basalt-a",
+      "family": "basalt",
+      "image": "images/map/backgrounds/world/regions/boundary-strips-v1/basalt-a.webp",
+      "pixelWidth": 768,
+      "pixelHeight": 87,
+      "width": 384,
+      "height": 43.5,
+      "anchorY": 17.400000000000002,
+      "bytes": 29994
+    },
+    {
+      "id": "shore-a",
+      "family": "shore",
+      "image": "images/map/backgrounds/world/regions/boundary-strips-v1/shore-a.webp",
+      "pixelWidth": 768,
+      "pixelHeight": 65,
+      "width": 384,
+      "height": 32.5,
+      "anchorY": 13.0,
+      "bytes": 27882
+    }
+  ],
+  "totalBytes": 459326
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "base",
+    "source": "C:/Users/uronw/.codex/generated_images/01a16876-1e4e-75e2-a55e-d4ed39c34a2e/exec-d58b70dd-4622-4517-9d03-dbb5710445f8.png",
+    "textureSize": [
+      512,
+      512
+    ],
+    "webpBytes": 21430,
+    "repeatSvgBytes": 29000,
+    "repeatWorldSize": 1024,
+    "opacity": 1
+  },
+  {
+    "name": "ripples",
+    "source": "C:/Users/uronw/.codex/generated_images/01a16876-1e4e-75e2-a55e-d4ed39c34a2e/exec-e72f2075-daef-4033-a3d3-1da206cd9fea.png",
+    "textureSize": [
+      384,
+      384
+    ],
+    "webpBytes": 19472,
+    "repeatSvgBytes": 26383,
+    "repeatWorldSize": 768,
+    "opacity": 0.16
+  }
+]

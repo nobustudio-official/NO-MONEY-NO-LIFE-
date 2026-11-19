@@ -1,0 +1,380 @@
+[
+  {
+    "source": "images\\illustration-drafts\\エリア別バイト案_20261107\\草原-背景.png",
+    "output": "images\\optimized\\event-characters\\バイト\\エリア別\\草原-背景.webp",
+    "archiveFile": "草原-背景.png",
+    "bytes": 3452719,
+    "sourceSize": [
+      1672,
+      941
+    ],
+    "outputBytes": 555412,
+    "outputSize": [
+      1672,
+      941
+    ],
+    "alpha": false,
+    "meanRgbError": 4.065313208148378,
+    "sha256": "df59c8c73ef861bfa5a1499229eb3197ced3ba8d7c871bd6bf707dfbd4821b06"
+  },
+  {
+    "source": "images\\illustration-drafts\\エリア別バイト案_20261107\\草原-通常.png",
+    "output": "images\\optimized\\event-characters\\バイト\\エリア別\\草原-通常.webp",
+    "archiveFile": "草原-通常.png",
+    "bytes": 1862724,
+    "sourceSize": [
+      1199,
+      1312
+    ],
+    "outputBytes": 236722,
+    "outputSize": [
+      936,
+      1024
+    ],
+    "alpha": true,
+    "meanRgbError": 4.212838198345023,
+    "sha256": "126769d9090899fc7968ac97b96a497e2bbedd57505abc8166580e2e5e566a6b"
+  },
+  {
+    "source": "images\\illustration-drafts\\エリア別バイト案_20261107\\草原-断り.png",
+    "output": "images\\optimized\\event-characters\\バイト\\エリア別\\草原-断り.webp",
+    "archiveFile": "草原-断り.png",
+    "bytes": 1766683,
+    "sourceSize": [
+      1199,
+      1312
+    ],
+    "outputBytes": 204412,
+    "outputSize": [
+      936,
+      1024
+    ],
+    "alpha": true,
+    "meanRgbError": 4.394567186654432,
+    "sha256": "dea016fa97f3f6a9dbdfae74140770544ffc1c03826849bab1af0b4c65f8db2b"
+  },
+  {
+    "source": "images\\illustration-drafts\\エリア別バイト案_20261107\\森林-背景.png",
+    "output": "images\\optimized\\event-characters\\バイト\\エリア別\\森林-背景.webp",
+    "archiveFile": "森林-背景.png",
+    "bytes": 3378373,
+    "sourceSize": [
+      1672,
+      941
+    ],
+    "outputBytes": 535610,
+    "outputSize": [
+      1672,
+      941
+    ],
+    "alpha": false,
+    "meanRgbError": 4.120661704013681,
+    "sha256": "c72213ddd77813ed8b037ae6eaefedc7484fb0a8a1661c1c7045ec90b3f32d49"
+  },
+  {
+    "source": "images\\illustration-drafts\\エリア別バイト案_20261107\\森林-通常.png",
+    "output": "images\\optimized\\event-characters\\バイト\\エリア別\\森林-通常.webp",
+    "archiveFile": "森林-通常.png",
+    "bytes": 1715125,
+    "sourceSize": [
+      1286,
+      1223
+    ],
+    "outputBytes": 215886,
+    "outputSize": [
+      1024,
+      974
+    ],
+    "alpha": true,
+    "meanRgbError": 3.9444543668512235,
+    "sha256": "0c58c21466a9aa4f0a2788922bf064e3421fa87d88e85b4eb6de443e96572e14"
+  },
+  {
+    "source": "images\\illustration-drafts\\エリア別バイト案_20261107\\森林-断り.png",
+    "output": "images\\optimized\\event-characters\\バイト\\エリア別\\森林-断り.webp",
+    "archiveFile": "森林-断り.png",
+    "bytes": 1566830,
+    "sourceSize": [
+      1286,
+      1223
+    ],
+    "outputBytes": 179938,
+    "outputSize": [
+      1024,
+      974
+    ],
+    "alpha": true,
+    "meanRgbError": 4.027350668607715,
+    "sha256": "317359586190aa0ef3ab390588f324833f39af12cb0f497e9202e46692824bcb"
+  },
+  {
+    "source": "images\\illustration-drafts\\エリア別バイト案_20261107\\湖-背景.png",
+    "output": "images\\optimized\\event-characters\\バイト\\エリア別\\湖-背景.webp",
+    "archiveFile": "湖-背景.png",
+    "bytes": 3384393,
+    "sourceSize": [
+      1672,
+      941
+    ],
+    "outputBytes": 531994,
+    "outputSize": [
+      1672,
+      941
+    ],
+    "alpha": false,
+    "meanRgbError": 4.273120064677199,
+    "sha256": "301e196c7c489d4be3e22e58f8f29259985cd6139019771461aa18b384e86a6c"
+  },
+  {
+    "source": "images\\illustration-drafts\\エリア別バイト案_20261107\\湖-通常.png",
+    "output": "images\\optimized\\event-characters\\バイト\\エリア別\\湖-通常.webp",
+    "archiveFile": "湖-通常.png",
+    "bytes": 1783400,
+    "sourceSize": [
+      1286,
+      1223
+    ],
+    "outputBytes": 240398,
+    "outputSize": [
+      1024,
+      974
+    ],
+    "alpha": true,
+    "meanRgbError": 3.9376067598075513,
+    "sha256": "5eb1dc7750ff8c0411e01d4eedc1ea25b251a127ffe844376aa77cf8cee896e7"
+  },
+  {
+    "source": "images\\illustration-drafts\\エリア別バイト案_20261107\\湖-断り-修正.png",
+    "output": "images\\optimized\\event-characters\\バイト\\エリア別\\湖-断り-修正.webp",
+    "archiveFile": "湖-断り-修正.png",
+    "bytes": 1702496,
+    "sourceSize": [
+      1286,
+      1223
+    ],
+    "outputBytes": 213910,
+    "outputSize": [
+      1024,
+      974
+    ],
+    "alpha": true,
+    "meanRgbError": 4.397749106035665,
+    "sha256": "22f4eff176358dd49eda60587f5f1ace6a502139f2db5e59d81dce63ad62d8a0"
+  },
+  {
+    "source": "images\\illustration-drafts\\エリア別バイト案_20261107\\砂漠-背景.png",
+    "output": "images\\optimized\\event-characters\\バイト\\エリア別\\砂漠-背景.webp",
+    "archiveFile": "砂漠-背景.png",
+    "bytes": 3225847,
+    "sourceSize": [
+      1672,
+      941
+    ],
+    "outputBytes": 487812,
+    "outputSize": [
+      1672,
+      941
+    ],
+    "alpha": false,
+    "meanRgbError": 3.938388442848983,
+    "sha256": "6b32b8d51d5a327f4770aa44afa1be4ef069d2158090c73b627ed2caca4843a7"
+  },
+  {
+    "source": "images\\illustration-drafts\\エリア別バイト案_20261107\\砂漠-通常.png",
+    "output": "images\\optimized\\event-characters\\バイト\\エリア別\\砂漠-通常.webp",
+    "archiveFile": "砂漠-通常.png",
+    "bytes": 2105923,
+    "sourceSize": [
+      1289,
+      1220
+    ],
+    "outputBytes": 267916,
+    "outputSize": [
+      1024,
+      969
+    ],
+    "alpha": true,
+    "meanRgbError": 4.24410328319019,
+    "sha256": "f7c21ed85359b584b31a2c22e0f02352c9b41fe716c7cdc7d73c358541e3f43c"
+  },
+  {
+    "source": "images\\illustration-drafts\\エリア別バイト案_20261107\\砂漠-断り-修正.png",
+    "output": "images\\optimized\\event-characters\\バイト\\エリア別\\砂漠-断り-修正.webp",
+    "archiveFile": "砂漠-断り-修正.png",
+    "bytes": 1934488,
+    "sourceSize": [
+      1289,
+      1220
+    ],
+    "outputBytes": 238280,
+    "outputSize": [
+      1024,
+      969
+    ],
+    "alpha": true,
+    "meanRgbError": 4.376999628390933,
+    "sha256": "56cf4017e95bfb3b1a9920cf5edd90feb78dd1a7b4606680faa18b61c02834e5"
+  },
+  {
+    "source": "images\\illustration-drafts\\エリア別バイト案_20261107\\雪山-背景.png",
+    "output": "images\\optimized\\event-characters\\バイト\\エリア別\\雪山-背景.webp",
+    "archiveFile": "雪山-背景.png",
+    "bytes": 3138252,
+    "sourceSize": [
+      1672,
+      941
+    ],
+    "outputBytes": 449616,
+    "outputSize": [
+      1672,
+      941
+    ],
+    "alpha": false,
+    "meanRgbError": 3.346151825317327,
+    "sha256": "866e6d98043292b7baa458babb9864bc724d867b3a905cb18221e2d6eaa190b1"
+  },
+  {
+    "source": "images\\illustration-drafts\\エリア別バイト案_20261107\\雪山-通常-修正.png",
+    "output": "images\\optimized\\event-characters\\バイト\\エリア別\\雪山-通常-修正.webp",
+    "archiveFile": "雪山-通常-修正.png",
+    "bytes": 1931938,
+    "sourceSize": [
+      1288,
+      1221
+    ],
+    "outputBytes": 222562,
+    "outputSize": [
+      1024,
+      971
+    ],
+    "alpha": true,
+    "meanRgbError": 3.063336509145114,
+    "sha256": "9dd28eb6201c1060074ef9128d671e03b42b7c26c891f55e8fdf33ee4b8ce8f7"
+  },
+  {
+    "source": "images\\illustration-drafts\\エリア別バイト案_20261107\\雪山-断り-修正2.png",
+    "output": "images\\optimized\\event-characters\\バイト\\エリア別\\雪山-断り-修正2.webp",
+    "archiveFile": "雪山-断り-修正2.png",
+    "bytes": 1639070,
+    "sourceSize": [
+      1289,
+      1221
+    ],
+    "outputBytes": 153338,
+    "outputSize": [
+      1024,
+      970
+    ],
+    "alpha": true,
+    "meanRgbError": 2.70989581701667,
+    "sha256": "5ca3f1a74396a4893c2316c0308191361a7fb4a26bf836c7962bfe39ff0a60ea"
+  },
+  {
+    "source": "images\\illustration-drafts\\エリア別バイト案_20261107\\古代遺跡-背景.png",
+    "output": "images\\optimized\\event-characters\\バイト\\エリア別\\古代遺跡-背景.webp",
+    "archiveFile": "古代遺跡-背景.png",
+    "bytes": 3487330,
+    "sourceSize": [
+      1672,
+      941
+    ],
+    "outputBytes": 561346,
+    "outputSize": [
+      1672,
+      941
+    ],
+    "alpha": false,
+    "meanRgbError": 4.280619340109524,
+    "sha256": "f832792abdaf2ef81d8929b99d5d199240463a9792e0a12847c26c362bb05e57"
+  },
+  {
+    "source": "images\\illustration-drafts\\エリア別バイト案_20261107\\古代遺跡-通常.png",
+    "output": "images\\optimized\\event-characters\\バイト\\エリア別\\古代遺跡-通常.webp",
+    "archiveFile": "古代遺跡-通常.png",
+    "bytes": 1461101,
+    "sourceSize": [
+      1286,
+      1223
+    ],
+    "outputBytes": 177622,
+    "outputSize": [
+      1024,
+      974
+    ],
+    "alpha": true,
+    "meanRgbError": 3.8842937938213415,
+    "sha256": "b8168dc307756519c27823d434e5e679985010b790c3d6de2803890003920adf"
+  },
+  {
+    "source": "images\\illustration-drafts\\エリア別バイト案_20261107\\古代遺跡-断り.png",
+    "output": "images\\optimized\\event-characters\\バイト\\エリア別\\古代遺跡-断り.webp",
+    "archiveFile": "古代遺跡-断り.png",
+    "bytes": 1361633,
+    "sourceSize": [
+      1286,
+      1223
+    ],
+    "outputBytes": 158664,
+    "outputSize": [
+      1024,
+      974
+    ],
+    "alpha": true,
+    "meanRgbError": 4.1566169309689345,
+    "sha256": "031e5ba83109d7fceb1c24985f9f90607535ca768eb455a73bf9bfdef5589c78"
+  },
+  {
+    "source": "images\\illustration-drafts\\エリア別バイト案_20261107\\火山-背景-修正.png",
+    "output": "images\\optimized\\event-characters\\バイト\\エリア別\\火山-背景-修正.webp",
+    "archiveFile": "火山-背景-修正.png",
+    "bytes": 3004413,
+    "sourceSize": [
+      1672,
+      941
+    ],
+    "outputBytes": 433934,
+    "outputSize": [
+      1672,
+      941
+    ],
+    "alpha": false,
+    "meanRgbError": 3.472308167530216,
+    "sha256": "5b5ca29775e8b1f2b160dc2b73f8d1e1f45a53e2c7822c6541f0cc5fd777c184"
+  },
+  {
+    "source": "images\\illustration-drafts\\エリア別バイト案_20261107\\火山-通常.png",
+    "output": "images\\optimized\\event-characters\\バイト\\エリア別\\火山-通常.webp",
+    "archiveFile": "火山-通常.png",
+    "bytes": 1737481,
+    "sourceSize": [
+      1286,
+      1223
+    ],
+    "outputBytes": 211270,
+    "outputSize": [
+      1024,
+      974
+    ],
+    "alpha": true,
+    "meanRgbError": 4.313419413324349,
+    "sha256": "329dd7b7d2b65a895c88fd325c48c639a77f9c8c1840409cefae27ab70f36db9"
+  },
+  {
+    "source": "images\\illustration-drafts\\エリア別バイト案_20261107\\火山-断り.png",
+    "output": "images\\optimized\\event-characters\\バイト\\エリア別\\火山-断り.webp",
+    "archiveFile": "火山-断り.png",
+    "bytes": 1565767,
+    "sourceSize": [
+      1286,
+      1223
+    ],
+    "outputBytes": 173830,
+    "outputSize": [
+      1024,
+      974
+    ],
+    "alpha": true,
+    "meanRgbError": 4.326621154435254,
+    "sha256": "d4cde5b95e8dec27054dba2f3664a3f5e8989b10fe9789e112cd4da1faea7d07"
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "ruins-snow",
+    "image": "images/map/backgrounds/world/regions/painted-joins-v1/ruins-snow.webp",
+    "x": 2600,
+    "y": 1280,
+    "width": 1536,
+    "height": 1024,
+    "edgeFade": 32,
+    "note": "Locally repainted illustration registered to actual ground crop. Fade only at the rectangular asset's outside edges."
+  }
+]

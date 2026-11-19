@@ -1,0 +1,122 @@
+[
+  {
+    "file": "images\\map-objects\\town\\guild-v1.png",
+    "width": 1312,
+    "height": 1199,
+    "mode": "RGBA",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "cornerAlpha": [
+      0,
+      0,
+      1,
+      0
+    ],
+    "bytes": 1891771
+  },
+  {
+    "file": "images\\map-objects\\grassland\\windmill-v1.png",
+    "width": 1312,
+    "height": 1199,
+    "mode": "RGBA",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "bytes": 1703015
+  },
+  {
+    "file": "images\\map-objects\\forest\\ancient-tree-v2.png",
+    "width": 1312,
+    "height": 1199,
+    "mode": "RGBA",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "cornerAlpha": [
+      0,
+      0,
+      1,
+      0
+    ],
+    "bytes": 1725148
+  },
+  {
+    "file": "images\\map-objects\\desert\\oasis-v1.png",
+    "width": 1312,
+    "height": 1199,
+    "mode": "RGBA",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "bytes": 1945068
+  },
+  {
+    "file": "images\\map-objects\\snow\\ice-cave-v1.png",
+    "width": 1312,
+    "height": 1199,
+    "mode": "RGBA",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "bytes": 1637857
+  },
+  {
+    "file": "images\\map-objects\\ruins\\ruined-gate-v1.png",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGBA",
+    "alphaRange": [
+      0,
+      254
+    ],
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "bytes": 2244774,
+    "gateOpeningAlpha": 0
+  },
+  {
+    "file": "images\\map-objects\\volcano\\mini-volcano-v1.png",
+    "width": 1492,
+    "height": 1054,
+    "mode": "RGBA",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "bytes": 794514
+  }
+]

@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "enabled": true,
+  "passes": 2,
+  "geometryHash": "468806b08da7ec34ca635c4cfe7529b7e27a1fb2d58f0ad5db98b77cfa0cd91d",
+  "masks": [
+    {
+      "regionId": "capital",
+      "image": "images/map/backgrounds/world/regions/transitions-v1/capital-coverage.webp",
+      "x": 4192,
+      "y": 2388,
+      "width": 3492,
+      "height": 3440,
+      "pixelWidth": 873,
+      "pixelHeight": 860,
+      "partialPixels": 103734,
+      "bytes": 112944
+    },
+    {
+      "regionId": "town",
+      "image": "images/map/backgrounds/world/regions/transitions-v1/town-coverage.webp",
+      "x": 1536,
+      "y": 4756,
+      "width": 3588,
+      "height": 2668,
+      "pixelWidth": 897,
+      "pixelHeight": 667,
+      "partialPixels": 87398,
+      "bytes": 84436
+    },
+    {
+      "regionId": "grassland",
+      "image": "images/map/backgrounds/world/regions/transitions-v1/grassland-coverage.webp",
+      "x": 1536,
+      "y": 3004,
+      "width": 3832,
+      "height": 3188,
+      "pixelWidth": 958,
+      "pixelHeight": 797,
+      "partialPixels": 108405,
+      "bytes": 117645
+    },
+    {
+      "regionId": "forest",
+      "image": "images/map/backgrounds/world/regions/transitions-v1/forest-coverage.webp",
+      "x": 3508,
+      "y": 528,
+      "width": 3032,
+      "height": 3148,
+      "pixelWidth": 758,
+      "pixelHeight": 787,
+      "partialPixels": 89273,
+      "bytes": 98856
+    },
+    {
+      "regionId": "desert",
+      "image": "images/map/backgrounds/world/regions/transitions-v1/desert-coverage.webp",
+      "x": 4688,
+      "y": 4056,
+      "width": 2996,
+      "height": 3368,
+      "pixelWidth": 749,
+      "pixelHeight": 842,
+      "partialPixels": 84228,
+      "bytes": 88792
+    },
+    {
+      "regionId": "snow",
+      "image": "images/map/backgrounds/world/regions/transitions-v1/snow-coverage.webp",
+      "x": 1536,
+      "y": 0,
+      "width": 3876,
+      "height": 2328,
+      "pixelWidth": 969,
+      "pixelHeight": 582,
+      "partialPixels": 88170,
+      "bytes": 94341
+    },
+    {
+      "regionId": "ruins",
+      "image": "images/map/backgrounds/world/regions/transitions-v1/ruins-coverage.webp",
+      "x": 1536,
+      "y": 0,
+      "width": 2480,
+      "height": 5212,
+      "pixelWidth": 620,
+      "pixelHeight": 1303,
+      "partialPixels": 98243,
+      "bytes": 109934
+    },
+    {
+      "regionId": "volcano",
+      "image": "images/map/backgrounds/world/regions/transitions-v1/volcano-coverage.webp",
+      "x": 4980,
+      "y": 0,
+      "width": 2704,
+      "height": 3776,
+      "pixelWidth": 676,
+      "pixelHeight": 944,
+      "partialPixels": 77721,
+      "bytes": 86492
+    }
+  ],
+  "totalBytes": 793440
+}

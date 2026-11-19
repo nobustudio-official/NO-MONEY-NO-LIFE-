@@ -1,0 +1,371 @@
+{
+  "version": 1,
+  "updated": "2026-10-26",
+  "status": "complete",
+  "extraction": {
+    "coreAlphaThreshold": 32,
+    "edgeRadiusPixels": 3,
+    "outputPaddingPixels": 12,
+    "method": "Select the upper-right connected silhouette; preserve its original RGBA pixels and nearby low-alpha edge pixels; exclude other connected poses. No resampling."
+  },
+  "players": [
+    {
+      "id": 1,
+      "name": "戦士",
+      "source": "images/characters/player/sprites/戦士.png",
+      "sourceSha256": "e47ee2abf340d510f5e32fc98e477c7808a6a166426ddaa8ea1c60c3e97ea388",
+      "sourceSize": {
+        "width": 1241,
+        "height": 1267
+      },
+      "sourceRectangle": {
+        "left": 738,
+        "top": 2,
+        "width": 346,
+        "height": 620
+      },
+      "silhouetteBoundsInSource": {
+        "left": 741,
+        "top": 5,
+        "width": 340,
+        "height": 614
+      },
+      "file": "images/characters/player/back/戦士-back.webp",
+      "outputSha256": "e6fb9400fb7aac021e5c8abeeb3876ab14cac484bf3b9c41d18f56149a1b553c",
+      "width": 370,
+      "height": 644,
+      "retainedPixels": 121249,
+      "excludedForeignCorePixels": 0,
+      "originalSilhouetteTouchesTop": false,
+      "status": "compressed-webp"
+    },
+    {
+      "id": 2,
+      "name": "めぐみ",
+      "source": "images/characters/player/sprites/めぐみ.png",
+      "sourceSha256": "72b9271680b11012d4b071cf0cef6ea0bad88485214e92b9aa91dd51bf330223",
+      "sourceSize": {
+        "width": 1241,
+        "height": 1267
+      },
+      "sourceRectangle": {
+        "left": 751,
+        "top": 1,
+        "width": 297,
+        "height": 631
+      },
+      "silhouetteBoundsInSource": {
+        "left": 754,
+        "top": 4,
+        "width": 291,
+        "height": 625
+      },
+      "file": "images/characters/player/back/めぐみ-back.webp",
+      "outputSha256": "9bef9ec9823823b9748524d720669fcee66731612f2e92e7ed2b8a7de4f65744",
+      "width": 321,
+      "height": 655,
+      "retainedPixels": 123755,
+      "excludedForeignCorePixels": 31,
+      "originalSilhouetteTouchesTop": false,
+      "status": "compressed-webp"
+    },
+    {
+      "id": 3,
+      "name": "聖職者",
+      "source": "images/characters/player/sprites/聖職者.png",
+      "sourceSha256": "84569493327af5d5538ac34f5a4aefee9490afa2429849968d953a0db0c38237",
+      "sourceSize": {
+        "width": 1223,
+        "height": 1286
+      },
+      "sourceRectangle": {
+        "left": 698,
+        "top": 0,
+        "width": 421,
+        "height": 634
+      },
+      "silhouetteBoundsInSource": {
+        "left": 701,
+        "top": 3,
+        "width": 415,
+        "height": 628
+      },
+      "file": "images/characters/player/back/聖職者-back.webp",
+      "outputSha256": "41134fb8272ea3e959011e23cb88c390d50833ffb9cfe008479dad37191ebd90",
+      "width": 445,
+      "height": 658,
+      "retainedPixels": 178312,
+      "excludedForeignCorePixels": 0,
+      "originalSilhouetteTouchesTop": false,
+      "status": "compressed-webp"
+    },
+    {
+      "id": 4,
+      "name": "剣士",
+      "source": "images/characters/player/sprites/剣士.png",
+      "sourceSha256": "6cf53d2ea9bf1921cccb6b980926509b7d5a3adadf5748ec1801948667f2cbb7",
+      "sourceSize": {
+        "width": 1223,
+        "height": 1286
+      },
+      "sourceRectangle": {
+        "left": 731,
+        "top": 2,
+        "width": 379,
+        "height": 628
+      },
+      "silhouetteBoundsInSource": {
+        "left": 734,
+        "top": 5,
+        "width": 373,
+        "height": 622
+      },
+      "file": "images/characters/player/back/剣士-back.webp",
+      "outputSha256": "686f86af9ded85c756036e64aa9e564eec434f3a0d8f3189d29bf578656ed743",
+      "width": 403,
+      "height": 652,
+      "retainedPixels": 125034,
+      "excludedForeignCorePixels": 0,
+      "originalSilhouetteTouchesTop": false,
+      "status": "compressed-webp"
+    },
+    {
+      "id": 5,
+      "name": "騎士",
+      "source": "images/characters/player/sprites/騎士.png",
+      "sourceSha256": "13c806be6343fbab9a6c473e432fa4a8f297b5a0e68f54dc8111800cbbee17d3",
+      "sourceSize": {
+        "width": 1223,
+        "height": 1286
+      },
+      "sourceRectangle": {
+        "left": 711,
+        "top": 5,
+        "width": 340,
+        "height": 622
+      },
+      "silhouetteBoundsInSource": {
+        "left": 714,
+        "top": 8,
+        "width": 334,
+        "height": 616
+      },
+      "file": "images/characters/player/back/騎士-back.webp",
+      "outputSha256": "2b05999536129009e1c225b01e5dfdf753aaab002e4bdfb3d2e6f03fb5440a88",
+      "width": 364,
+      "height": 646,
+      "retainedPixels": 140540,
+      "excludedForeignCorePixels": 0,
+      "originalSilhouetteTouchesTop": false,
+      "status": "compressed-webp"
+    },
+    {
+      "id": 6,
+      "name": "魔術師",
+      "source": "images/characters/player/sprites/魔術師.png",
+      "sourceSha256": "dfad6c2cb6cd23b0eaf5a70d9b35090f59826070d779c3bb599535bbbd4b8dad",
+      "sourceSize": {
+        "width": 1223,
+        "height": 1286
+      },
+      "sourceRectangle": {
+        "left": 690,
+        "top": 3,
+        "width": 479,
+        "height": 639
+      },
+      "silhouetteBoundsInSource": {
+        "left": 693,
+        "top": 6,
+        "width": 473,
+        "height": 633
+      },
+      "file": "images/characters/player/back/魔術師-back.webp",
+      "outputSha256": "a4b5004026b95cf8ec6c06fe7830248582540e877b999b38aad9007efd02e800",
+      "width": 503,
+      "height": 663,
+      "retainedPixels": 188276,
+      "excludedForeignCorePixels": 1,
+      "originalSilhouetteTouchesTop": false,
+      "status": "compressed-webp"
+    },
+    {
+      "id": 7,
+      "name": "鍛冶士",
+      "source": "images/characters/player/sprites/鍛冶士.png",
+      "sourceSha256": "79c0604eee6ca91aa658c32de27a27b262e146a74d6573a70c36d1aba1ba755c",
+      "sourceSize": {
+        "width": 1230,
+        "height": 1271
+      },
+      "sourceRectangle": {
+        "left": 725,
+        "top": 0,
+        "width": 321,
+        "height": 606
+      },
+      "silhouetteBoundsInSource": {
+        "left": 728,
+        "top": 0,
+        "width": 315,
+        "height": 603
+      },
+      "outputSha256": "ad9437057fb15c3a5926cc11f2f0a2f130d171085eceb5ce37771fc312c1a264",
+      "width": 345,
+      "height": 630,
+      "retainedPixels": 134231,
+      "excludedForeignCorePixels": 1,
+      "originalSilhouetteTouchesTop": true,
+      "status": "unused-removed"
+    },
+    {
+      "id": 8,
+      "name": "看護師",
+      "source": "images/characters/player/sprites/看護師.png",
+      "sourceSha256": "a2889d697fa36856ca179cf486d5c308a939779b2bab7fbaf6a8e4ac1a388946",
+      "sourceSize": {
+        "width": 1236,
+        "height": 1222
+      },
+      "sourceRectangle": {
+        "left": 715,
+        "top": 16,
+        "width": 355,
+        "height": 593
+      },
+      "silhouetteBoundsInSource": {
+        "left": 718,
+        "top": 19,
+        "width": 349,
+        "height": 587
+      },
+      "file": "images/characters/player/back/看護師-back.webp",
+      "outputSha256": "445d0138b26341f3096f6b2e209676268e90c930e83fd8ee8ff55ee9d77a541e",
+      "width": 379,
+      "height": 617,
+      "retainedPixels": 136991,
+      "excludedForeignCorePixels": 1,
+      "originalSilhouetteTouchesTop": false,
+      "status": "compressed-webp"
+    },
+    {
+      "id": 9,
+      "name": "獣人",
+      "source": "images/characters/player/sprites/獣人.png",
+      "sourceSha256": "c80f708e3d13f56d419f3405fa682a411b51d710ebcec346922b67f1484c370d",
+      "sourceSize": {
+        "width": 1239,
+        "height": 1270
+      },
+      "sourceRectangle": {
+        "left": 740,
+        "top": 0,
+        "width": 356,
+        "height": 627
+      },
+      "silhouetteBoundsInSource": {
+        "left": 743,
+        "top": 3,
+        "width": 350,
+        "height": 621
+      },
+      "file": "images/characters/player/back/獣人-back.webp",
+      "outputSha256": "8e9df13b9b8077db0fce03a9c5d3c40e4aa1c3b68c3ff77b5fae2ad1132af7fb",
+      "width": 380,
+      "height": 651,
+      "retainedPixels": 123646,
+      "excludedForeignCorePixels": 1,
+      "originalSilhouetteTouchesTop": false,
+      "status": "compressed-webp"
+    },
+    {
+      "id": 10,
+      "name": "エルフ",
+      "source": "images/characters/player/sprites/エルフ.png",
+      "sourceSha256": "59491128df9236d7da296ce2d8793ddd3099b410c7eed926d261edf1bfca2aee",
+      "sourceSize": {
+        "width": 1239,
+        "height": 1270
+      },
+      "sourceRectangle": {
+        "left": 718,
+        "top": 3,
+        "width": 421,
+        "height": 635
+      },
+      "silhouetteBoundsInSource": {
+        "left": 721,
+        "top": 6,
+        "width": 415,
+        "height": 629
+      },
+      "file": "images/characters/player/back/エルフ-back.webp",
+      "outputSha256": "c3554aa0611591ff38d1fc6c5fe861bdfa26c5c51e6bad705f43979f91f7d5ca",
+      "width": 445,
+      "height": 659,
+      "retainedPixels": 146816,
+      "excludedForeignCorePixels": 163,
+      "originalSilhouetteTouchesTop": false,
+      "status": "compressed-webp"
+    },
+    {
+      "id": 11,
+      "name": "義賊",
+      "source": "images/characters/player/sprites/義賊.png",
+      "sourceSha256": "87c3593192da223923fa498e7fbec33fb84092a6f0e756eaeacd07537f875def",
+      "sourceSize": {
+        "width": 1225,
+        "height": 1280
+      },
+      "sourceRectangle": {
+        "left": 719,
+        "top": 1,
+        "width": 447,
+        "height": 626
+      },
+      "silhouetteBoundsInSource": {
+        "left": 722,
+        "top": 4,
+        "width": 441,
+        "height": 620
+      },
+      "file": "images/characters/player/back/義賊-back.webp",
+      "outputSha256": "5041da0d6eb8c1cc16de1e6b6f0788cc5f1de0e66562a173dcf655d5e9aa4902",
+      "width": 471,
+      "height": 650,
+      "retainedPixels": 167000,
+      "excludedForeignCorePixels": 0,
+      "originalSilhouetteTouchesTop": false,
+      "status": "compressed-webp"
+    },
+    {
+      "id": 12,
+      "name": "拳法",
+      "source": "images/characters/player/sprites/拳法.png",
+      "sourceSha256": "b3d8916572e9ac219298f97c31753f1849c44ca431c3bf497448801b8c290f62",
+      "sourceSize": {
+        "width": 1240,
+        "height": 1308
+      },
+      "sourceRectangle": {
+        "left": 666,
+        "top": 0,
+        "width": 486,
+        "height": 643
+      },
+      "silhouetteBoundsInSource": {
+        "left": 669,
+        "top": 2,
+        "width": 480,
+        "height": 638
+      },
+      "outputSha256": "e9a8a34c795ada62fa3e69bcfa91dd82e521cc990617b17fff33c05f7e09796c",
+      "width": 510,
+      "height": 667,
+      "retainedPixels": 191444,
+      "excludedForeignCorePixels": 2,
+      "originalSilhouetteTouchesTop": false,
+      "status": "unused-removed"
+    }
+  ]
+}

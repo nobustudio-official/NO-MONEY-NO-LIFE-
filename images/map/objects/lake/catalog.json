@@ -1,0 +1,339 @@
+{
+  "青い屋根の家.png": {
+    "region": "town",
+    "symbol": "🏠",
+    "width": 250,
+    "height": 170
+  },
+  "青空授業.png": {
+    "region": "town",
+    "symbol": "📚",
+    "width": 300,
+    "height": 240
+  },
+  "噴水.png": {
+    "region": "capital",
+    "symbol": "⛲",
+    "width": 220,
+    "height": 160
+  },
+  "ゴーレム.png": {
+    "region": "ruins",
+    "symbol": "🗿",
+    "width": 260,
+    "height": 170
+  },
+  "花壇.png": {
+    "region": "capital",
+    "symbol": "🌷",
+    "width": 180,
+    "height": 140
+  },
+  "未来型塔.png": {
+    "region": "desert",
+    "symbol": "🗼",
+    "width": 220,
+    "height": 160
+  },
+  "木造の家.png": {
+    "region": "town",
+    "symbol": "🏡",
+    "width": 250,
+    "height": 170
+  },
+  "王都の王家紋章碑.png": {
+    "region": "capital",
+    "symbol": "🏰",
+    "width": 180,
+    "height": 200
+  },
+  "王都の郵便箱.png": {
+    "region": "capital",
+    "symbol": "📮",
+    "width": 160,
+    "height": 200
+  },
+  "王都の道標.png": {
+    "region": "capital",
+    "symbol": "🪧",
+    "width": 180,
+    "height": 210
+  },
+  "王都の祝祭旗.png": {
+    "region": "capital",
+    "symbol": "🚩",
+    "width": 140,
+    "height": 220
+  },
+  "街の石造り井戸.png": {
+    "region": "town",
+    "symbol": "🪣",
+    "width": 190,
+    "height": 210
+  },
+  "街の青果屋台.png": {
+    "region": "town",
+    "symbol": "🥕",
+    "width": 210,
+    "height": 175
+  },
+  "街の手押し荷車.png": {
+    "region": "town",
+    "symbol": "🛒",
+    "width": 200,
+    "height": 160
+  },
+  "街の石造りベンチ.png": {
+    "region": "town",
+    "symbol": "🪑",
+    "width": 200,
+    "height": 140
+  },
+  "草原のかかし.png": {
+    "region": "grassland",
+    "symbol": "🌾",
+    "width": 140,
+    "height": 200
+  },
+  "草原の干し草俵.png": {
+    "region": "grassland",
+    "symbol": "🌾",
+    "width": 190,
+    "height": 150
+  },
+  "草原の木桶水飲み場.png": {
+    "region": "grassland",
+    "symbol": "🪣",
+    "width": 180,
+    "height": 130
+  },
+  "草原の小さな風車.png": {
+    "region": "grassland",
+    "symbol": "🌬️",
+    "width": 170,
+    "height": 220
+  },
+  "森林の赤キノコ.png": {
+    "region": "forest",
+    "symbol": "🍄",
+    "width": 190,
+    "height": 160
+  },
+  "森林の倒木ベンチ.png": {
+    "region": "forest",
+    "symbol": "🪵",
+    "width": 210,
+    "height": 140
+  },
+  "森林のうろ切り株.png": {
+    "region": "forest",
+    "symbol": "🌳",
+    "width": 180,
+    "height": 180
+  },
+  "森林の木彫り道標.png": {
+    "region": "forest",
+    "symbol": "🪵",
+    "width": 150,
+    "height": 220
+  },
+  "砂漠のサボテン.png": {
+    "region": "desert",
+    "symbol": "🌵",
+    "width": 180,
+    "height": 200
+  },
+  "砂漠の水差し.png": {
+    "region": "desert",
+    "symbol": "🏺",
+    "width": 160,
+    "height": 190
+  },
+  "砂漠の砂岩標柱.png": {
+    "region": "desert",
+    "symbol": "🪨",
+    "width": 150,
+    "height": 200
+  },
+  "砂漠の日よけ布.png": {
+    "region": "desert",
+    "symbol": "⛺",
+    "width": 210,
+    "height": 160
+  },
+  "雪山の雪だるま.png": {
+    "region": "snow",
+    "symbol": "⛄",
+    "width": 150,
+    "height": 200
+  },
+  "雪山の赤いそり.png": {
+    "region": "snow",
+    "symbol": "🛷",
+    "width": 200,
+    "height": 130
+  },
+  "雪山の氷晶.png": {
+    "region": "snow",
+    "symbol": "💎",
+    "width": 170,
+    "height": 200
+  },
+  "雪山の雪靴立て.png": {
+    "region": "snow",
+    "symbol": "🥾",
+    "width": 170,
+    "height": 180
+  },
+  "古代遺跡の石柱.png": {
+    "region": "ruins",
+    "symbol": "🏛️",
+    "width": 150,
+    "height": 210
+  },
+  "古代遺跡の石碑.png": {
+    "region": "ruins",
+    "symbol": "🪨",
+    "width": 160,
+    "height": 210
+  },
+  "古代遺跡の壊れた門.png": {
+    "region": "ruins",
+    "symbol": "🏛️",
+    "width": 190,
+    "height": 190
+  },
+  "古代遺跡の守護面.png": {
+    "region": "ruins",
+    "symbol": "🎭",
+    "width": 180,
+    "height": 180
+  },
+  "火山の黒岩群.png": {
+    "region": "volcano",
+    "symbol": "🌋",
+    "width": 190,
+    "height": 150
+  },
+  "火山の溶岩口.png": {
+    "region": "volcano",
+    "symbol": "🌋",
+    "width": 170,
+    "height": 180
+  },
+  "火山の黒曜石結晶.png": {
+    "region": "volcano",
+    "symbol": "💎",
+    "width": 170,
+    "height": 190
+  },
+  "火山の炭化切り株.png": {
+    "region": "volcano",
+    "symbol": "🪵",
+    "width": 180,
+    "height": 170
+  },
+  "ラクダ.png": {
+    "region": "desert",
+    "symbol": "🐪",
+    "width": 180,
+    "height": 170
+  },
+  "王都の街灯.png": {
+    "region": "capital",
+    "symbol": "🏮",
+    "width": 180,
+    "height": 220
+  },
+  "帆船.png": {
+    "region": "lake",
+    "symbol": "⛵",
+    "width": 220,
+    "height": 180
+  },
+  "てんとう虫.png": {
+    "region": "grassland",
+    "symbol": "🐞",
+    "width": 140,
+    "height": 140
+  },
+  "火山ランドマーク.png": {
+    "region": "volcano",
+    "symbol": "🌋",
+    "width": 460,
+    "height": 420
+  },
+  "王都の魔法練習用モンスター的.png": {
+    "region": "capital",
+    "name": "王都のモンスター的",
+    "symbol": "🎯",
+    "width": 220,
+    "height": 200
+  },
+  "王都の見習い戦士.png": {
+    "region": "capital",
+    "name": "王都の見習い戦士",
+    "symbol": "🪄",
+    "width": 180,
+    "height": 220
+  },
+  "王都の見習い魔術師.png": {
+    "region": "capital",
+    "name": "王都の見習い魔術師",
+    "symbol": "🧙",
+    "width": 180,
+    "height": 230
+  },
+  "王都の見習いエルフ.png": {
+    "region": "capital",
+    "name": "王都の見習いエルフ",
+    "symbol": "🧝",
+    "width": 180,
+    "height": 220
+  },
+  "王都の見習い聖職者.png": {
+    "region": "capital",
+    "name": "王都の見習い聖職者",
+    "symbol": "✨",
+    "width": 180,
+    "height": 220
+  },
+  "王都の魔法訓練場.png": {
+    "region": "capital",
+    "name": "王都の魔法訓練場",
+    "symbol": "✨",
+    "width": 1080,
+    "height": 772,
+    "kind": "ground"
+  },
+  "湖の水車.webp": {
+    "region": "lake",
+    "symbol": "⚙️",
+    "width": 200,
+    "height": 220
+  },
+  "湖の白鳥.webp": {
+    "region": "lake",
+    "symbol": "🦢",
+    "width": 220,
+    "height": 180
+  },
+  "湖の漁網.webp": {
+    "region": "lake",
+    "symbol": "🎣",
+    "width": 220,
+    "height": 220
+  },
+  "湖の真珠貝.webp": {
+    "region": "lake",
+    "symbol": "🦪",
+    "width": 190,
+    "height": 170
+  },
+  "湖の黒鳥.webp": {
+    "region": "lake",
+    "symbol": "🦢",
+    "width": 220,
+    "height": 180
+  }
+}
