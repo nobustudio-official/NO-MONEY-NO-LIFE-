@@ -55,11 +55,26 @@
  }
  function createBackground(squares){
   const background=document.createElement('div');background.className='map-background';
-  // Reuse the validated baked terrain/roads on phones. Building the full-world
-  // SVG and decoding all terrain/road images can exhaust Safari's memory while
-  // the opening is still playing, even though the game is visually scaled down.
-  if(window.mobileRuntimeTuning===true&&window.MapOverviewCache?.mountAsBase(background,squares)){
+  // Phones use the same native-resolution raster tiles as desktop, but only
+  // tiles in the viewport are loaded. The 25% overview is reserved for zoomed
+  // out views; using it as the gameplay base made the map visibly blurry.
+  if(window.mobileRuntimeTuning===true){
+   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+   svg.classList.add('map-continent');
+   svg.setAttribute('viewBox',`0 0 ${config.width} ${config.height}`);
+   svg.setAttribute('aria-hidden','true');
+   const fallback=window.MapOverviewRasterData?.mobileImage;
+   if(fallback){
+    const image=document.createElementNS('http://www.w3.org/2000/svg','image');
+    image.setAttribute('href',fallback);
+    image.setAttribute('width',String(config.width));
+    image.setAttribute('height',String(config.height));
+    svg.append(image);
+   }
+   background.append(svg);
+   window.MapWorkshopScene?.mount(background);
    setZoom(typeof window.getMapZoomUI==='function'?window.getMapZoomUI():1);
+   queueMicrotask(()=>window.MapBackgroundCache?.prepare(background,svg));
    return background;
   }
   const ns='http://www.w3.org/2000/svg';

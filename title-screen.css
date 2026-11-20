@@ -313,8 +313,10 @@
 
 .title-screen__mode-button {
     display: grid;
-    grid-template-columns: 28px 1fr 16px;
+    grid-template-columns: 1fr;
+    justify-items: center;
     align-items: center;
+    text-align: center;
     min-height: 58px;
     padding: 12px 20px;
     border: 1px solid #ffe3a0b8;
@@ -332,14 +334,6 @@
     border-color: #fff0bd;
     background: linear-gradient(100deg, #273751f2, #58385cf2 54%, #2a3b58f2);
 }
-
-.title-screen__mode-icon {
-    color: var(--title-gold);
-    font-size: 18px;
-    text-shadow: 0 0 10px #ffd88487;
-}
-
-.title-screen__mode-button .title-screen__button-arrow { color: var(--title-gold); }
 
 .title-screen__back-button {
     justify-self: center;

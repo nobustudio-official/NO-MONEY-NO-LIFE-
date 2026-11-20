@@ -23,7 +23,7 @@
         background.classList.add('map-static-background');
         background.append(image);
         if (data.mobileImage) window.MapWorkshopScene?.mount(background, { bakedScenery: true });
-        if (window.mobileMapDetailEnabled === true && data.detailTiles?.length) {
+        if (data.detailTiles?.length) {
             const levels = mobileLevels.map(level => ({ ...level, images: new Map(), opacity: 0 }));
             const tuned = window.mobileRuntimeTuning === true;
             mobileStates.set(background, { tiles: data.detailTiles, levels, tuned, loading: 0, pending: [], lastPixelZoom: null });
@@ -53,7 +53,6 @@
         }
     }
     function setMobileViewport(board, bounds, zoom) {
-        if (window.mobileMapDetailEnabled !== true) return;
         if (board.classList.contains('map-zoom-interacting')) return;
         const background = board.querySelector('.map-static-background');
         const state = mobileStates.get(background);
