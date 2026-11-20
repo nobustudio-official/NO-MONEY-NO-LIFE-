@@ -26,7 +26,7 @@
         if (window.mobileMapDetailEnabled === true && data.detailTiles?.length) {
             const levels = mobileLevels.map(level => ({ ...level, images: new Map(), opacity: 0 }));
             const tuned = window.mobileRuntimeTuning === true;
-            mobileStates.set(background, { tiles: data.detailTiles, levels, tuned, loading: 0, pending: [] });
+            mobileStates.set(background, { tiles: data.detailTiles, levels, tuned, loading: 0, pending: [], lastPixelZoom: null });
         }
         return true;
     }
@@ -67,6 +67,8 @@
         const zooming = board.classList.contains('map-zoom-interacting');
         // Use more detail on dense phone screens, retaining the overview at full-map zoom.
         const pixelZoom = zoom <= window.MapScene.getMinZoom() ? 0 : zoom * Math.min(window.devicePixelRatio || 1, 2);
+        const zoomingOut = zooming && state.lastPixelZoom !== null && pixelZoom < state.lastPixelZoom;
+        state.lastPixelZoom = pixelZoom;
         const pending = [];
         for (const level of state.levels) {
             const opacity = Math.max(0, Math.min(1, (pixelZoom - level.fadeFrom) / (level.fadeTo - level.fadeFrom)));
@@ -74,13 +76,13 @@
                 level.opacity = opacity;
                 background.style.setProperty(`--map-${level.name}-opacity`, String(opacity));
             }
-            // Keep the outgoing tiles during a gesture so an immediate reversal can reuse them.
-            if (pixelZoom < level.preload && zooming) continue;
+            // Release outgoing detail promptly while zooming out to cap Safari memory use.
+            if (pixelZoom < level.preload && zooming && !zoomingOut) continue;
             const wanted = pixelZoom < level.preload ? [] : near.filter(({ tile }) => tile[level.source]).slice(0, level.limit);
             const needed = new Set(wanted.map(({ tile }) => tile));
             for (const [tile, entry] of level.images) {
                 if (needed.has(tile)) continue;
-                if (state.tuned && entry.started && pixelZoom >= level.preload && needed.size < level.limit && intersects(tile, 128 / zoom)) {
+                if (!zoomingOut && state.tuned && entry.started && pixelZoom >= level.preload && needed.size < level.limit && intersects(tile, 128 / zoom)) {
                     needed.add(tile);
                     continue;
                 }

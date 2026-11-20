@@ -1801,8 +1801,8 @@
         const compatibilityMode = settings.get('mobile-perf') === 'off';
         window.mobilePerformanceEnabled = defaultEnabled && !compatibilityMode;
         window.mobileOpeningLightweight = !compatibilityMode;
-        // Detail tiles are optional; keep mobile memory use predictable unless explicitly enabled.
-        window.mobileMapDetailEnabled = !compatibilityMode && settings.get('mobile-detail') === 'on';
+        // Keep viewport detail enabled by default; it unloads as the camera zooms out.
+        window.mobileMapDetailEnabled = !compatibilityMode && settings.get('mobile-detail') !== 'off';
         const phoneViewport = matchMedia('(pointer: coarse)').matches;
         window.mobileRuntimeTuning = !compatibilityMode && settings.get('mobile-runtime') !== 'off' && phoneViewport;
     }

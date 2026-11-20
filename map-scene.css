@@ -29,6 +29,10 @@
 /* Promote only during a gesture. A permanent board surface retains the small
    overview raster and magnifies it, blurring the original character sprites. */
 #mapBoard.map-zoom-interacting { will-change: transform; }
+@media (pointer: coarse) {
+    /* Avoid hinting Safari to promote the entire 9k × 7k map as one layer. */
+    #mapBoard.map-zoom-interacting { will-change: auto; }
+}
 #mapBoard .map-background { transform: translateZ(0); will-change: transform; }
 #mapBoard:has(> .map-static-background),
 #mapBoard .map-static-background { -webkit-backface-visibility:visible; backface-visibility:visible; will-change:auto; }
