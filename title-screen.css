@@ -584,13 +584,9 @@
 
 /* Player setup on a portrait phone keeps navigation visible while its fields scroll. */
 @media (orientation: portrait) and (max-width: 700px) {
-    .title-screen.is-setup[data-setup-stage="players"] .title-screen__setup {
-        padding: clamp(54px, 9vh, 78px) 10px max(10px, env(safe-area-inset-bottom));
-    }
-
     .title-screen.is-setup[data-setup-stage="players"] .title-screen__setup-card {
-        width: min(100%, 440px);
-        height: 100%;
+        width: min(1120px, 100%);
+        height: min(760px, 100%);
         max-height: 100%;
         box-sizing: border-box;
         overflow: hidden;
