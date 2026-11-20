@@ -3,8 +3,7 @@
     'use strict';
     const states = new WeakMap();
     const overscan = 220;
-    const touchDevice = window.mobileRuntimeTuning === true ||
-        window.mobilePerformanceEnabled !== false && Boolean(window.matchMedia?.('(pointer: coarse)').matches);
+    const touchDevice = Boolean(window.matchMedia?.('(pointer: coarse)').matches);
 
     function intersects(tile, bounds) {
         return tile.x < bounds.right && tile.x + tile.width > bounds.left &&
@@ -36,6 +35,7 @@
             state.frame = requestAnimationFrame(() => {
                 state.frame = 0;
                 if (!board.isConnected) return;
+                if (board.classList.contains('map-zoom-interacting')) return;
                 const visible = cull(board, state);
                 if (visible) window.MapOverviewCache?.setMobileViewport?.(board, visible, state.zoom);
             });
@@ -69,10 +69,10 @@
         return visible;
     }
 
-    function setZoom(board, zoom) {
+    function setZoom(board, zoom, options = {}) {
         const state = stateFor(board);
         state.zoom = zoom;
-        window.MapOverviewCache?.setZoom(board, zoom);
+        if (options.preview !== true) window.MapOverviewCache?.setZoom(board, zoom);
         // Avoid invalidating inherited styles on every road, SVG and icon.
         const emphasis = zoom < 1 ? 1 / zoom : 1;
         const value = String(emphasis);
@@ -85,7 +85,7 @@
         for (const row of state.bossPieces) {
             row.piece.style.setProperty('--piece-node-scale', String(row.base * emphasis));
         }
-        state.schedule();
+        if (options.preview !== true) state.schedule();
     }
 
     function refreshPieces(board, zoom) {

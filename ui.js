@@ -681,7 +681,7 @@ function updateMapZoomUI(zoom, options = {}) {
     if (options.preview) {
         const board = document.getElementById('mapBoard');
         if (board) board.style.transform = `scale(${mapZoomUI})`;
-        if (board) window.MapDetailLevel.setZoom(board, mapZoomUI);
+        if (board) window.MapDetailLevel.setZoom(board, mapZoomUI, { preview: true });
         return;
     }
     applyMapZoomUI();

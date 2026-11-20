@@ -12,8 +12,8 @@
  function getMinZoom(){
   const area=document.querySelector('.game-screen .map-area');if(!area)return config.minZoom;
   const fitZoom=Math.max(area.clientWidth/cameraFrame.width,area.clientHeight/cameraFrame.height);
-  const landscapePhone=window.matchMedia?.('(pointer: coarse) and (orientation: landscape)').matches;
-  return Math.max(landscapePhone ? .02 : config.minZoom,fitZoom);
+  const touchDevice=window.matchMedia?.('(pointer: coarse)').matches;
+  return Math.max(touchDevice ? .02 : config.minZoom,fitZoom);
  }
  function getCameraLimits(){
   const area=document.querySelector('.game-screen .map-area'),board=document.getElementById('mapBoard');if(!area||!board)return null;

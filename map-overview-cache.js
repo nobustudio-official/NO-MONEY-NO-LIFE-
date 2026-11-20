@@ -4,8 +4,8 @@
     const states = new WeakMap();
     const mobileStates = new WeakMap();
     const mobileLevels = [
-        { name: 'medium', source: 'mediumImage', resolution: .5, preload: .19, fadeFrom: .25, fadeTo: .39, limit: 16 },
-        { name: 'native', source: 'image', resolution: 1, preload: .46, fadeFrom: .55, fadeTo: .8, limit: 6 }
+        { name: 'medium', source: 'mediumImage', resolution: .5, preload: .19, fadeFrom: .25, fadeTo: .39, limit: 10 },
+        { name: 'native', source: 'image', resolution: 1, preload: .46, fadeFrom: .55, fadeTo: .8, limit: 4 }
     ];
     function signature() {
         return JSON.stringify([window.MapBackgroundRasterData, window.MapRoadRasterData?.signature,window.MapWorkshopData?.objectLayout||[]]);
@@ -54,6 +54,7 @@
     }
     function setMobileViewport(board, bounds, zoom) {
         if (window.mobileMapDetailEnabled !== true) return;
+        if (board.classList.contains('map-zoom-interacting')) return;
         const background = board.querySelector('.map-static-background');
         const state = mobileStates.get(background);
         if (!state) return;
@@ -67,7 +68,6 @@
         const near = state.tiles.filter(tile => intersects(tile, margin)).map(tile => ({ tile, visible: intersects(tile, 0) }));
         near.sort((a, b) => Number(b.visible) - Number(a.visible) || distance(a.tile) - distance(b.tile));
         const zooming = board.classList.contains('map-zoom-interacting');
-        // Use more detail on dense phone screens, retaining the overview at full-map zoom.
         const pixelZoom = zoom <= window.MapScene.getMinZoom() ? 0 : zoom * Math.min(window.devicePixelRatio || 1, 2);
         const zoomingOut = zooming && state.lastPixelZoom !== null && pixelZoom < state.lastPixelZoom;
         state.lastPixelZoom = pixelZoom;
