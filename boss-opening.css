@@ -10,8 +10,6 @@
 .boss-opening-map svg { width:100%; height:100%; display:block; }
 .boss-opening-region { fill:white; fill-opacity:0; stroke:none; pointer-events:none; filter:none; }
 .boss-opening-region.active { fill-opacity:.34; stroke:none; filter:none; }
-.boss-opening-road-tile { pointer-events:none; opacity:.9; }
-.boss-opening-bridge { pointer-events:none; }
 .boss-opening-info { display:flex; flex:1; align-items:center; justify-content:center; gap:5%; min-height:0; font-size:22px; }
 .boss-opening-portrait { display:flex; flex-direction:column; align-items:center; gap:8px; height:95%; width:45%; justify-content:center; }
 .boss-opening-portrait img { max-height:80%; max-width:100%; object-fit:contain; }

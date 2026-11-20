@@ -12,8 +12,6 @@
 
     <title>NO MONEY, NO LIFE</title>
 
-    <script src="game-viewport.js?v=mobile-opening-memory-2"></script>
-
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%231b2430%22/%3E%3Ctext x=%2232%22 y=%2244%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23f6c453%22%3E$%3C/text%3E%3C/svg%3E">
 
     <link
@@ -1804,7 +1802,7 @@
         window.mobilePerformanceEnabled = defaultEnabled && !compatibilityMode;
         window.mobileOpeningLightweight = !compatibilityMode;
         window.mobileMapDetailEnabled = !compatibilityMode && settings.get('mobile-detail') !== 'off';
-        const phoneViewport = window.GameViewport?.managed === true || matchMedia('(pointer: coarse)').matches;
+        const phoneViewport = matchMedia('(pointer: coarse)').matches;
         window.mobileRuntimeTuning = !compatibilityMode && settings.get('mobile-runtime') !== 'off' && phoneViewport;
     }
 </script>
@@ -1837,7 +1835,7 @@
 <script src="map-island-banks.js"></script>
 <script src="map-boundary-strips.js"></script>
 <script src="map-region-background.js"></script>
-<script src="map-scene.js?v=mobile-opening-memory-2"></script>
+<script src="map-scene.js?v=mobile-native-layout-1"></script>
 <script src="map-background-cache.js?v=mobile-map-window-1"></script>
 <script src="map-background-raster-data.js"></script>
 <script src="map-overview-cache.js?v=mobile-map-sharpness-1"></script>
@@ -1858,8 +1856,8 @@
 <script src="boss-ceremony-rules.js?v=market-season-1"></script>
 <script src="guidebook-rules.js?v=destroyed-book-refund-1"></script>
 <script src="special-reward-rules.js?v=turn25-lowest-gift-2"></script>
-<link rel="stylesheet" href="boss-opening.css?v=desktop-game-layout-1">
-<script src="boss-opening.js?v=mobile-opening-memory-2"></script>
+<link rel="stylesheet" href="boss-opening.css?v=boss-opening-baked-map-1">
+<script src="boss-opening.js?v=boss-opening-baked-map-1"></script>
 <link rel="stylesheet" href="bridge-mugging.css?v=2">
 <link rel="stylesheet" href="ending-presentation.css?v=ending-tied-finishes-1">
 <script src="ending-race-rules.js?v=ending-tied-finishes-1"></script>
@@ -1877,8 +1875,8 @@
 <script src="fukubukuro-ui.js?v=item-catalog-names-20261119"></script>
 <script src="movement-counter-ui.js"></script>
 <link rel="stylesheet" href="map-road-renderer.css?v=boss-route-pink-blink-restore-1">
-<script src="map-road-cache.js?v=mobile-map-lite-1"></script>
-<script src="map-road-raster-data.js?v=map-v1.0.0-20261110"></script>
+<script src="map-road-cache.js?v=no-road-tiles-1"></script>
+<script src="map-road-raster-data.js?v=bridge-overlays-only-1"></script>
 <script src="map-workshop-data.js?v=asset-type-ids-20261110"></script>
 <script src="map-authoring/imported-small-objects.js"></script>
 <script src="map-authoring/catalog.js"></script>
@@ -1907,7 +1905,7 @@
 <script src="turn-handoff.js?v=2"></script>
 <script src="treasure-rules.js?v=multi-get-boss-thresholds-1"></script>
 <script src="game-action-input.js?v=square-detail-move-1"></script>
-<script src="game.js?v=mobile-opening-memory-2"></script>
+<script src="game.js?v=mobile-native-layout-1"></script>
 <script src="battle-effects.js?v=spiffa-tornado-2"></script>
 <script src="battle-effects/common.js"></script>
 <script src="battle-effects/casting-circle.js"></script>

@@ -1245,7 +1245,6 @@ function waitForGameAssets() {
     const mapAssets = constrained ? [overview?.mobileImage || overview?.image] : [
         ...MapScene.assetUrls,
         ...(window.MapBackgroundRasterData?.tiles || []).map(tile => tile.image),
-        ...(window.MapRoadRasterData?.tiles || []).map(tile => tile.image),
         overview?.image
     ];
     const assets = [...new Set([...mapAssets, ...GAME_LOADING_ASSETS].filter(Boolean))];
@@ -1824,7 +1823,6 @@ function showTurnSelectScreen(
 // =========================
 
 gameStarted = true;
-window.GameViewport?.activate();
 window.OfflineDividends.reset(players);
 const lightweightOpening = window.mobileOpeningLightweight === true && (window.mobileRuntimeTuning === true || window.matchMedia?.('(pointer: coarse)').matches);
 
@@ -1948,9 +1946,6 @@ function showGameScreen(
     players,
     maxTurns
 ) {
-
-    // Also cover callers that enter the game without the turn setup screen.
-    window.GameViewport?.activate();
 
     // A fresh game starts with the canonical magic ID order. Drag changes are
     // kept only for the current game and must not leak into the next one.

@@ -36,21 +36,22 @@ async function preload(constrained, failed = new Set()) {
     return { requests, peak, context };
 }
 
-test('phone startup loads the baked overview, not all 78 terrain/road images', async () => {
+test('phone startup loads the overview without preloading terrain or road tiles', async () => {
     const { requests, peak, context } = await preload(true);
     assert.deepEqual(requests.sort(), [context.MapOverviewRasterData.mobileImage, 'gold.webp', 'dice.webp'].sort());
     assert.equal(peak, 2);
     const tiles = [...context.MapBackgroundRasterData.tiles, ...context.MapRoadRasterData.tiles];
-    assert.ok(tiles.length > 50, 'check against production terrain and road data');
+    assert.ok(tiles.length > 50, 'check against production terrain data');
+    assert.equal(context.MapRoadRasterData.tiles.length, 0, 'road raster tiles are disabled');
     assert.ok(tiles.every(tile => !requests.includes(tile.image)));
 });
 
-test('desktop preload keeps its terrain and road assets with bounded concurrency', async () => {
+test('desktop preload keeps terrain assets and skips removed road tiles', async () => {
     const { requests, peak, context } = await preload(false);
     assert.equal(peak, 8);
     assert.ok(requests.includes('terrain.webp'));
     assert.ok(requests.includes(context.MapOverviewRasterData.image));
-    assert.ok(context.MapRoadRasterData.tiles.every(tile => requests.includes(tile.image)));
+    assert.equal(context.MapRoadRasterData.tiles.length, 0);
     assert.equal(new Set(requests).size, requests.length);
 });
 
@@ -111,7 +112,7 @@ function opening({ mobile = true, lightweight = false, nextBoss = false } = {}) 
     const context = {
         console, Image, Audio, Path2D: class {},
         document: { body, createElement: tag => new Element(tag), createElementNS: (_, tag) => new Element(tag), getElementById: () => null },
-        mobileRuntimeTuning: mobile, GameViewport: { active: true },
+        mobileRuntimeTuning: mobile,
         GameSE: { play: () => Promise.resolve() }, BossBattleRules: { DAMAGE_MULTIPLIER: 2 },
         MapRoadRasterData: { tiles: [{ image: 'road.webp', x: 0, y: 0, width: 1024, height: 1024 }], bridges: [] },
         performance: { now: () => 0 },
@@ -143,14 +144,13 @@ function opening({ mobile = true, lightweight = false, nextBoss = false } = {}) 
     };
 }
 
-test('PC layout on phones keeps lazy opening images and uses baked roads', async () => {
+test('phone opening uses the complete baked map without loading separate road tiles', async () => {
     const run = opening();
-    assert.equal(run.context.GameViewport.active, true);
     assert.ok(run.images.every(image => !image.hasAttribute('src')), 'no early second map or boss decode during narration');
     for (let step = 0; step < 5; step++) run.click();
     await flush();
     const mapImage = run.overlay.find(node => node.tag === 'image');
-    assert.equal(mapImage.getAttribute('href'), 'mobile.webp');
+    assert.equal(mapImage.getAttribute('href'), 'overview.webp');
     assert.equal(run.overlay.all(node => node.classes.has('boss-opening-road-tile')).length, 0);
 });
 
@@ -170,23 +170,23 @@ test('the real opening completes narration, lottery, zoom, boss guide and map ha
     assert.equal(run.completed, 1);
 });
 
-test('next-boss announcements also use the memory-safe map without a lightweight option', async () => {
+test('next-boss announcements also use the complete map without a lightweight option', async () => {
     const run = opening({ nextBoss: true });
     await flush();
-    assert.equal(run.overlay.find(node => node.tag === 'image').getAttribute('href'), 'mobile.webp');
+    assert.equal(run.overlay.find(node => node.tag === 'image').getAttribute('href'), 'overview.webp');
     run.click(); run.drain(); run.drain();
     run.click(); run.click(); run.click();
     await run.done;
     assert.equal(run.completed, 1);
 });
 
-test('desktop announcements retain the clean map and separate road layer', async () => {
+test('desktop announcements use the complete map without separate road tile images', async () => {
     const run = opening({ mobile: false });
-    assert.deepEqual(run.images.map(image => image.src), ['clean.webp', 'boss.webp']);
+    assert.deepEqual(run.images.map(image => image.src), ['overview.webp', 'boss.webp']);
     for (let step = 0; step < 5; step++) run.click();
     await flush();
-    assert.equal(run.overlay.find(node => node.tag === 'image').getAttribute('href'), 'clean.webp');
-    assert.equal(run.overlay.all(node => node.classes.has('boss-opening-road-tile')).length, 1);
+    assert.equal(run.overlay.find(node => node.tag === 'image').getAttribute('href'), 'overview.webp');
+    assert.equal(run.overlay.all(node => node.classes.has('boss-opening-road-tile')).length, 0);
 });
 
 function mapContext() {
@@ -233,10 +233,10 @@ test('stale baked maps are rejected instead of masking changed roads or map obje
     assert.equal(context.MapOverviewCache.mountAsBase(new Element('div'), context.mapData), false);
 });
 
-test('framed phones keep runtime memory tuning even with fine-pointer emulation', () => {
+test('phones keep runtime memory tuning without a fixed desktop viewport', () => {
     const source = read('index.html');
     const settings = source.slice(source.indexOf('const defaultEnabled = false;'), source.indexOf('</script>', source.indexOf('const defaultEnabled = false;'))).replace(/\}\s*$/, '');
-    const context = { URLSearchParams, location: { search: '' }, GameViewport: { managed: true }, matchMedia: () => ({ matches: false }) };
+    const context = { URLSearchParams, location: { search: '' }, matchMedia: () => ({ matches: true }) };
     context.window = context;
     vm.runInNewContext(settings, context);
     assert.equal(context.mobileRuntimeTuning, true);

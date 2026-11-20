@@ -1,4 +1,4 @@
-/* Static stonework is baked by scripts/bake-map-roads.cjs, never during play. */
+/* Optional bridge overlays are prebuilt; regular roads use the existing renderer. */
 (function () {
     'use strict';
     // Bump when the source artwork changes so old tiles cannot mask new art.
@@ -112,13 +112,14 @@
         const currentBoard = svg.closest('#mapBoard');
         if (currentBoard) boards.delete(currentBoard);
         const data = window.MapRoadRasterData;
-        if (!data?.tiles?.length || data.signature !== signature(squares)) {
+        if (!data || data.signature !== signature(squares)) {
             return showFallback(svg, squares, token);
         }
         svg.dataset.roadCache = 'loading';
         try {
             const background = currentBoard?.querySelector('.map-background');
             const useBakedRoads = background?.classList.contains('map-static-background');
+            if (!useBakedRoads && !data.tiles?.length) return showFallback(svg, squares, token);
             const streaming = useBakedRoads || Boolean(window.MapDetailLevel?.touchDevice);
             if (!streaming) {
                 // Desktop keeps the existing fully prepared road layer.

@@ -13,7 +13,7 @@
     function mountAsBase(background, squares) {
         const data = window.MapOverviewRasterData;
         const roads = window.MapRoadRasterData;
-        if (!Array.isArray(squares) || !data?.image || data.signature !== signature() || !roads?.tiles?.length ||
+        if (!Array.isArray(squares) || !data?.image || data.signature !== signature() || !roads ||
             roads.signature !== window.MapRoadCache?.signature(squares)) return false;
         const image = new Image();
         image.alt = '';

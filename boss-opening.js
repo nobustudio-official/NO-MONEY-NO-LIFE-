@@ -57,7 +57,7 @@
             const onlineSync = sequenceKey && window.onlineGame?.isOnline ? window.onlineGame.sync : null;
             let expectedStep = 0, requestPending = false, stopRemoteAdvance = null;
             const useBakedRoads = options.lightweight === true || window.mobileRuntimeTuning === true;
-            const overviewSource = useBakedRoads ? overview.mobileImage || overview.image : overview.cleanImage || overview.image;
+            const overviewSource = overview.image;
             const overviewPreload = new Image();
             if (!useBakedRoads) overviewPreload.src = overviewSource;
             const bossPreload = new Image();
@@ -135,31 +135,6 @@
                 try { await overviewPreload.decode(); } catch (error) { console.warn('[開始演出] 全体図の読み込みに失敗:', error); }
                 if (!root.isConnected) return;
                 svg.append(svgElement('image', { href: overviewSource, width: w, height: h }));
-                // The clean overview intentionally omits roads for a quieter map.
-                // Reuse the baked road tiles here so the lottery overview still
-                // communicates the traversable routes without redrawing them.
-                const roadData = window.MapRoadRasterData;
-                if (!useBakedRoads && Array.isArray(roadData?.tiles)) {
-                    roadData.tiles.forEach(tile => svg.append(svgElement('image', {
-                        href: tile.image, x:tile.x, y:tile.y, width:tile.width, height:tile.height,
-                        class:'boss-opening-road-tile'
-                    })));
-                }
-                // Bridges are baked as a separate layer from ordinary roads.
-                // Use the map's authored bridge assets and edge IDs here too,
-                // so opening and boss-lottery maps show the same route network.
-                if (Array.isArray(roadData?.bridges)) {
-                    const collapse = window.bridgeCollapseVisualState || window.bridgeCollapseState || null;
-                    roadData.bridges.forEach(bridge => {
-                        const edge = String(bridge.key || '').split(':').map(Number);
-                        const collapsed = edge.length === 2 && window.BridgeCollapseRules?.isClosed(collapse, edge[0], edge[1]);
-                        if (collapsed) return;
-                        svg.append(svgElement('image', {
-                            href:bridge.image, x:bridge.x, y:bridge.y, width:bridge.width, height:bridge.height,
-                            class:'boss-opening-bridge', 'data-bridge-edge':bridge.key
-                        }));
-                    });
-                }
                 // Region paths are presentation approximations and may extend
                 // slightly past the coastline. Clip the highlight to the actual
                 // continent silhouette so no lottery glow appears over the sea.
