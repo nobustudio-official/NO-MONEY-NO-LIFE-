@@ -9203,6 +9203,7 @@ function showAssetRankingPopup(callback, serverRanking = null, displayOptions = 
 // ここに統一する。
 // =========================
 
+let nextPlayerCameraRequest = 0;
 function updateNextPlayerView() {
 
     // ターン表示を更新
@@ -9211,8 +9212,15 @@ function updateNextPlayerView() {
     // プレイヤー表示を更新
     renderPlayers();
 
-    // 現在プレイヤーへカメラを移動
-    centerCurrentPlayerOnMap();
+    // Recenter after the HUD and player panels have finished their layout.
+    // Do not route turn handoffs through centerCurrentPlayerOnMap's special
+    // guidebook-view guard; that guard is for incidental refreshes only.
+    const focusIndex = currentPlayer;
+    const requestId = ++nextPlayerCameraRequest;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (requestId !== nextPlayerCameraRequest || focusIndex !== currentPlayer) return;
+        centerPlayerOnMap(focusIndex, 'smooth', null, true);
+    }));
 
     // 現在プレイヤーの最短ルートを再描画
     refreshShortestPathToBoss();
@@ -10457,12 +10465,13 @@ function centerPlayerOnMap(
             const squareRect = mapNode.getBoundingClientRect();
             const viewRect = mapArea.getBoundingClientRect();
             const limits = window.MapScene?.getCameraLimits?.();
+            const zoom = Math.max(0.01, Number(getMapZoomUI?.()) || 1);
             const maxScrollLeft = Math.max(0, mapArea.scrollWidth - mapArea.clientWidth);
             const maxScrollTop = Math.max(0, mapArea.scrollHeight - mapArea.clientHeight);
-            const targetScrollLeft = mapArea.scrollLeft + squareRect.left + squareRect.width / 2
-                - viewRect.left - viewRect.width / 2;
-            const targetScrollTop = mapArea.scrollTop + squareRect.top + squareRect.height / 2
-                - viewRect.top - viewRect.height / 2;
+            const targetScrollLeft = mapArea.scrollLeft + (squareRect.left + squareRect.width / 2
+                - viewRect.left - viewRect.width / 2) / zoom;
+            const targetScrollTop = mapArea.scrollTop + (squareRect.top + squareRect.height / 2
+                - viewRect.top - viewRect.height / 2) / zoom;
             const finalScrollLeft = Math.max(limits?.minLeft ?? 0,
                 Math.min(targetScrollLeft, limits?.maxLeft ?? maxScrollLeft));
             const finalScrollTop = Math.max(limits?.minTop ?? 0,

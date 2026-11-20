@@ -67,12 +67,20 @@
             tile.y < bounds.bottom + pad && tile.y + tile.height > bounds.top - pad;
         const near = state.tiles.filter(tile => intersects(tile, margin)).map(tile => ({ tile, visible: intersects(tile, 0) }));
         near.sort((a, b) => Number(b.visible) - Number(a.visible) || distance(a.tile) - distance(b.tile));
+        // Mobile gameplay is hosted in a 1920x1080 logical viewport and then
+        // scaled to the phone. A fixed four-tile cap left much of that viewport
+        // showing the 25% overview image at normal zoom. Always cover every
+        // visible tile with native detail; the limit only caps offscreen preload.
+        const visibleNativeCount = near.filter(({ tile, visible }) => visible && tile.image).length;
         const zooming = board.classList.contains('map-zoom-interacting');
         const pixelZoom = zoom <= window.MapScene.getMinZoom() ? 0 : zoom * Math.min(window.devicePixelRatio || 1, 2);
         const zoomingOut = zooming && state.lastPixelZoom !== null && pixelZoom < state.lastPixelZoom;
         state.lastPixelZoom = pixelZoom;
         const pending = [];
         for (const level of state.levels) {
+            const levelLimit = level.name === 'native'
+                ? Math.max(level.limit, visibleNativeCount)
+                : level.limit;
             const opacity = Math.max(0, Math.min(1, (pixelZoom - level.fadeFrom) / (level.fadeTo - level.fadeFrom)));
             if (level.opacity !== opacity) {
                 level.opacity = opacity;
@@ -84,11 +92,11 @@
             // Zooming out exposes more map area, but its shrinking detail is not worth new image decodes.
             const wanted = candidates
                 .filter(({ tile }) => !zoomingOut || level.images.get(tile)?.ready)
-                .slice(0, level.limit);
+                .slice(0, levelLimit);
             const needed = new Set(wanted.map(({ tile }) => tile));
             for (const [tile, entry] of level.images) {
                 if (needed.has(tile)) continue;
-                if (!zoomingOut && state.tuned && entry.started && pixelZoom >= level.preload && needed.size < level.limit && intersects(tile, 128 / zoom)) {
+                if (!zoomingOut && state.tuned && entry.started && pixelZoom >= level.preload && needed.size < levelLimit && intersects(tile, 128 / zoom)) {
                     needed.add(tile);
                     continue;
                 }
