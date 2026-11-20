@@ -46,6 +46,7 @@
 .map-background.map-overview-active > .map-overview-raster { display:block; }
 .map-background.map-overview-active > .map-background-raster,
 .map-background.map-overview-active > .map-road-raster { display:none; }
+#mapBoard.map-overview-active .map-stone-roads > .map-road-vector { display:none; }
 .map-background.map-background-tiles-pending > .map-background-raster,
 .map-background > .map-background-raster:not([src]) { visibility:hidden; }
 .game-screen > .map-area.map-ocean {

@@ -72,7 +72,7 @@
     function setZoom(board, zoom, options = {}) {
         const state = stateFor(board);
         state.zoom = zoom;
-        if (options.preview !== true) window.MapOverviewCache?.setZoom(board, zoom);
+        if (options.preview !== true || touchDevice) window.MapOverviewCache?.setZoom(board, zoom);
         // Avoid invalidating inherited styles on every road, SVG and icon.
         const emphasis = zoom < 1 ? 1 / zoom : 1;
         const value = String(emphasis);

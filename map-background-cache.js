@@ -80,6 +80,16 @@
   const state=windows.get(board);
   if(!state)return;
   const overview=board.classList.contains('map-overview-active');
+  const zoom=typeof getMapZoomUI==='function'?getMapZoomUI():1;
+  // At full-map scale, never decode the entire high-resolution tile set on a
+  // phone while the overview image is still becoming available. Keep the
+  // lightweight map visible as a fallback and release all sharp tile sources.
+  if(window.mobileRuntimeTuning===true&&zoom<=.4&&!overview){
+   MapDetailLevel.setTileSources(state.tiles,null,visible);
+   state.svg.style.display='';
+   state.background.classList.remove('map-background-tiles-pending');
+   return;
+  }
   const ready=MapDetailLevel.setTileSources(state.tiles,overview?null:bounds,visible);
   state.svg.style.display=ready?'none':'';
   state.background.classList.toggle('map-background-tiles-pending',!ready);

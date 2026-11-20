@@ -157,8 +157,12 @@
         // Hysteresis prevents repeated swaps around the full-map viewing range.
         const limit = window.MapDetailLevel?.touchDevice ? (state.active ? .48 : .4)
             : MapScene.getMinZoom() * (state.active ? 1.8 : 1.45);
-        const valid = signature() === window.MapOverviewRasterData.signature &&
-            board.querySelector('.map-stone-roads')?.dataset.roadCache === 'ready' &&
+        const roadState = board.querySelector('.map-stone-roads')?.dataset.roadCache;
+        // On phones the high-resolution road raster is intentionally omitted;
+        // the baked overview already contains the roads. A valid vector
+        // fallback is therefore sufficient for the overview transition.
+        const roadsReady = roadState === 'ready' || (state.tuned && roadState === 'fallback');
+        const valid = signature() === window.MapOverviewRasterData.signature && roadsReady &&
             background.dataset.rasterState === 'ready';
         const active = Boolean(valid && zoom <= limit);
         if (state.active === active) return;
