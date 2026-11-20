@@ -84,6 +84,7 @@
                 return result;
             }});
             Object.defineProperty(mediaPrototype, 'pause', { configurable:true, writable:true, value:function (...args) {
+                stopPlayback(this);
                 const result = nativePause.apply(this, args);
                 activeSE.delete(this);
                 return result;
@@ -132,7 +133,7 @@
                 }
             } catch (error) { console.warn('[SE] 音声の初期化を再試行します:', error); }
         }
-        function stop(audio) {
+        function stopPlayback(audio) {
             activeSE.delete(audio);
             generations.set(audio, (generations.get(audio) || 0) + 1);
             const entry = nodes.get(audio);
@@ -140,6 +141,9 @@
                 nodes.delete(audio); entry.source.onended = null; entry.source.stop();
                 entry.source.disconnect(); entry.gain.disconnect();
             }
+        }
+        function stop(audio) {
+            stopPlayback(audio);
             audio.pause();
             audio.currentTime = 0;
         }
@@ -150,7 +154,7 @@
         function volume() {
             return volumeLevel ?? defaultVolume;
         }
-        async function playLocal(audio, expiresAt = Infinity) {
+        async function playLocal(audio, expiresAt = Infinity, { loopEnd = 0 } = {}) {
             if (!audio) return;
             if (isConfirmSound(audio) && hasOtherSEPlaying(audio)) return;
             stop(audio);
@@ -175,6 +179,8 @@
             if (generation !== generations.get(audio) || syncNow() > expiresAt) return;
             const source = context.createBufferSource(), gain = context.createGain();
             source.buffer = buffer; gain.gain.value = volume();
+            source.loop = Boolean(audio.loop || loopEnd > 0);
+            if (loopEnd > 0) source.loopEnd = Math.min(loopEnd, buffer.duration);
             source.connect(gain); gain.connect(context.destination);
             nodes.set(audio, { source, gain });
             source.onended = () => {

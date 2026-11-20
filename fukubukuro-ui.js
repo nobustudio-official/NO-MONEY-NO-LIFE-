@@ -13,7 +13,7 @@
         current.phase='stopping';
         cancelAnimationFrame(current.raf);
         stopAudio();
-        new Audio('sounds/サイコロ停止.mp3').play().catch(()=>{});
+        const stopCue=new Audio('sounds/サイコロ停止.mp3');(window.GameSE ? window.GameSE.playLocal(stopCue) : stopCue.play()).catch(()=>{});
         view.rollButton.disabled=true;view.rollButton.textContent='停止中…';
         const renderer=window.DiceAnimation.createRenderer(view.canvas,{stopMotion:window.DiceStopMotion.sample});
         const now=performance.now(),state={phase:'stopping',results:event.rolls.map(Number),count:3,began:now-1000,stopped:now,showIndividualResults:false,centerLanding:true,canvasLanding:true,diceScale:.9};
@@ -42,7 +42,7 @@
         view.audio=new Audio('sounds/サイコロ.wav');view.audio.loop=false;
         // Match dice-game-ui.js: loop the spin cue at 0.83s rather than looping the full file.
         view.audioLoop=()=>{if(view?.audio&&view.audio.currentTime>=.83)view.audio.currentTime=0;};
-        if(typeof view.audio.addEventListener==='function')view.audio.addEventListener('timeupdate',view.audioLoop);view.audio.play().catch(()=>{});
+        if(typeof view.audio.addEventListener==='function')view.audio.addEventListener('timeupdate',view.audioLoop);(window.GameSE ? window.GameSE.playLocal(view.audio, Infinity, { loopEnd: .83 }) : view.audio.play()).catch(()=>{});
         const renderer=window.DiceAnimation.createRenderer(view.canvas,{stopMotion:window.DiceStopMotion.sample});const now=performance.now();const state={phase:'rolling',results:[],count:3,began:now,stopped:now,showIndividualResults:false,centerLanding:true,canvasLanding:true,diceScale:.9};
         const draw=t=>{if(view!==current||current.phase!=='rolling')return;renderer.draw(state,t);current.raf=requestAnimationFrame(draw);};draw(now);
     }

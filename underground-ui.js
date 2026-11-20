@@ -54,14 +54,14 @@
             audio.loop = true;
             audio.addEventListener('timeupdate', () => { if (audio.currentTime >= loopEnd) audio.currentTime = 0; });
         }
-        playCue.play().catch(() => {});
+        (window.GameSE ? window.GameSE.playLocal(playCue, Infinity, { loopEnd: loopEnd || 0 }) : playCue.play()).catch(() => {});
     }
 
     function say(name) {
         voice?.pause();
         voice = new Audio('sounds/ガイド/地下アナウンス' + name + '.mp3?v=underground');
         voice.volume = typeof buttonSound !== 'undefined' ? buttonSound.volume : 0.7;
-        voice.play().catch(() => {});
+        (window.GameSE ? window.GameSE.playLocal(voice) : voice.play()).catch(() => {});
     }
 
     function portrait(player) {

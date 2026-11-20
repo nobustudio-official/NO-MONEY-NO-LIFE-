@@ -82,7 +82,7 @@
                     };
                     audio.addEventListener('ended', finish, { once:true });
                     audio.addEventListener('error', finish, { once:true });
-                    audio.play().catch(error => { console.warn(`[開始アナウンス${index}] 音声を再生できません:`, error); finish(); });
+                    (window.GameSE ? window.GameSE.playLocal(audio) : audio.play()).catch(error => { console.warn(`[開始アナウンス${index}] 音声を再生できません:`, error); finish(); });
                 });
             }
             function stopSound() { soundGeneration++; releaseLotteryGain?.(); releaseLotteryGain = null; if (audioSource) { try { audioSource.stop(); } catch (_) {} audioSource.disconnect(); audioSource = null; } }
@@ -105,7 +105,7 @@
                         }).catch(error => console.warn('[開始演出] ルーレットSE:', error));
                 } catch (error) { console.warn('[開始演出] SE:', error); }
             }
-            function playStop() { new Audio('sounds/ボスルーレット停止2.mp3').play().catch(() => {}); }
+            function playStop() { const audio = new Audio('sounds/ボスルーレット停止2.mp3'); (window.GameSE ? window.GameSE.playLocal(audio) : audio.play()).catch(() => {}); }
             const cleanup = () => { clearTimeout(timer); clearInterval(interval); cancelAnimationFrame(frame); stopGuideAudio(); stopSound(); stopRemoteAdvance?.(); if (audioContext) audioContext.close().catch(() => {}); overviewPreload.removeAttribute('src'); bossPreload.removeAttribute('src'); root.remove(); };
             function showBoss() {
                 stage = 'boss'; next.hidden = false; next.textContent = '次へ▶';

@@ -1895,7 +1895,7 @@ loadMapData()
         // =========================
 
         startSound.currentTime = 0;
-        startSound.play();
+        (window.GameSE ? window.GameSE.playLocal(startSound) : startSound.play());
 
 
         // =========================
@@ -6541,7 +6541,7 @@ inventoryButton.disabled =
                 applyOnlineCanonicalState(payload.state, "item-warp-observer", true);
                 if (typeof warpSound !== "undefined") {
                     warpSound.currentTime = 0;
-                    warpSound.play().catch(function () {});
+                    (window.GameSE ? window.GameSE.playLocal(warpSound) : warpSound.play()).catch(function () {});
                 }
                 return;
             }
@@ -6679,7 +6679,7 @@ inventoryButton.disabled =
             button.onclick = null;
             popup.style.display = "block";
             window.CommonAnnouncements?.render(popup, data.announcement || null, {players,icon:getPlayerCharacterIcon,eventId:data.eventId});
-            if (data.variant === "boss-counter") new Audio("sounds/戦闘/怪獣の足音.mp3").play().catch(function () {});
+            if (data.variant === "boss-counter") window.GameSE.playLocal(new Audio("sounds/戦闘/怪獣の足音.mp3")).catch(function () {});
             if (data.variant === "boss-destination") showBossDestinationPopup(null, true);
         });
         window.onlineGame.sync.on("scene:sync", renderRemoteOnlineScene);
@@ -7453,8 +7453,7 @@ function showGoldRoulette(
 rouletteSound.currentTime =
     0;
 
-rouletteSound
-    .play()
+(window.GameSE ? window.GameSE.playLocal(rouletteSound, Infinity, { loopEnd: 2 }) : rouletteSound.play())
         .catch(function (error) {
 
             console.error(
@@ -7539,7 +7538,7 @@ rouletteSound.addEventListener(
                 console.warn("[online] ゴールドルーレット結果を同期できません:", response && response.error);
                 roulette.onclick = stopRoulette;
                 rouletteSound.addEventListener("timeupdate", loopDiceSound);
-                rouletteSound.play().catch(function () {});
+                (window.GameSE ? window.GameSE.playLocal(rouletteSound, Infinity, { loopEnd: 2 }) : rouletteSound.play()).catch(function () {});
                 return;
             }
 
@@ -7562,7 +7561,7 @@ rouletteSound.addEventListener(
                 stopSoundFinished = true;
                 finishWhenReady();
             };
-            roulettestopSound.play().catch(function (error) {
+            (window.GameSE ? window.GameSE.playLocal(roulettestopSound) : roulettestopSound.play()).catch(function (error) {
                 console.error("ルーレット停止SEの再生に失敗しました:", error);
                 stopSoundFinished = true;
                 finishWhenReady();
@@ -7768,8 +7767,7 @@ function showItemRoulette(
 rouletteSound.currentTime =
     0;
 
-rouletteSound
-    .play()
+(window.GameSE ? window.GameSE.playLocal(rouletteSound, Infinity, { loopEnd: 2 }) : rouletteSound.play())
         .catch(function (error) {
 
             console.error(
@@ -7906,7 +7904,7 @@ rouletteSound.addEventListener(
 
         };
 
-    roulettestopSound.play()
+    (window.GameSE ? window.GameSE.playLocal(roulettestopSound) : roulettestopSound.play())
         .catch(function (error) {
 
             console.error(
@@ -9423,7 +9421,7 @@ const bossCounterSE =
 
 bossCounterSE.currentTime = 0;
 
-bossCounterSE.play().catch(
+(window.GameSE ? window.GameSE.playLocal(bossCounterSE) : bossCounterSE.play()).catch(
     function (error) {
 
         console.warn(
@@ -9594,7 +9592,7 @@ let walletAnnouncementsTurnKey = null;
 function showTurnStartAnnouncements(player, appliedEffects, expiredItems, bossCounter, callback) {
     const continueTurn = function () { showPassiveEffectAnnouncements(player, appliedEffects, expiredItems, callback); };
     if (!bossCounter) { continueTurn(); return; }
-    new Audio("sounds/戦闘/怪獣の足音.mp3").play().catch(function () {});
+    window.GameSE.playLocal(new Audio("sounds/戦闘/怪獣の足音.mp3")).catch(function () {});
     const popup = document.getElementById("eventPopup");
     if (popup) popup.classList.add("boss-counter-popup");
     showEventPopup("ボスカウンター発動！", buildBossCounterMessage(bossCounter), function () {
@@ -12940,7 +12938,7 @@ async function animateRandomWarp(player, targetPosition, isCurrent = () => true)
         if (typeof warpSound !== 'undefined') {
             try {
                 warpSound.currentTime = 0;
-                Promise.resolve(warpSound.play()).catch(() => {});
+                Promise.resolve((window.GameSE ? window.GameSE.playLocal(warpSound) : warpSound.play())).catch(() => {});
             } catch {}
         }
         await playWarpMotion(piece, [
@@ -13168,7 +13166,7 @@ function useOnlineWarpItem(player, itemId, useButton, destination = null) {
             applyOnlineCanonicalState(response.state, "item-warp-instant", true);
             if (typeof warpSound !== "undefined") {
                 warpSound.currentTime = 0;
-                warpSound.play().catch(function () {});
+                (window.GameSE ? window.GameSE.playLocal(warpSound) : warpSound.play()).catch(function () {});
             }
             completeWarp();
         } else {

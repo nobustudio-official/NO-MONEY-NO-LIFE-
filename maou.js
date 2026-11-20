@@ -581,7 +581,7 @@ if (
     typeof kamenSound !== "undefined"
 ) {
     kamenSound.currentTime = 0;
-    kamenSound.play().catch(function (error) {
+    (window.GameSE ? window.GameSE.playLocal(kamenSound) : kamenSound.play()).catch(function (error) {
         console.error(
             "仮面割れるSEの再生に失敗しました:",
             error
@@ -595,7 +595,7 @@ if (
     typeof secondFormSound !== "undefined"
 ) {
     secondFormSound.currentTime = 0;
-    secondFormSound.play().catch(function (error) {
+    (window.GameSE ? window.GameSE.playLocal(secondFormSound) : secondFormSound.play()).catch(function (error) {
         console.error(
             "魔王第二形態SEの再生に失敗しました:",
             error
@@ -1030,7 +1030,7 @@ BOSS_CONTENTS[
     if (magic.sound) {
         const se = new Audio(magic.sound);
         se.currentTime = 0;
-        se.play().catch(function () {});
+        (window.GameSE ? window.GameSE.playLocal(se) : se.play()).catch(function () {});
     }
 
     finishMaouEnemyTurn(
@@ -1053,7 +1053,7 @@ BOSS_CONTENTS[
        if (magic.sound) {
     const se = new Audio(magic.sound);
     se.currentTime = 0;
-    se.play().catch(function () {});
+    (window.GameSE ? window.GameSE.playLocal(se) : se.play()).catch(function () {});
 }
 
 

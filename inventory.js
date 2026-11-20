@@ -748,8 +748,7 @@ if (
 
     warpSound.currentTime = 0;
 
-    warpSound
-        .play()
+    (window.GameSE ? window.GameSE.playLocal(warpSound) : warpSound.play())
         .catch(
             function (error) {
 

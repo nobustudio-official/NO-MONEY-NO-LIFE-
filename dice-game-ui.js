@@ -3,7 +3,7 @@
  'use strict';
  const active=new Set(),remoteItems=new Map(),remoteTreasureBonuses=new Map();
  let treasureBonusPreview;
- function sound(audio){audio.pause();audio.currentTime=0;audio.play().catch(()=>{});}
+ function sound(audio,options){audio.pause();audio.currentTime=0;(window.GameSE ? window.GameSE.playLocal(audio,Infinity,options) : audio.play()).catch(()=>{});}
  function open(container,count,options={}){
   for(const old of active)old.cancel();
   const single=container.id==='diceRoulette';
@@ -27,7 +27,7 @@
   let state={phase:preview?'idle':'rolling',results:[],began:performance.now(),stopped:0,count,showIndividualResults:false,centerLanding:true,cornerLaunch:true,launchHeight:.22,diceScale:.7,landingOffsetY:80},raf=0,paint=0,closed=false,stopping=false,resolveStop=null,readOnly=options.readOnly===true,confirmed=false,resultNotified=false;
   const loop=()=>{if(diceSound.currentTime>=.83)diceSound.currentTime=0;};
   let stopCuePlayed=false;
-  function startLoop(){diceSound.loop=false;sound(diceSound);diceSound.addEventListener('timeupdate',loop);}
+  function startLoop(){diceSound.loop=false;sound(diceSound,{loopEnd:.83});diceSound.addEventListener('timeupdate',loop);}
   function stopLoop(){diceSound.pause();diceSound.removeEventListener('timeupdate',loop);}
   function playStopCue(){if(stopCuePlayed)return;stopCuePlayed=true;stopLoop();sound(stopSound);}
   function cancel(){

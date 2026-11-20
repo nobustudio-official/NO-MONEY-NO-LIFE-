@@ -113,7 +113,7 @@ function opening({ mobile = true, lightweight = false, nextBoss = false } = {}) 
         console, Image, Audio, Path2D: class {},
         document: { body, createElement: tag => new Element(tag), createElementNS: (_, tag) => new Element(tag), getElementById: () => null },
         mobileRuntimeTuning: mobile,
-        GameSE: { play: () => Promise.resolve() }, BossBattleRules: { DAMAGE_MULTIPLIER: 2 },
+        GameSE: { play: () => Promise.resolve(), playLocal: audio => audio.play() }, BossBattleRules: { DAMAGE_MULTIPLIER: 2 },
         MapRoadRasterData: { tiles: [{ image: 'road.webp', x: 0, y: 0, width: 1024, height: 1024 }], bridges: [] },
         performance: { now: () => 0 },
         setTimeout: callback => { const id = ++sequence; timers.set(id, callback); return id; },

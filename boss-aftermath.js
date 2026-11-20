@@ -135,9 +135,9 @@
                 button.onclick = () => {
                     if (rollPhase === 'idle') {
                         rollPhase = 'rolling'; began = performance.now(); button.textContent = 'クリックして止める';
-                        loop = new Audio('sounds/サイコロ.wav'); loop.volume = typeof buttonSound !== 'undefined' ? buttonSound.volume : .7; loop.addEventListener('timeupdate', () => { if (loop && loop.currentTime >= .83) loop.currentTime = 0; }); loop.play().catch(() => {}); frame = requestAnimationFrame(animate);
+                        loop = new Audio('sounds/サイコロ.wav'); loop.volume = typeof buttonSound !== 'undefined' ? buttonSound.volume : .7; loop.addEventListener('timeupdate', () => { if (loop && loop.currentTime >= .83) loop.currentTime = 0; }); (window.GameSE ? window.GameSE.playLocal(loop, Infinity, { loopEnd: .83 }) : loop.play()).catch(() => {}); frame = requestAnimationFrame(animate);
                     } else if (rollPhase === 'rolling') {
-                        if (loop) { loop.pause(); loop = null; } const stop = new Audio('sounds/サイコロ停止.mp3'); stop.volume = typeof buttonSound !== 'undefined' ? buttonSound.volume : .7; stop.play().catch(() => {});
+                        if (loop) { loop.pause(); loop = null; } const stop = new Audio('sounds/サイコロ停止.mp3'); stop.volume = typeof buttonSound !== 'undefined' ? buttonSound.volume : .7; (window.GameSE ? window.GameSE.playLocal(stop) : stop.play()).catch(() => {});
                         value = 1 + Math.floor(Math.random() * 6); rollPhase = 'stopping'; stopped = performance.now(); button.disabled = true;
                     }
                 };
@@ -216,8 +216,8 @@
             Promise.resolve(window.GameSE ? window.GameSE.playLocal(onlineSound) : onlineSound.play()).catch(()=>{});
         }
         if (changedStage && stage === 'penalty') snd('punishment');
-        if (changedStage && stage === 'rolling') { onlineSound=new Audio('sounds/サイコロ.wav');onlineSound.loop=true;onlineSound.volume=typeof buttonSound !== 'undefined' ? buttonSound.volume : .7;onlineSound.addEventListener('timeupdate',()=>{if(onlineSound && onlineSound.currentTime>=.83)onlineSound.currentTime=0});onlineSound.play().catch(()=>{}); }
-        if (changedStage && stage === 'formula') { const stop=new Audio('sounds/サイコロ停止.mp3'); stop.volume=typeof buttonSound !== 'undefined' ? buttonSound.volume : .7; stop.play().catch(()=>{}); }
+        if (changedStage && stage === 'rolling') { onlineSound=new Audio('sounds/サイコロ.wav');onlineSound.loop=true;onlineSound.volume=typeof buttonSound !== 'undefined' ? buttonSound.volume : .7;onlineSound.addEventListener('timeupdate',()=>{if(onlineSound && onlineSound.currentTime>=.83)onlineSound.currentTime=0});(window.GameSE ? window.GameSE.playLocal(onlineSound, Infinity, { loopEnd: .83 }) : onlineSound.play()).catch(()=>{}); }
+        if (changedStage && stage === 'formula') { const stop=new Audio('sounds/サイコロ停止.mp3'); stop.volume=typeof buttonSound !== 'undefined' ? buttonSound.volume : .7; (window.GameSE ? window.GameSE.playLocal(stop) : stop.play()).catch(()=>{}); }
         next.hidden = !owner;
         if (stage === 'reward') {
             header('討伐報酬');
