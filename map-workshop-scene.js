@@ -104,7 +104,8 @@
     function updateMagicEffects(board,state,now=performance.now()) {
         state.effectTimer=0;
         if(!board.isConnected)return;
-        const active=!document.hidden&&!board.classList.contains('map-overview-active')&&!reducedMotion?.matches;
+        const active=!document.hidden&&!board.classList.contains('map-overview-active')&&
+            !board.classList.contains('map-zoom-interacting')&&!reducedMotion?.matches;
         let hasVisibleEffect=false;
         const phase=(now%4000)/4000;
         for(const pair of state.pairs){
@@ -134,16 +135,18 @@
         const state=boards.get(board);if(!state)return;
         state.bounds=bounds;
         const overview=board.classList.contains('map-overview-active');
+        const zooming=board.classList.contains('map-zoom-interacting');
         for(const row of state.rows){
             const {image,extent}=row;
             const visible=!overview&&extent.left<bounds.right&&extent.right>bounds.left&&extent.top<bounds.bottom&&extent.bottom>bounds.top;
-            if(row.sharp===visible)continue;
-            row.sharp=visible;
+            if(row.sharp!==visible){
+                row.sharp=visible;
+                image?.classList.toggle('map-object-sharp',visible);
+            }
             if(!image)continue;
-            image.classList.toggle('map-object-sharp',visible);
             if(state.streamImages){
-                if(visible)image.src=row.asset;
-                else image.removeAttribute('src');
+                if(visible&&!zooming&&image.getAttribute('src')!==row.asset)image.src=row.asset;
+                else if(!visible&&image.hasAttribute('src'))image.removeAttribute('src');
             }
         }
         if(!state.effectTimer)updateMagicEffects(board,state);
