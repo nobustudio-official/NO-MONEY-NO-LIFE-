@@ -1212,7 +1212,19 @@ function renderGameTemplate(templateId, target) {
             setup.appendChild(card);
             titleBackdrop.appendChild(setup);
         }
-        setup.firstElementChild.querySelector(".title-screen__setup-content").replaceChildren(template.content.cloneNode(true));
+        setup.firstElementChild.querySelector(".player-setup-confirm")?.remove();
+        const setupContent = setup.firstElementChild.querySelector(".title-screen__setup-content");
+        setupContent.replaceChildren(template.content.cloneNode(true));
+        setupContent.classList.toggle("is-player-setup-content", templateId === "playerSetupTemplate");
+        if (templateId === "playerSetupTemplate") {
+            const heading = setupContent.querySelector("h2");
+            const scrollArea = document.createElement("div");
+            scrollArea.className = "player-setup-scroll";
+            [...setupContent.children].forEach(child => {
+                if (child !== heading) scrollArea.appendChild(child);
+            });
+            setupContent.appendChild(scrollArea);
+        }
         titleBackdrop.classList.add("is-setup");
         titleBackdrop.dataset.setupStage = templateId === "playerSetupTemplate" ? "players" : "turns";
         if (templateId === "playerSetupTemplate") titleBackdrop.dataset.setupStep = "count";
@@ -1501,8 +1513,14 @@ startButton.addEventListener(
                         orderInstruction.className = "player-order-instruction";
                         orderInstruction.textContent = "ドラッグしてプレイヤーの順番を入れ替え";
                         confirmRow.appendChild(orderInstruction);
-                        confirmRow.appendChild(confirmTemplate.content.firstElementChild.cloneNode(true));
                         playerNames.appendChild(confirmRow);
+
+                        const setupFooter = titleScreen.querySelector(".title-screen__setup-footer");
+                        setupFooter.querySelector(".player-setup-confirm")?.remove();
+                        const confirmAction = document.createElement("div");
+                        confirmAction.className = "player-setup-confirm";
+                        confirmAction.appendChild(confirmTemplate.content.firstElementChild.cloneNode(true));
+                        setupFooter.appendChild(confirmAction);
 
 
 

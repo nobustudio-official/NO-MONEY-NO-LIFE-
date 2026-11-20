@@ -588,6 +588,61 @@
     margin-top: 22px;
 }
 
+/* Player setup on a portrait phone keeps navigation visible while its fields scroll. */
+@media (orientation: portrait) and (max-width: 700px) {
+    .title-screen.is-setup[data-setup-stage="players"] .title-screen__setup {
+        padding: clamp(54px, 9vh, 78px) 10px max(10px, env(safe-area-inset-bottom));
+    }
+
+    .title-screen.is-setup[data-setup-stage="players"] .title-screen__setup-card {
+        width: min(100%, 440px);
+        height: 100%;
+        max-height: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+        padding: 16px 12px 10px;
+        border-radius: 16px;
+    }
+
+    .title-screen.is-setup[data-setup-stage="players"] .title-screen__setup-content.is-player-setup-content {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .title-screen.is-setup[data-setup-stage="players"] .player-setup-scroll {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    .title-screen.is-setup[data-setup-stage="players"] .title-screen__setup-footer {
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 8px;
+        padding-top: 8px;
+    }
+
+    .title-screen.is-setup[data-setup-stage="players"] .player-setup-confirm {
+        display: flex;
+        flex: 0 0 auto;
+        align-items: center;
+    }
+
+    .title-screen.is-setup[data-setup-stage="players"] #confirmPlayers {
+        min-width: 104px;
+        min-height: 42px;
+        margin: 0;
+        padding: 8px 20px;
+    }
+}
+
 .title-screen.is-setup #player-names {
     display: flex !important;
     flex-flow: row wrap;
