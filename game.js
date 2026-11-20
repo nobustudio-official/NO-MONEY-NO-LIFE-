@@ -10374,7 +10374,8 @@ function centerPlayerOnMap(
     playerIndex,
     behavior = "smooth",
     onCentered,
-    allowDuringMovement = false
+    allowDuringMovement = false,
+    movementWaitFrames = 0
 ) {
 
     avatarCameraFocus?.abort();
@@ -10416,17 +10417,6 @@ function centerPlayerOnMap(
     }
 
 
-// =========================
-// 現在のズーム倍率
-// =========================
-
-const zoom =
-    typeof getMapZoomUI ===
-    "function"
-        ? getMapZoomUI()
-        : 1;
-
-
     // =========================
     // 進行中のスクロールを解除
     // =========================
@@ -10447,137 +10437,36 @@ const zoom =
 
     requestAnimationFrame(
         function () {
-            if (!mapNode.isConnected || (!allowDuringMovement && MapMovementPresentation.isMoving(mapBoard))) {
+            if (!mapNode.isConnected) {
                 onCentered?.();
                 return;
             }
+            if (!allowDuringMovement && MapMovementPresentation.isMoving(mapBoard)) {
+                if (playerIndex === currentPlayer && movementWaitFrames < 90) {
+                    requestAnimationFrame(() => centerPlayerOnMap(
+                        playerIndex, behavior, onCentered, allowDuringMovement, movementWaitFrames + 1
+                    ));
+                } else {
+                    onCentered?.();
+                }
+                return;
+            }
 
-            // =========================
-            // マスの中心座標
-            // mapBoard内の座標
-            // =========================
-
-            // Account for the square's CSS translation when finding its
-            // visible center; offsetLeft + width/2 was half a square off.
+            // Use the actual on-screen square position. This stays correct
+            // across CSS zoom, mobile padding and scrollable board margins.
             const squareRect = mapNode.getBoundingClientRect();
-            const boardRect = mapBoard.getBoundingClientRect();
-            const squareCenterX =
-                (squareRect.left + squareRect.width / 2 - boardRect.left) / zoom;
-            const squareCenterY =
-                (squareRect.top + squareRect.height / 2 - boardRect.top) / zoom;
-
-
-            // =========================
-            // mapBoardの中心座標
-            // =========================
-
-            const boardCenterX =
-                mapBoard.clientWidth / 2;
-
-            const boardCenterY =
-                mapBoard.clientHeight / 2;
-
-
-            // =========================
-            // ズーム後の
-            // マス中心座標
-            //
-            // transform-origin:
-            // center center
-            // に合わせて計算
-            // =========================
-
-            const zoomedSquareCenterX =
-                boardCenterX +
-                (
-                    squareCenterX -
-                    boardCenterX
-                ) *
-                zoom;
-
-            const zoomedSquareCenterY =
-                boardCenterY +
-                (
-                    squareCenterY -
-                    boardCenterY
-                ) *
-                zoom;
-
-
-           // =========================
-// 画面中央へ合わせる
-// 追加したスクロール余白を考慮
-// =========================
-
-// map-area に追加した余白
-const paddingLeft =
-    parseFloat(
-        getComputedStyle(mapArea).paddingLeft
-    ) || 0;
-
-const paddingTop =
-    parseFloat(
-        getComputedStyle(mapArea).paddingTop
-    ) || 0;
-
-
-// =========================
-// 画面中央に合わせるスクロール位置
-// =========================
-
-const targetScrollLeft =
-    paddingLeft +
-    (parseFloat(getComputedStyle(mapBoard).marginLeft) || 0) +
-    zoomedSquareCenterX -
-    mapArea.clientWidth / 2;
-
-const targetScrollTop =
-    paddingTop +
-    (parseFloat(getComputedStyle(mapBoard).marginTop) || 0) +
-    zoomedSquareCenterY -
-    mapArea.clientHeight / 2;
-
-
-// =========================
-// スクロール可能範囲
-// =========================
-
-const maxScrollLeft =
-    Math.max(
-        0,
-        mapArea.scrollWidth -
-        mapArea.clientWidth
-    );
-
-const maxScrollTop =
-    Math.max(
-        0,
-        mapArea.scrollHeight -
-        mapArea.clientHeight
-    );
-
-
-// =========================
-// 範囲内に収める
-// =========================
-
-const finalScrollLeft =
-    Math.max(
-        0,
-        Math.min(
-            targetScrollLeft,
-            maxScrollLeft
-        )
-    );
-
-const finalScrollTop =
-    Math.max(
-        0,
-        Math.min(
-            targetScrollTop,
-            maxScrollTop
-        )
-    );
+            const viewRect = mapArea.getBoundingClientRect();
+            const limits = window.MapScene?.getCameraLimits?.();
+            const maxScrollLeft = Math.max(0, mapArea.scrollWidth - mapArea.clientWidth);
+            const maxScrollTop = Math.max(0, mapArea.scrollHeight - mapArea.clientHeight);
+            const targetScrollLeft = mapArea.scrollLeft + squareRect.left + squareRect.width / 2
+                - viewRect.left - viewRect.width / 2;
+            const targetScrollTop = mapArea.scrollTop + squareRect.top + squareRect.height / 2
+                - viewRect.top - viewRect.height / 2;
+            const finalScrollLeft = Math.max(limits?.minLeft ?? 0,
+                Math.min(targetScrollLeft, limits?.maxLeft ?? maxScrollLeft));
+            const finalScrollTop = Math.max(limits?.minTop ?? 0,
+                Math.min(targetScrollTop, limits?.maxTop ?? maxScrollTop));
 
             // =========================
             // マス中央へ移動
