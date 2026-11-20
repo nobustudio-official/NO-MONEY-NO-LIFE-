@@ -4,6 +4,54 @@
     const states = new WeakMap();
     const overscan = 220;
     const touchDevice = Boolean(window.matchMedia?.('(pointer: coarse)').matches);
+    const pendingImages = new Map();
+    const activeImages = new Set();
+    const maxMobileImageLoads = 2;
+    let pumpScheduled = false;
+
+    function pumpImageLoads() {
+        pumpScheduled = false;
+        while (activeImages.size < maxMobileImageLoads && pendingImages.size) {
+            const [element, request] = [...pendingImages.entries()].sort((a, b) =>
+                a[1].priority - b[1].priority || a[1].distance - b[1].distance)[0];
+            pendingImages.delete(element);
+            const token = Number(element.dataset.mapLoadToken || 0) + 1;
+            element.dataset.mapLoadToken = String(token);
+            activeImages.add(element);
+            const finish = () => {
+                if (Number(element.dataset.mapLoadToken) !== token) return;
+                activeImages.delete(element);
+                scheduleImagePump();
+            };
+            element.addEventListener('load', finish, { once: true });
+            element.addEventListener('error', finish, { once: true });
+            element.src = request.image;
+        }
+    }
+
+    function scheduleImagePump() {
+        if (pumpScheduled) return;
+        pumpScheduled = true;
+        setTimeout(pumpImageLoads, 32);
+    }
+
+    function releaseImage(element) {
+        pendingImages.delete(element);
+        if (!element.hasAttribute('src')) return;
+        element.dataset.mapLoadToken = String(Number(element.dataset.mapLoadToken || 0) + 1);
+        activeImages.delete(element);
+        element.removeAttribute('src');
+        scheduleImagePump();
+    }
+
+    function imagePriority(tile, visible) {
+        if (!visible) return { priority: 1, distance: 0 };
+        const isVisible = intersects(tile, visible);
+        const centerX = (visible.left + visible.right) / 2;
+        const centerY = (visible.top + visible.bottom) / 2;
+        return { priority: isVisible ? 0 : 1,
+            distance: (tile.x + tile.width / 2 - centerX) ** 2 + (tile.y + tile.height / 2 - centerY) ** 2 };
+    }
 
     function intersects(tile, bounds) {
         return tile.x < bounds.right && tile.x + tile.width > bounds.left &&
@@ -15,12 +63,19 @@
         for (const tile of tiles) {
             const element = tile.element;
             if (!bounds || !intersects(tile, bounds)) {
-                if (element.hasAttribute('src')) element.removeAttribute('src');
+                if (touchDevice) releaseImage(element);
+                else if (element.hasAttribute('src')) element.removeAttribute('src');
                 continue;
             }
-            if (!element.hasAttribute('src')) element.src = tile.image;
+            if (!element.hasAttribute('src')) {
+                if (touchDevice) {
+                    const rank = imagePriority(tile, visible);
+                    pendingImages.set(element, { image: tile.image, ...rank });
+                } else element.src = tile.image;
+            }
             if (visible && intersects(tile, visible) && !(element.complete && element.naturalWidth)) ready = false;
         }
+        if (touchDevice && pendingImages.size) scheduleImagePump();
         return ready;
     }
 
