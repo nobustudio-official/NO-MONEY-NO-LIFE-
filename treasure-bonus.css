@@ -1,0 +1,30 @@
+/* Two-panel layout for the existing treasure slot and existing single die. */
+#itemRoulette,
+#diceRoulette {
+    transition: left 760ms cubic-bezier(.2,.72,.2,1), width 760ms cubic-bezier(.2,.72,.2,1), transform 760ms cubic-bezier(.2,.72,.2,1), opacity 220ms ease;
+}
+
+body.treasure-bonus-moving #itemRoulette {
+    left: 28%;
+    width: min(43vw, 500px);
+    transform: translate(-50%, -50%) scale(.94);
+}
+
+body.treasure-bonus-dice #diceRoulette {
+    left: 67%;
+    width: min(38vw, 450px);
+    transform: translateX(-50%);
+}
+
+#treasureBonusBanner.slot-arrival-announcement:focus-visible { outline: none; }
+
+@media (max-width: 700px) {
+    body.treasure-bonus-moving #itemRoulette {
+        left: 27%;
+        width: 48vw;
+    }
+    body.treasure-bonus-dice #diceRoulette {
+        left: 69%;
+        width: 42vw;
+    }
+}

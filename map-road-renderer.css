@@ -1,0 +1,6 @@
+.map-stone-roads .map-road-route-edge{filter:drop-shadow(0 0 3px #ff8ac4)}
+.map-road-overlay .map-road-shortest-highlight{animation:boss-shortest-route-pulse 1.35s ease-in-out infinite}
+@keyframes boss-shortest-route-pulse{0%,100%{opacity:.38}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.map-road-overlay .map-road-shortest-highlight{animation:none}}
+.map-stone-roads[data-road-cache="ready"] > .map-road-vector { display:none; }
+.map-road-material-replaced { display:none; }

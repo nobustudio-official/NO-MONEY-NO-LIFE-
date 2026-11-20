@@ -1,0 +1,33 @@
+.special-item-popup { position:fixed; inset:0; z-index:35000; background:transparent; }
+.special-item-popup[hidden] { display:none; }
+.special-item-panel { position:absolute; left:50%; top:8%; transform:translateX(-50%); width:min(62vw,1000px); height:calc(88% - 160px); min-height:280px; padding:22px 26px; border:1px solid #ccae7b; border-radius:16px; background:linear-gradient(125deg,#102b40f2,#0b2033ed); color:#fcfcfc; display:flex; flex-direction:column; }
+.special-item-panel header { display:flex; align-items:center; justify-content:space-between; gap:16px; border-bottom:1px solid #ccae7b88; padding-bottom:12px; }
+.special-item-panel h2 { margin:0; font-size:24px; }
+.special-item-panel button { color:#fcfcfc; border:1px solid #ccae7b; border-radius:8px; background:#2c4e6d; padding:9px 16px; font:700 16px 'Yu Gothic',Meiryo,sans-serif; cursor:pointer; }
+.special-item-panel button:disabled { opacity:.5; cursor:default; }
+.special-item-choices { flex:1; min-height:0; display:flex; gap:12px; align-items:center; justify-content:center; overflow:auto; }
+.special-item-choices.is-areas { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); grid-template-rows:repeat(3,minmax(0,1fr)); padding:10px 0; }
+.special-item-card { min-width:0; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:10px; padding:15px; border:1px solid #d8ba71; border-radius:13px; background:linear-gradient(155deg,#344b5fef,#172b40f7); text-align:center; }
+.special-item-card img { width:76px; height:76px; object-fit:contain; }
+.special-item-card strong { font-size:19px; }.special-item-card .special-item-money { color:#ffdc83; font-size:24px; }
+.special-item-choices.is-areas button { height:100%; min-height:0; display:flex; align-items:center; justify-content:center; gap:10px; }
+.special-item-choices.is-areas img { width:clamp(40px,5vw,75px); height:clamp(40px,7vh,75px); object-fit:contain; }
+.special-item-destination { display:flex; align-items:center; justify-content:center; gap:45px; }
+.special-item-destination img { width:clamp(100px,14vw,200px); height:clamp(120px,24vh,240px); object-fit:contain; }
+.special-item-destination div { display:flex; flex-direction:column; align-items:center; gap:14px; }
+.special-item-announcement { position:absolute; left:50%; bottom:4%; transform:translateX(-50%); width:min(81%,1560px); min-height:130px; border:1px solid #ccae7b; border-radius:14px; background:linear-gradient(125deg,#18384fef,#10293ced); display:flex; align-items:center; padding:20px 26px; font:700 22px 'Yu Gothic',Meiryo,sans-serif; }
+.special-item-panel { bottom:calc(var(--an02-bottom) + var(--an02-min-height) + 18px); height:auto; min-height:0; box-sizing:border-box; padding-bottom:68px; }
+.special-item-back { position:absolute; left:26px; bottom:18px; }
+.special-item-choices.is-equalize { flex-direction:column; gap:12px; }
+.special-equalize-cards { display:flex; justify-content:center; gap:12px; }
+.special-equalize-average { margin:0; color:#ffdc83; font-size:20px; font-weight:700; }
+.special-item-announcement { position:fixed; top:auto; left:var(--an02-left); right:var(--an02-right); bottom:var(--an02-bottom); transform:none; width:auto; max-width:var(--an02-max-width); height:auto; min-height:var(--an02-min-height); max-height:52vh; margin:0 auto; box-sizing:border-box; padding:24px 22px; gap:22px; border-radius:12px; font:600 22px/1.6 'Yu Gothic',Meiryo,sans-serif; }
+.special-item-announcement img { width:80px; height:80px; object-fit:contain; flex:none; }
+.special-item-announcement-name { color:#ffdc83; }
+.special-item-choices.is-areas button { background:linear-gradient(155deg,#344b5fef,#172b40f7); }
+.special-item-choices.is-areas img { width:clamp(58px,6.5vw,96px); height:clamp(58px,8.5vh,96px); }
+.special-item-choices.is-areas button span { font-size:22px; font-weight:700; }
+.special-item-destination-prompt { white-space:pre-line; text-align:center; font-size:24px; }
+.special-item-choices:not(.is-areas):not(.is-equalize) > .special-item-card { flex:1 1 0; width:100%; max-width:230px; }
+.special-equalize-cards { width:100%; }
+.special-equalize-cards > .special-item-card { flex:1 1 0; width:100%; max-width:230px; }

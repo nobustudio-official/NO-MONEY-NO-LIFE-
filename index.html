@@ -1,0 +1,1945 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>NO MONEY, NO LIFE</title>
+
+    <script src="game-viewport.js?v=desktop-game-layout-1"></script>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%231b2430%22/%3E%3Ctext x=%2232%22 y=%2244%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23f6c453%22%3E$%3C/text%3E%3C/svg%3E">
+
+    <link
+        rel="stylesheet"
+        href="style.css?v=desktop-game-layout-1"
+    >
+    <link rel="stylesheet" href="title-screen.css?v=setup-colors-1">
+    <link rel="stylesheet" href="shop-presentation.css">
+    <link rel="stylesheet" href="game-panels.css?v=magic-usage-two-line-2">
+    <link rel="stylesheet" href="common-announcements.css?v=forced-sale-sp04-an02-2">
+    <link rel="stylesheet" href="treasure-bonus.css?v=dice-preview-1">
+    <link rel="stylesheet" href="job-presentation.css">
+    <link rel="stylesheet" href="battle-motion.css?v=mobile-pc-battle-layout-1">
+    <link rel="stylesheet" href="reward-cards.css">
+    <link rel="stylesheet" href="boss-gate.css?v=1">
+    <link rel="stylesheet" href="battle-reward-ui.css">
+    <link rel="stylesheet" href="map-scene.css?v=mobile-zoom-1">
+    <link rel="stylesheet" href="disadvantage-immunity-effect.css?v=gold-overlay-1">
+    <link rel="stylesheet" href="battle-effects/thunder-css.css">
+    <link rel="stylesheet" href="battle-effects/meteor.css">
+    <link rel="stylesheet" href="battle-effects/spiffa.css?v=1">
+    <link rel="stylesheet" href="battle-effects/tornado.css?v=2">
+    <link rel="preload" as="image" href="images/effects/battle/blizzard-ice-eruption-v2.webp">
+    <link rel="preload" as="image" href="images/effects/battle/meteor-flame.webp">
+    <link rel="preload" as="image" href="images/effects/battle/meteor-rock.webp">
+    <link rel="preload" as="image" href="images/effects/battle/tornado-vortex.webp">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&display=swap"
+        rel="stylesheet"
+    >
+
+</head>
+
+
+<body>
+
+
+    <!-- =========================
+         メインゲーム画面
+    ========================= -->
+
+    <div class="game-container">
+        <section class="title-screen" aria-label="タイトル画面">
+            <div class="title-screen__world" aria-hidden="true">
+                <span class="title-world__sun"></span>
+                <span class="title-world__mountains"></span>
+                <div class="title-world__castle">
+                    <span class="title-world__tower title-world__tower--left"></span>
+                    <span class="title-world__tower title-world__tower--right"></span>
+                    <span class="title-world__keep"></span>
+                    <span class="title-world__wall"></span>
+                    <span class="title-world__gate"></span>
+                </div>
+            </div>
+
+            <div class="title-screen__hero">
+                <div class="title-screen__crest" aria-hidden="true">
+                    <span class="title-screen__spark title-screen__spark--one">✦</span>
+                    <span class="title-screen__spark title-screen__spark--two">✧</span>
+                </div>
+
+                <h1 class="game-title">NO MONEY, NO LIFE</h1>
+                <p class="game-subtitle">ようこそ、資本至上主義異世界へ。</p>
+
+                <button id="startButton" type="button">
+                    <span>ゲームを始める</span>
+                    <span class="title-screen__button-arrow" aria-hidden="true">▶</span>
+                </button>
+                <div id="titleModeMenu" class="title-screen__mode-menu" hidden>
+                    <button id="localGameButton" class="title-screen__mode-button" type="button">
+                        <span class="title-screen__mode-icon" aria-hidden="true">⚔</span>
+                        <span>ローカル対戦</span>
+                        <span class="title-screen__button-arrow" aria-hidden="true">▶</span>
+                    </button>
+                    <button id="backToTitleButton" class="title-screen__back-button" type="button">タイトルに戻る</button>
+                </div>
+            </div>
+
+        </section>
+    </div>
+
+
+    <!-- =========================
+         ゴールドルーレット
+    ========================= -->
+
+    <div
+        id="goldRoulette"
+        class="gold-roulette"
+    >
+
+        <div class="gold-roulette-title">
+            獲得ゴールド
+        </div>
+
+        <div
+            id="goldRouletteNumber"
+            class="gold-roulette-number"
+        >
+            0G
+        </div>
+
+    </div>
+
+
+</div>
+
+    <!-- =========================
+         モンスター遭遇選択
+    ========================= -->
+
+    <div
+        id="monsterChoicePopup"
+        class="monster-choice-popup"
+    >
+
+        <img class="boss-gate-art" src="images/backgrounds/scenes/ボス扉.webp" alt="ボス戦への扉">
+        <div class="boss-gate-choices br-choices">
+            <div class="br-card-slot"><button id="monsterFightButton" type="button"><span class="br-card-front">挑戦する</span></button></div>
+            <div class="br-card-slot"><button id="monsterEscapeButton" type="button"><span class="br-card-front">やめる</span></button></div>
+        </div>
+        <div class="boss-gate-banner">
+            <img id="bossGatePlayerIcon" alt="">
+            <div id="monsterChoiceMessage" class="monster-choice-message"></div>
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         モンスター戦闘
+    ========================= -->
+
+    <div
+        id="battlePopup"
+        class="battle-popup"
+    >
+
+        <div class="battle-title">
+            ⚔️ モンスターバトル
+        </div>
+
+
+        <div
+            id="battleRound"
+            class="battle-round"
+        >
+            ROUND 1 / 3
+        </div>
+
+
+        <div class="battle-status">
+
+
+            <!-- プレイヤー -->
+
+            <div class="battle-player">
+
+                <div
+                    id="battlePlayerName"
+                    class="battle-name"
+                >
+                    A
+                </div>
+
+                <div id="battlePlayerStats">
+
+                    💰500G<br>
+                    ⚔️100<br>
+                    🛡️100
+
+                </div>
+
+            </div>
+
+
+            <!-- VS -->
+
+            <div class="battle-vs">
+                VS
+            </div>
+
+
+            <!-- モンスター -->
+
+            <div class="battle-monster">
+
+                <div
+                    id="battleMonsterName"
+                    class="battle-name"
+                >
+                    👾 ゴブリン
+                </div>
+
+                <div id="battleMonsterStats">
+
+                    ❤️150<br>
+                    ⚔️120<br>
+                    🛡️20
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- 戦闘メッセージ -->
+
+        <div
+            id="battleMessage"
+            class="battle-message"
+        >
+            戦闘開始！
+        </div>
+
+
+<button
+    id="battleMagicButton"
+    class="battle-magic-button"
+>
+    🪄 魔法
+</button>
+
+<button
+    id="battlePassButton"
+    class="battle-magic-button"
+>
+    ⏭️ パス
+</button>
+
+    </div>
+
+<!-- =========================
+     戦闘中の魔法選択
+========================= -->
+
+<div
+    id="battleMagicPopup"
+    class="battle-magic-popup"
+>
+
+    <div class="battle-magic-title">
+        🪄 魔法
+    </div>
+
+
+    <div
+        id="battleMagicList"
+        class="battle-magic-list"
+    ></div>
+
+
+    <button
+        id="battleMagicCloseButton"
+        class="battle-magic-close-button"
+    >
+        閉じる
+    </button>
+
+</div>
+
+    <!-- =========================
+         バイト選択
+    ========================= -->
+
+    <div
+        id="jobPopup"
+        class="job-popup"
+    >
+
+        <div class="job-title">
+            💼 バイト
+        </div>
+
+        <div
+            id="jobMessage"
+            class="job-message"
+        >
+            ここで働くことができます。
+        </div>
+
+        <div class="job-choices">
+
+            <button
+    id="job1Button"
+    class="job-choice-button"
+>
+    💼 1ターン働く
+    <span id="job1Reward"></span>
+</button>
+
+<button
+    id="job2Button"
+    class="job-choice-button"
+>
+    💼 2ターン働く
+    <span id="job2Reward"></span>
+</button>
+
+<button
+    id="job3Button"
+    class="job-choice-button"
+>
+    💼 3ターン働く
+    <span id="job3Reward"></span>
+</button>
+
+            <button
+                id="jobNoneButton"
+                class="job-choice-button"
+            >
+                🏃 働かない
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         イベントポップアップ
+    ========================= -->
+
+    <div
+        id="eventPopup"
+        class="event-popup"
+    >
+
+        <div class="event-popup-title">
+            💰 イベント
+        </div>
+
+        <div
+            id="eventPopupMessage"
+            class="event-popup-message"
+        ></div>
+
+        <button
+            id="eventPopupButton"
+            class="event-popup-button"
+        >
+            OK
+        </button>
+
+    </div>
+
+    <div id="treasureBonusBanner" class="event-popup" aria-live="polite">
+        <div class="event-popup-title">宝箱</div>
+        <div class="event-popup-message"></div>
+    </div>
+
+
+    <!-- =========================
+         報酬選択
+    ========================= -->
+
+    <div
+        id="rewardPopup"
+        class="reward-popup"
+    >
+
+        <div class="reward-title">
+            🎁 報酬を選択
+        </div>
+
+        <div
+            id="rewardMessage"
+            class="reward-message"
+        >
+            報酬を1つ選んでください
+        </div>
+
+        <div
+            id="rewardChoices"
+            class="reward-choices"
+        ></div>
+
+    </div>
+
+
+    <!-- =========================
+     サイコロルーレット
+    ========================= -->
+
+<div
+    id="diceRoulette"
+    class="dice-roulette"
+>
+
+    <div class="dice-roulette-title">
+        🎲 サイコロ
+    </div>
+
+    <div
+        id="diceRouletteNumber"
+        class="dice-roulette-number"
+    >
+        1
+    </div>
+
+</div>
+
+
+<!-- =========================
+     アイテム用 複数サイコロルーレット
+========================= -->
+
+<div
+    id="multiDiceRoulette"
+    class="multi-dice-roulette"
+>
+
+    <div class="multi-dice-title">
+        🎲 サイコロ
+    </div>
+
+    <div
+        id="multiDiceNumbers"
+        class="multi-dice-numbers"
+    ></div>
+
+    <div
+        id="multiDiceTotal"
+        class="multi-dice-total"
+    ></div>
+
+</div>
+
+<!-- =========================
+     サウンド設定
+========================= -->
+
+<div
+    id="soundSettingsPopup"
+    class="inventory-popup"
+>
+
+    <div class="inventory-popup-title">
+        ⚙️ サウンド設定
+    </div>
+
+    <div class="inventory-list">
+
+       <div class="inventory-item sound-setting-item">
+
+    <div class="sound-setting-title">
+        🎵 BGM
+    </div>
+
+    <input
+        id="bgmVolumeSlider"
+        class="sound-volume-slider"
+        type="range"
+        min="0"
+        max="100"
+        value="10"
+    >
+
+    <div
+        id="bgmVolumeValue"
+        class="sound-volume-value"
+    >
+        10%
+    </div>
+
+</div>
+
+        <div class="inventory-item sound-setting-item">
+
+    <div class="sound-setting-title">
+        🔊 SE
+    </div>
+
+    <input
+        id="seVolumeSlider"
+        class="sound-volume-slider"
+        type="range"
+        min="0"
+        max="100"
+        value="50"
+    >
+
+    <div
+        id="seVolumeValue"
+        class="sound-volume-value"
+    >
+        50%
+    </div>
+
+</div>
+
+    </div>
+
+    <button
+        id="soundSettingsCloseButton"
+        class="inventory-close-button"
+        type="button"
+    >
+        閉じる
+    </button>
+
+</div>
+
+
+    <!-- =========================
+         アイテム画面
+    ========================= -->
+
+    <div
+        id="inventoryPopup"
+        class="inventory-popup"
+    >
+
+        <div class="inventory-title">
+            アイテム
+        </div>
+
+        <div
+            id="inventoryList"
+            class="inventory-list"
+        ></div>
+
+        <button
+            id="inventoryCloseButton"
+            class="inventory-close-button"
+        >
+            閉じる
+        </button>
+
+    </div>
+<!-- =========================
+         魔法画面
+    ========================= -->
+
+    <div
+        id="magicPopup"
+        class="magic-popup"
+    >
+
+        <div class="magic-title">
+            魔法
+        </div>
+
+        <div
+            id="magicList"
+            class="magic-list"
+        ></div>
+
+        <button
+            id="magicCloseButton"
+            class="magic-close-button"
+        >
+            閉じる
+        </button>
+
+    </div>
+
+<!-- =========================
+     ショップ
+========================= -->
+
+<div
+    id="shopPopup"
+    class="shop-popup"
+>
+
+    <div class="shop-title">
+        アイテムショップ
+    </div>
+
+    <div
+        id="shopName"
+        class="shop-name"
+    >
+    </div>
+
+<!-- =========================
+         商品一覧
+    ========================= -->
+
+    <div
+        id="shopItemList"
+        class="shop-item-list"
+    ></div>
+
+
+    <!-- =========================
+        やめる
+    ========================= -->
+
+    <button
+        id="shopCloseButton"
+        class="shop-close-button"
+    >
+         やめる
+    </button>
+
+</div>
+
+    <!-- =========================
+     魔法ショップ
+========================= -->
+
+<div
+    id="magicShopPopup"
+    class="magic-shop-popup"
+>
+
+    <div class="magic-shop-title">
+        🪄 魔法屋
+    </div>
+
+
+    <div
+        id="magicShopList"
+        class="magic-shop-list"
+    ></div>
+
+
+    <button
+        id="magicShopCloseButton"
+        class="magic-shop-close-button"
+    >
+         やめる
+    </button>
+
+</div>
+<!-- =========================
+     魔力購入画面
+     ========================= -->
+
+<div
+    id="powerShopPopup"
+    class="magic-shop-popup"
+>
+
+    <div
+        class="magic-title"
+        id="powerShopTitle"
+    >
+        🔮 魔力購入
+    </div>
+
+    <div
+        id="powerShopList"
+    >
+    </div>
+
+    <button
+        id="powerShopCloseButton"
+        class="magic-shop-close-button"
+    >
+        閉じる
+    </button>
+
+</div>
+
+
+    <!-- =========================
+         最終結果
+    ========================= -->
+
+    <div
+        id="resultPopup"
+        class="result-popup"
+    >
+
+        <div class="result-title">
+            🏁 GAME OVER
+        </div>
+
+        <div class="result-subtitle">
+            🎉 冒険終了！
+        </div>
+
+        <div
+            id="resultRanking"
+            class="result-ranking"
+        ></div>
+
+        <button
+            id="resultButton"
+            class="result-button"
+        >
+            🏠 タイトルにもどる
+        </button>
+
+    </div>
+
+
+
+<template id="gameLoadingTemplate">
+
+<section class="game-loading-screen title-screen" aria-label="ゲーム読み込み画面">
+    <div class="title-screen__world" aria-hidden="true">
+        <span class="title-world__sun"></span>
+        <span class="title-world__mountains"></span>
+        <div class="title-world__castle">
+            <span class="title-world__tower title-world__tower--left"></span>
+            <span class="title-world__tower title-world__tower--right"></span>
+            <span class="title-world__keep"></span>
+            <span class="title-world__wall"></span>
+            <span class="title-world__gate"></span>
+        </div>
+    </div>
+    <div class="title-screen__hero game-loading-content">
+        <h1 class="game-title">NO MONEY, NO LIFE</h1>
+        <p class="game-loading-subtitle game-subtitle">マップを読み込んでいます…</p>
+        <div class="game-loading-track" aria-hidden="true"><div class="game-loading-bar"></div></div>
+    </div>
+</section>
+
+</template>
+
+
+<template id="playerSetupTemplate">
+
+
+            <h2>プレイヤー設定</h2>
+
+            <p>何人で冒険しますか？</p>
+
+            <div class="player-count-buttons">
+
+                <button
+                    class="player-count"
+                    data-count="1">
+                    1人
+                </button>
+
+                <button
+                    class="player-count"
+                    data-count="2">
+                    2人
+                </button>
+
+                <button
+                    class="player-count"
+                    data-count="3">
+                    3人
+                </button>
+
+                <button
+                    class="player-count"
+                    data-count="4">
+                    4人
+                </button>
+
+                <button
+                    class="player-count"
+                    data-count="5">
+                    5人
+                </button>
+
+                <button
+                    class="player-count"
+                    data-count="6">
+                    6人
+                </button>
+
+            </div>
+
+            <div id="player-names"></div>
+        
+</template>
+
+
+<template id="turnSelectTemplate">
+
+    <h2>プレイ時間を選択</h2>
+    <div class="turn-select-group">
+        <p>何ターンで遊びますか？</p>
+
+        <p id="setupPlayTimeEstimate" class="setup-play-time-estimate" aria-live="polite"></p>
+
+
+        <div class="turn-input-area">
+
+            <input
+                type="number"
+                id="turnCountInput"
+                min="1"
+                max="300"
+                step="1"
+                value="30"
+            >
+
+            <span class="turn-input-label">
+                ターン
+            </span>
+
+        </div>
+
+        <button
+            id="confirmTurnButton"
+        >
+            このターンで開始
+        </button>
+    </div>
+    
+</template>
+
+
+<template id="mainGameTemplate">
+
+
+        <div class="game-screen">
+
+            <!-- =========================
+                 上部固定HUD
+            ========================= -->
+
+            <div class="game-hud">
+
+                <div
+                    id="currentPlayerInfo"
+                    class="hud-box hud-player"
+                    data-map-camera
+                >
+                    <div
+                        id="hudPlayerAvatar"
+                        class="hud-player-avatar hud-avatar-face"
+                        aria-label="プレイヤー"
+                    ></div>
+                    <span
+                        id="hudPlayerName"
+                        class="hud-player-name"
+                    ></span>
+                </div>
+
+                <div class="hud-box hud-gold">
+                    <img
+                        class="hud-icon"
+                        src="images/ui/icons/interface/gold.webp"
+                        alt="ゴールド"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
+                    >
+                    <span class="hud-icon-fallback">🪙</span>
+                    <span id="hudGoldValue" class="hud-value">0G</span>
+                </div>
+
+                <div class="hud-box hud-magic">
+                    <img
+                        class="hud-icon"
+                        src="images/ui/icons/interface/mana.webp"
+                        alt="魔力"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
+                    >
+                    <span class="hud-icon-fallback">🔮</span>
+                    <span id="hudMagicValue" class="hud-value">0</span>
+                </div>
+
+                <div
+    id="destinationInfo"
+    class="hud-box hud-destination destination"
+    data-map-camera
+    title="ボスの位置へ移動"
+>
+    <img
+    class="hud-destination-icon"
+    src=""
+    alt="ボス"
+>
+<span class="hud-destination-label">まであと</span>
+<strong
+    id="hudDestinationValue"
+    class="hud-destination-value"
+>0</strong>
+<span class="hud-destination-label">マス</span>
+</div>
+
+                <div
+                    id="turnDisplay"
+                    class="hud-box hud-turn"
+                >
+                    Tern 1/10
+                </div>
+
+            </div>
+
+            <!-- =========================
+                 マップ
+            ========================= -->
+
+            <div class="map-area">
+                <div id="mapBoard" class="map-board"></div>
+            </div>
+
+
+            
+            <!-- =========================
+                 左側固定アクションメニュー
+            ========================= -->
+
+            <div class="roulette-area action-menu">
+
+                <button id="rouletteButton" class="action-menu-button action-menu-dice" type="button" data-game-action-start>
+                    <img src="images/ui/icons/interface/dice.webp" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <span class="action-menu-fallback">🎲</span>
+                    <span class="action-menu-label">サイコロ</span>
+                </button>
+
+                <div class="guidebook-inventory-row">
+                <button id="inventoryButton" class="action-menu-button" type="button" data-game-action-start>
+                    <img src="images/ui/icons/interface/item.webp" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <span class="action-menu-fallback">🎒</span>
+                    <span class="action-menu-label">アイテム</span>
+                </button>
+                <button id="guidebookRequestButton" class="action-menu-button" type="button" data-game-action-start hidden>
+                    <img src="images/ui/icons/guidebook/guidebook-closed.webp" alt="">
+                    <span class="action-menu-label">購入申請</span>
+                </button>
+                </div>
+
+                <button id="magicButton" class="action-menu-button" type="button" data-game-action-start>
+                    <img src="images/ui/icons/interface/magic.webp" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <span class="action-menu-fallback">🪄</span>
+                    <span class="action-menu-label">魔法</span>
+                </button>
+
+                <button id="otherButton" class="action-menu-button" type="button" data-game-action-start>
+                    <img src="images/ui/icons/interface/settings.webp" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <span class="action-menu-fallback">⚙️</span>
+                    <span class="action-menu-label">その他</span>
+                </button>
+
+<!-- =========================
+     サイコロ移動中のみ表示
+     出発地点へ戻るボタン
+========================= -->
+
+<button
+    id="diceMovementReturnButton"
+    class="action-menu-button dice-movement-return-button"
+    type="button"
+>
+    <img
+        src="images/ui/icons/interface/back.webp"
+        alt=""
+        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+    >
+
+    <span class="action-menu-fallback">🔙</span>
+
+    <span class="action-menu-label">
+        現在地に戻る
+    </span>
+</button>
+
+            </div>
+
+            <!-- 既存処理との互換用。新UIでは常時表示しません。 -->
+            <div id="playerStatus" class="player-status"></div>
+            <div id="choiceArea" class="choice-area"></div>
+
+            <!-- =========================
+                 その他メニュー
+            ========================= -->
+
+            <div id="otherMenuPopup" class="other-menu-popup">
+                <div class="other-menu-title">その他</div>
+                <button id="otherAssetButton" type="button" class="other-menu-item">資産を見る</button>
+                <button id="otherSoundButton" type="button" class="other-menu-item">サウンド設定</button>
+                <button id="otherMenuCloseButton" type="button" class="other-menu-close">閉じる</button>
+            </div>
+
+            <!-- =========================
+                 資産一覧
+            ========================= -->
+
+            <div id="assetPopup" class="inventory-popup">
+                <div class="inventory-popup-title">資産一覧</div>
+                <div id="assetList" class="inventory-list"></div>
+                <button id="assetCloseButton" class="inventory-close-button" type="button">閉じる</button>
+            </div>
+
+            <div id="salePopup" style="display:none" aria-label="売却一覧"></div>
+
+            <!-- =========================
+                 資産購入
+            ========================= -->
+
+            <div id="assetPurchasePopup" class="shop-purchase-frame" role="dialog" aria-labelledby="assetPurchaseTitle" style="display:none">
+                <img class="shop-backdrop" src="images/characters/npc/shops/資産店.webp" alt="">
+                <div class="shop-purchase-layout">
+                    <section class="purchase-panel">
+                        <header class="shop-heading"><h1 id="assetPurchaseTitle"></h1></header>
+                        <div class="stock-space"><table class="stock-table" aria-label="資産購入一覧">
+                            <colgroup><col class="name-column"><col class="price-column"><col class="yield-column"><col class="owner-column"><col class="action-column"></colgroup>
+                            <thead><tr><th scope="col">資産名</th><th scope="col">価格</th><th scope="col">利回り</th><th scope="col">所有者</th><th scope="col"><span class="sr-only">購入操作</span></th></tr></thead>
+                            <tbody id="assetPurchaseList"></tbody>
+                        </table></div>
+                        <footer class="purchase-footer"><button id="assetPurchaseCloseButton" type="button">店を出る <img class="exit-arrow" src="images/ui/icons/interface/yajirushi.webp" alt=""></button></footer>
+                    </section>
+                    <aside class="staff-panel" aria-label="資産店員とアナウンス">
+                        <div class="staff-scene"><img src="images/characters/npc/shops/資産店-店員.webp" alt="資産店の店員"></div>
+                        <div class="dialogue"><p>本日はどの子をご指名ですか？</p></div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+
+    
+</template>
+
+  
+
+<!-- =========================
+     アイテム操作ポップアップ用テンプレート
+========================= -->
+
+<template id="lostMagicPlayerPopupTemplate">
+    <div class="item-action-popup lost-magic-player-popup">
+            <div class="item-action-title">
+                ロストマジック
+            </div>
+
+            <div class="item-action-description">
+                魔法を失わせるプレイヤーを選択
+            </div>
+
+            <div class="item-action-content lost-magic-player-list"></div>
+
+            <button
+                class="item-action-back-button lost-magic-back-button"
+                type="button"
+            >
+                戻る
+            </button>
+    </div>
+</template>
+
+<template id="lostMagicSelectionPopupTemplate">
+    <div class="item-action-popup lost-magic-selection-popup">
+            <div class="item-action-title">
+                ロストマジック
+            </div>
+
+            <div class="item-action-description">
+                消失させる魔法を選択
+            </div>
+
+            <div class="item-action-content lost-magic-list"></div>
+
+            <button
+                class="item-action-back-button lost-magic-selection-back-button"
+                type="button"
+            >
+                戻る
+            </button>
+    </div>
+</template>
+
+<template id="transferPlayerPopupTemplate">
+    <div class="item-action-popup transfer-player-popup">
+            <div class="item-action-title">
+            </div>
+
+            <div class="item-action-description">
+            </div>
+
+            <div
+                class="item-action-content transfer-player-list"
+            ></div>
+
+            <button
+                class="item-action-back-button transfer-player-back-button"
+                type="button"
+            >
+                戻る
+            </button>
+    </div>
+</template>
+
+<template id="transferTypePopupTemplate">
+    <div class="item-action-popup transfer-type-popup">
+            <div class="item-action-title">
+            </div>
+
+            <div class="item-action-description">
+
+                <strong class="transfer-target-name">
+                </strong>
+
+                <br><br>
+
+                どうする？
+
+            </div>
+
+            <div
+                class="item-action-content transfer-type-content"
+            >
+
+                <button
+                    class="money-transfer-type-button"
+                    type="button"
+                    data-type="send"
+                >
+                </button>
+
+                <button
+                    class="money-transfer-type-button"
+                    type="button"
+                    data-type="steal"
+                >
+                </button>
+
+            </div>
+
+            <button
+                class="item-action-back-button transfer-type-back-button"
+                type="button"
+            >
+                戻る
+            </button>
+    </div>
+</template>
+
+<template id="moneyTransferAmountPopupTemplate">
+    <div class="item-action-popup money-transfer-amount-popup">
+            <div class="item-action-title">
+                闇みずほ
+            </div>
+
+            <div
+                class="item-action-description money-transfer-target-description"
+            ></div>
+
+            <div
+                class="money-transfer-target-money amount-target-money"
+            ></div>
+
+            <div
+                class="item-action-content money-transfer-amount-content"
+            >
+
+                <input
+                    type="number"
+                    class="money-transfer-amount-input"
+                    step="1000"
+                    min="1000"
+                >
+
+                <span
+                    class="money-transfer-amount-unit"
+                >
+                    G
+                </span>
+
+            </div>
+
+            <button
+                class="money-transfer-confirm-button"
+                type="button"
+            >
+                実行
+            </button>
+
+            <button
+                class="item-action-back-button money-transfer-amount-back-button"
+                type="button"
+            >
+                戻る
+            </button>
+    </div>
+</template>
+
+<template id="darkSuumoAssetPopupTemplate">
+    <div class="item-action-popup">
+            <div class="item-action-title">闇スーモ</div>
+
+            <div class="item-action-description">
+                <strong class="dark-suumo-player-name"></strong>
+                の保有資産
+            </div>
+
+            <div class="item-action-content dark-suumo-asset-list"></div>
+
+            <button
+                class="item-action-back-button dark-suumo-back-button"
+                type="button"
+            >
+                戻る
+            </button>
+    </div>
+</template>
+
+<!-- =========================
+     魔法一覧用テンプレート
+========================= -->
+
+<template id="magicEmptyTemplate">
+    <div class="magic-empty">
+        まだ魔法を覚えていません。
+    </div>
+</template>
+
+<template id="magicItemTemplate">
+    <div class="magic-item">
+        <div class="magic-item-name"></div>
+        <div class="magic-item-effect"></div>
+        <div class="magic-item-cost"></div>
+    </div>
+</template>
+
+<template id="battleMagicItemTemplate">
+    <div class="battle-magic-item">
+        <div class="battle-magic-item-info">
+            <div class="battle-magic-item-name"></div>
+            <div class="battle-magic-item-effect"></div>
+            <div class="battle-magic-item-cost"></div>
+        </div>
+        <button
+            class="battle-magic-use-button"
+            type="button"
+        >
+            使う
+        </button>
+    </div>
+</template>
+
+
+<!-- =========================
+     資産・アイテム・ショップ一覧テンプレート
+========================= -->
+
+<template id="assetEmptyTemplate">
+    <div class="inventory-empty">保有資産はありません。</div>
+</template>
+
+<template id="assetSummaryTemplate">
+    <div class="asset-summary">
+        <div class="asset-summary-item">💰 <strong></strong></div>
+        <div class="asset-summary-item">📈 <strong></strong></div>
+    </div>
+</template>
+
+<template id="assetItemTemplate">
+    <div class="inventory-item">
+        <div class="inventory-item-name"></div>
+        <div class="inventory-item-effect"></div>
+    </div>
+</template>
+
+<template id="inventoryEmptyTemplate">
+    <div class="inventory-empty">アイテムはありません。</div>
+</template>
+
+<template id="inventoryPassiveItemTemplate">
+    <div class="inventory-item">
+        <div class="inventory-item-name"></div>
+        <div class="inventory-item-effect"></div>
+        <div class="inventory-item-effect inventory-item-passive-status"></div>
+    </div>
+</template>
+
+<template id="inventoryUsableItemTemplate">
+    <div class="inventory-item">
+        <div class="inventory-item-name"></div>
+        <div class="inventory-item-effect"></div>
+        <button class="inventory-item-use-button" type="button">使う</button>
+    </div>
+</template>
+
+<template id="shopProductTemplate">
+    <div class="magic-shop-item">
+        <div class="magic-shop-item-name"></div>
+        <div class="magic-shop-item-effect"></div>
+        <div class="magic-shop-item-price"></div>
+        <div class="magic-shop-learned">✅ 習得済み</div>
+        <button class="magic-shop-buy-button" type="button">購入</button>
+    </div>
+</template>
+
+<template id="shopItemCategoryButtonTemplate">
+    <button class="shop-category-button" type="button">
+        <img src="images/ui/icons/interface/item.webp" class="shop-category-icon" alt="">
+        <span>アイテムを購入</span>
+    </button>
+</template>
+
+<template id="shopPowerCategoryButtonTemplate">
+    <button class="shop-category-button" type="button">
+        <img src="images/ui/icons/interface/mana.webp" class="shop-category-icon" alt="">
+        <span>魔力を購入</span>
+    </button>
+</template>
+
+<template id="shopMagicCategoryButtonTemplate">
+    <button class="shop-category-button" type="button">
+        <img src="images/ui/icons/interface/magic.webp" class="shop-category-icon" alt="">
+        <span>魔法を購入</span>
+    </button>
+</template>
+
+
+<template id="playerNamesHeadingTemplate">
+    <h3 class="player-names-heading"></h3>
+</template>
+
+<template id="playerNameInputTemplate">
+    <div class="player-name-input">
+        <div class="player-name-label"></div>
+        <button type="button" class="player-character-button">
+            <img class="player-character-preview" src="" alt="キャラクター">
+        </button>
+        <input type="text" class="player-name" placeholder="名前を入力" maxlength="8">
+    </div>
+</template>
+
+<template id="confirmPlayersButtonTemplate">
+    <button id="confirmPlayers" type="button">決定</button>
+</template>
+
+<template id="playerCharacterWindowTemplate">
+    <div class="player-character-window">
+        <div class="player-character-window-title">キャラクターを選択</div>
+        <div class="player-character-list"></div>
+    </div>
+</template>
+
+<template id="playerCharacterOptionTemplate">
+    <button type="button" class="player-character-option" data-character-id="">
+        <img src="" alt="">
+        <span></span>
+    </button>
+</template>
+
+<template id="resultRankItemTemplate">
+    <div class="result-rank">
+        <span class="result-rank-name"></span>
+        <span class="result-rank-money"></span>
+    </div>
+</template>
+
+
+<template id="jobPopupContentTemplate">
+
+    <div class="job-scene">
+
+        <!-- バイト先の背景画像 -->
+        <img
+            class="job-background"
+            src=""
+            alt=""
+        >
+
+        <!-- 店員の立ち絵 -->
+        <img
+            class="job-staff"
+            src=""
+            alt=""
+        >
+
+        <!-- 会話ウィンドウ -->
+        <div class="job-dialogue-box">
+
+            <div class="job-name"></div>
+
+            <div class="job-dialogue-text"></div>
+
+            <div class="job-dialogue-next">
+                次へ▶
+            </div>
+
+        </div>
+
+        <!-- 会話終了後に表示する選択肢 -->
+        <div class="job-choice-panel" hidden>
+
+            <div class="job-wage"></div>
+
+            <div class="job-question">
+                1ターン働きますか？
+            </div>
+
+            <div class="job-choices">
+
+                <button
+                    id="jobWorkButton"
+                    class="job-choice-button job-work-button"
+                    type="button"
+                >
+                    働く
+                </button>
+
+                <button
+                    class="job-choice-button job-none-button"
+                    type="button"
+                >
+                    やめる
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</template>
+
+<template id="lossNotePlayerPopupTemplate">
+    <div class="item-action-popup loss-note-player-popup">
+        <div class="item-action-title">ロスノート</div>
+        <div class="item-action-description">名前を書くプレイヤーを選択</div>
+        <div class="item-action-content loss-note-player-list"></div>
+        <button class="item-action-back-button loss-note-back-button" type="button">戻る</button>
+    </div>
+</template>
+
+<template id="lossNotePlayerRowTemplate">
+    <div class="loss-note-player-row">
+        <span class="loss-note-player-name"></span>
+        <button class="loss-note-use-button" type="button">使用する</button>
+    </div>
+</template>
+
+<template id="darkSuumoEmptyAssetTemplate">
+    <div class="inventory-empty">移転できる資産はありません。</div>
+</template>
+
+<template id="darkSuumoAssetItemTemplate">
+    <div class="inventory-item">
+        <div class="inventory-item-name"></div>
+        <div class="inventory-item-effect"></div>
+        <button class="inventory-item-use-button" type="button"></button>
+    </div>
+</template>
+
+
+<!-- =========================
+     報酬・プレイヤー選択テンプレート
+========================= -->
+
+<template id="rewardChoiceButtonTemplate">
+    <button class="reward-choice-button" type="button">
+        <img class="reward-choice-icon" alt="">
+        <span class="reward-choice-label"></span>
+    </button>
+</template>
+
+<template id="lostMagicItemRowTemplate">
+    <div class="loss-note-player-row">
+        <div class="lost-magic-info">
+            <img src="" class="lost-magic-icon" alt="">
+            <span class="lost-magic-name"></span>
+        </div>
+        <button class="loss-note-use-button" type="button">ロスト</button>
+    </div>
+</template>
+
+<template id="transferPlayerRowTemplate">
+    <div class="loss-note-player-row">
+        <div class="money-transfer-player-info">
+            <div class="money-transfer-player-name"></div>
+            <div class="money-transfer-player-money"></div>
+        </div>
+        <button class="money-transfer-player-select-button" type="button">選択</button>
+    </div>
+</template>
+
+
+<!-- =========================
+     JavaScript
+========================= -->
+
+<template id="battleUIRootTemplate">
+
+            <div
+                id="battleIntroPopup"
+                class="battle-new-popup battle-intro-popup"
+                aria-hidden="true"
+            >
+                <div class="battle-intro-inner">
+
+                    <div
+                        id="battleIntroMonster"
+                        class="battle-intro-monster"
+                    ></div>
+
+                    <div
+                        id="battleIntroMessage"
+                        class="battle-intro-message"
+                    ></div>
+
+                    <div class="battle-intro-hint">
+                        　＞＞
+                    </div>
+
+                </div>
+            </div>
+
+
+            <div
+                id="battleMainPopup"
+                class="battle-new-popup battle-main-popup"
+                aria-hidden="true"
+            >
+
+                <div class="battle-main-screen">
+
+                    
+                    <div class="battle-round-badge">
+                        <span id="battleNewRound">ROUND 1 / 3</span>
+                    </div>
+
+
+                    <div class="battle-field">
+
+
+                        <div class="battle-player-area" data-battle-actor="player">
+                            <div class="battle-player-visual-wrap">
+                                <div class="battle-combatant-action"><div class="battle-combatant-idle">
+                                    <img id="battlePlayerBackImage" class="battle-player-image" alt="プレイヤーの後ろ姿">
+                                    <span id="battlePlayerBackFallback" class="battle-player-fallback"></span>
+                                </div></div>
+                            </div>
+                        </div>
+
+                        <div class="battle-monster-area" data-battle-actor="enemy">
+
+                            <div
+                                id="battleNewMonsterName"
+                                class="battle-monster-name"
+                            ></div>
+
+                            <div class="battle-monster-visual-wrap">
+                              <div class="battle-combatant-action"><div class="battle-combatant-idle">
+                                <img
+                                    id="battleNewMonsterImage"
+                                    class="battle-monster-image"
+                                    alt="モンスター"
+                                >
+                                <div
+                                    id="battleNewMonsterFallback"
+                                    class="battle-monster-fallback"
+                                ></div>
+                              </div></div>
+                            </div>
+
+                            <div class="battle-hp-bar">
+                                <div
+                                    id="battleNewMonsterHpFill"
+                                    class="battle-hp-fill"
+                                ></div>
+                            </div>
+
+                            <div
+                                id="battleNewMonsterHp"
+                                class="battle-monster-hp"
+                            ></div>
+
+                        </div>
+                        <div class="battle-preview-dark-chain-flight-layer" aria-hidden="true"></div>
+                        <div class="battle-preview-dark-chain-back-layer" aria-hidden="true"></div>
+                        <div class="battle-enemy-status" aria-label="モンスターのHP">
+                            <span class="battle-status-label">HP</span>
+                        </div>
+                        <div class="battle-lower-hud">
+                            <div class="battle-context" data-mode="message" aria-label="操作案内・魔法予測・戦闘ログ"></div>
+                        </div>
+                        <canvas id="battleEffectsCanvas" class="battle-effects-layer" aria-hidden="true"></canvas>
+                        <canvas class="battle-casting-layer" aria-hidden="true"></canvas>
+                        <canvas class="battle-projectile-layer" aria-hidden="true"></canvas>
+                        <div class="battle-preview-dark-chain-layer" aria-hidden="true"></div>
+                        <div class="battle-damage-number" data-battle-damage="player" aria-hidden="true"></div>
+                        <div class="battle-damage-number" data-battle-damage="enemy" aria-hidden="true"></div>
+
+                    </div>
+
+
+                    <div class="battle-control-panel">
+
+                        <div class="battle-magic-panel">
+
+        <div class="battle-panel-title">
+    <img src="images/ui/icons/interface/magic.webp" alt="">
+    <span>魔法一覧</span>
+</div>
+
+                            <button class="battle-magic-scroll-arrow" type="button" data-scroll-direction="-1" aria-label="魔法一覧を左へスクロール">◀</button>
+                            <div
+                                id="battleNewMagicList"
+                                class="battle-new-magic-list"
+                            ></div>
+                            <button class="battle-magic-scroll-arrow" type="button" data-scroll-direction="1" aria-label="魔法一覧を右へスクロール">▶</button>
+
+
+
+                        </div>
+
+<!-- =========================
+     プレイヤーHP
+========================= -->
+
+<div
+    class="battle-player-hp"
+>
+    <span id="battlePlayerStatusName" class="battle-status-name battle-refined-only"></span>
+    <span class="battle-status-label battle-refined-only">G</span>
+
+    <div
+        class="battle-player-hp-bar"
+    >
+        <div
+            id="battlePlayerHpFill"
+            class="battle-player-hp-fill"
+        ></div>
+    </div>
+
+    <div
+        class="battle-player-hp-status"
+    >
+
+        <img
+            id="battlePlayerHpIcon"
+            class="battle-player-hp-icon"
+            src=""
+            alt=""
+        >
+
+        <div
+            id="battlePlayerHpMax"
+            class="battle-player-hp-max"
+        >
+            / 0G
+        </div>
+
+    </div>
+
+    <div id="battleActiveBuffs" class="battle-active-buffs" aria-label="使用中のバフ魔法" aria-live="polite"></div>
+
+</div>
+
+                            <div
+                            class="battle-selected-magic battle-selected-magic-layout"
+                        >
+
+                        
+                                 <div
+                                    id="battleNewSelectedMagicIcon"
+                                    class="battle-selected-magic-icon battle-selected-magic-icon-layout"
+                                ></div>
+
+                            <div class="battle-selected-magic-info">
+
+                                <div class="battle-selected-magic-left">
+
+                                                   <div
+                                            id="battleNewSelectedMagicName"
+                                            class="battle-selected-magic-name battle-selected-magic-name-layout"
+                                        >
+                                            魔法を選択してください
+                                        </div>
+
+                                                                 <div
+                                            id="battleNewSelectedMagicEffect"
+                                            class="battle-selected-magic-effect battle-selected-magic-effect-layout"
+                                        ></div>
+                                </div>
+
+                                        <div
+                                        class="battle-selected-magic-right battle-selected-magic-right-layout"
+                                    >
+
+                                        <div
+                                            class="battle-selected-magic-cost battle-selected-magic-value-layout"
+                                        >
+                                            <span class="battle-magic-cost-label">コスト</span>
+                                            <strong class="battle-selected-magic-value-strong">
+                                                <span id="battleNewSelectedMagicCost">—</span>G
+                                            </strong>
+                                        </div>
+
+                                        <div
+                                            class="battle-selected-magic-damage battle-selected-magic-value-layout"
+                                        >
+                                            <span>予測ダメージ</span>
+                                            <strong
+                                                id="battleNewSelectedMagicDamage"
+                                             class="battle-selected-magic-value-strong">—</strong>
+                                        </div>
+
+                                    </div>
+
+                            </div>
+
+                        </div>
+
+
+                    <div
+                        id="battleNewMessage"
+                        class="battle-new-message"
+                    ></div>
+
+
+                  <div class="battle-action-row">
+
+    <button
+        id="battleNewEscapeButton"
+        class="battle-new-action-button battle-new-escape-button"
+        type="button"
+    >
+        <span>逃げる</span>
+    </button>
+
+</div>
+
+                </div>
+
+            </div>
+
+</template>
+
+<template id="monsterChoiceMessageTemplate">
+    <div class="monster-choice-boss-icon">
+        <img class="boss-inline-icon monster-choice-boss-image" src="" alt="ボス">
+    </div>
+    <div class="monster-choice-heading"></div>
+    <div class="monster-choice-description"></div>
+</template>
+
+<template id="battleMonsterImageTemplate">
+    <img class="battle-monster-template-image" src="" alt="">
+    <span class="battle-monster-fallback-text battle-monster-template-fallback">👾</span>
+</template>
+
+<template id="battleNewMagicEmptyTemplate">
+    <div class="battle-new-magic-empty">魔法を覚えていません。</div>
+</template>
+
+<template id="battleNewMagicItemTemplate">
+    <span class="battle-new-magic-name"></span>
+    <span class="battle-new-magic-icon-wrap">
+        <img class="battle-new-magic-icon" src="" alt="">
+        <span class="battle-new-magic-fallback">✨</span>
+    </span>
+</template>
+
+<template id="battleSelectedMagicIconTemplate">
+    <img class="battle-selected-magic-icon-image" src="" alt="">
+    <span class="battle-selected-magic-icon-fallback">✨</span>
+</template>
+
+<template id="playerStatusCardTemplate">
+    <div class="player-card" data-player-index="">
+        <button class="player-asset-button" type="button">
+            <img src="images/map/space-icons/asset.webp" alt="資産">
+        </button>
+        <span class="player-magic-power"></span>
+        <span class="player-money"></span>
+        <span class="player-immunity-status" hidden>🛡 無敵</span>
+    </div>
+</template>
+
+<template id="soundSettingsButtonTemplate">
+    <button id="soundSettingsButton" type="button" class="sound-settings-button">⚙️</button>
+</template>
+
+<template id="squareDetailPanelTemplate">
+    <div class="square-detail-panel">
+        <div class="square-detail-title"></div>
+        <div class="square-detail-content"></div>
+        <div class="square-detail-buttons">
+            <button type="button" class="square-detail-go-button">ここに行く</button>
+            <button type="button" class="square-detail-close-button">閉じる</button>
+        </div>
+    </div>
+</template>
+
+<template id="maouDialogueTemplate">
+    <div id="maouDialogueScreen" class="maou-dialogue-screen">
+        <div id="maouDialogueBackground" class="maou-dialogue-background"></div>
+        <img id="maouDialogueImage" class="maou-dialogue-image" alt="">
+        <div id="maouDialogueMessage" class="maou-dialogue-message"></div>
+    </div>
+</template>
+
+<script>
+    {
+        // Keep the previous performance rollout separate from the opening fix.
+        const defaultEnabled = false;
+        const settings = new URLSearchParams(location.search);
+        const compatibilityMode = settings.get('mobile-perf') === 'off';
+        window.mobilePerformanceEnabled = defaultEnabled && !compatibilityMode;
+        window.mobileOpeningLightweight = !compatibilityMode;
+        window.mobileMapDetailEnabled = !compatibilityMode && settings.get('mobile-detail') !== 'off';
+        window.mobileRuntimeTuning = !compatibilityMode && settings.get('mobile-runtime') !== 'off' && matchMedia('(pointer: coarse)').matches;
+    }
+</script>
+<script src="data.js?v=bridge-collapse-duration-3turns-tornado-se-1"></script>
+<script src="disadvantage-immunity-rules.js?v=1"></script>
+<script src="special-item-rules.js?v=4"></script>
+<link rel="stylesheet" href="special-item-ui.css?v=5">
+<script src="special-item-ui.js?v=item-catalog-names-20261119"></script>
+<link rel="stylesheet" href="duplicate-item-ui.css?v=copy-san-banner-4">
+<script src="duplicate-item-ui.js?v=copy-san-2"></script>
+<script src="economy.js?v=market-announcement-50percent-1"></script>
+<script src="dividend-selection.js"></script>
+<script src="dividend-history.js?v=forced-sale-sync-1"></script>
+<script src="sound.js?v=ancient-ruins-bgm-1"></script>
+<script src="se-sync.js?v=battle-reward-display-20261118"></script>
+<script src="bridge-collapse-rules.js?v=bridge-collapse-1"></script>
+<script src="bridge-mugging-rules.js?v=3"></script>
+<script src="ponzi-rules.js?v=6"></script>
+<link rel="stylesheet" href="ponzi-presentation.css?v=ponzi-report-1">
+<script src="ponzi-presentation.js?v=event-screen-wide-advance-20261119"></script>
+<script src="inventory.js?v=item-catalog-names-20261119"></script>
+<script src="magic.js"></script>
+<script src="attack.js"></script>
+<script src="map-continent-data.js"></script>
+<script src="map-region-data.js"></script>
+<script src="map-region-rules.js?v=1"></script>
+<script src="bridge-mugging-presentation.js?v=event-screen-wide-advance-20261119"></script>
+<script src="map-area-audio.js?v=ancient-ruins-region-1"></script>
+<script src="map-cliff-materials.js"></script>
+<script src="map-island-banks.js"></script>
+<script src="map-boundary-strips.js"></script>
+<script src="map-region-background.js"></script>
+<script src="map-scene.js?v=desktop-game-layout-1"></script>
+<script src="map-background-cache.js?v=mobile-map-window-1"></script>
+<script src="map-background-raster-data.js"></script>
+<script src="map-overview-cache.js?v=mobile-map-sharpness-1"></script>
+<script src="map-overview-raster-data.js?v=mobile-runtime-1"></script>
+<script src="map-zoom-interaction.js?v=mobile-zoom-1"></script>
+<script src="map-detail-level.js?v=mobile-detail-zoom-04-2"></script>
+<script src="map-character-layout.js"></script>
+<script src="map-movement-presentation.js"></script>
+<script src="gold-counter-ui.js?v=sale-balance-1"></script>
+<script src="ui.js?v=asset-detail-price-order-1"></script>
+<script src="asset-monopoly-rules.js?v=1"></script>
+<link rel="stylesheet" href="fukubukuro-ui.css?v=sp04-size-4">
+<link rel="stylesheet" href="lost-magic-ui.css?v=sp04-result-fade-2">
+<script src="lost-magic-ui.js?v=item-catalog-names-20261119"></script>
+<link rel="stylesheet" href="hatataki-haken-ui.css?v=hatataki-finished-no-border-1">
+<script src="hatataki-haken-ui.js?v=item-catalog-names-20261119"></script>
+<script src="boss-battle-rules.js?v=next-boss-area-distance-1"></script>
+<script src="boss-ceremony-rules.js?v=market-season-1"></script>
+<script src="guidebook-rules.js?v=destroyed-book-refund-1"></script>
+<script src="special-reward-rules.js?v=turn25-lowest-gift-2"></script>
+<link rel="stylesheet" href="boss-opening.css?v=desktop-game-layout-1">
+<script src="boss-opening.js?v=volume-defaults-1"></script>
+<link rel="stylesheet" href="bridge-mugging.css?v=2">
+<link rel="stylesheet" href="ending-presentation.css?v=ending-tied-finishes-1">
+<script src="ending-race-rules.js?v=ending-tied-finishes-1"></script>
+<script src="ending-presentation.js?v=ending-tied-finishes-1"></script>
+<link rel="stylesheet" href="boss-aftermath.css?v=immunity-target-2">
+<script src="boss-aftermath.js?v=guidebook-obtain-se-1"></script>
+<link rel="stylesheet" href="dividend-presentation.css?v=market-guide-centered-20261119">
+<script src="dividend-presentation.js?v=market-guide-centered-20261119"></script>
+<script src="dividend-offline.js?v=market-final-reset-1"></script>
+<link rel="stylesheet" href="dice-animation.css?v=hud-camera-1">
+<script src="dice-geometry.js"></script>
+<script src="dice-animation.js"></script>
+<script src="dice-stop-motion.js"></script>
+<script src="dice-game-ui.js?v=action-menu-2"></script>
+<script src="fukubukuro-ui.js?v=item-catalog-names-20261119"></script>
+<script src="movement-counter-ui.js"></script>
+<link rel="stylesheet" href="map-road-renderer.css?v=boss-route-pink-blink-restore-1">
+<script src="map-road-cache.js?v=mobile-map-lite-1"></script>
+<script src="map-road-raster-data.js?v=map-v1.0.0-20261110"></script>
+<script src="map-workshop-data.js?v=asset-type-ids-20261110"></script>
+<script src="map-authoring/imported-small-objects.js"></script>
+<script src="map-authoring/catalog.js"></script>
+<script src="map-authoring/capital-roads.js?v=20261106-road-strip-v2"></script>
+<script src="map-authoring/bridge-roads.js"></script>
+<script src="map-authoring/region-roads.js"></script>
+<script src="map-workshop-scene.js?v=mobile-runtime-1"></script>
+<script src="map-road-renderer.js?v=bridge-collapse-3"></script>
+<script src="vertical-slot.js"></script>
+<script src="slot-presentation.js?v=an02-text-fit-1"></script>
+<script src="shop-presentation.js"></script>
+<script src="game-panels.js?v=magic-usage-two-line-2"></script>
+<script src="commerce-panels.js?v=branch-name-without-suffix-1"></script>
+<script src="asset-shop-ui.js?v=asset-purchase-order-1"></script>
+<script src="common-announcements.js?v=event-screen-wide-advance-20261119"></script>
+<script src="job-presentation.js"></script>
+<script src="battle-reward-ui.js?v=reward-display-sound-20261118"></script>
+<link rel="stylesheet" href="money-transfer-ui.css?v=mizuho-min-max-1">
+<script src="money-transfer-ui.js?v=item-catalog-names-20261119"></script>
+<link rel="stylesheet" href="guidebook-ui.css?v=turn25-special-reward-cards-2">
+<script src="guidebook-ui.js?v=item-catalog-names-20261119"></script>
+<link rel="stylesheet" href="underground-ui.css?v=forced-sale-valuation-scroll-20261119">
+<script src="underground-rules.js?v=underground-immunity-return-2"></script>
+<script src="underground-ui.js?v=forced-sale-valuation-scroll-20261119"></script>
+<link rel="stylesheet" href="turn-handoff.css?v=1">
+<script src="turn-handoff.js?v=2"></script>
+<script src="treasure-rules.js?v=multi-get-boss-thresholds-1"></script>
+<script src="game-action-input.js?v=square-detail-move-1"></script>
+<script src="game.js?v=desktop-game-layout-1"></script>
+<script src="battle-effects.js?v=spiffa-tornado-2"></script>
+<script src="battle-effects/common.js"></script>
+<script src="battle-effects/casting-circle.js"></script>
+<script src="battle-effects/fire.js"></script>
+<script src="battle-effects/ice-pillars.js"></script>
+<script src="battle-effects/thunder-css.js"></script>
+<script src="battle-effects/meteor.js"></script>
+<script src="battle-effects/spiffa.js"></script>
+<script src="battle-effects/tornado.js?v=2"></script>
+<script src="battle-motion.js?v=debt-settlement-1"></script>
+<script src="battle-dark-chain.js?v=buff-circles-20261119"></script>
+<script src="battle-ui.js?v=buff-presentation-20261119b"></script>
+<script src="maou-reward.js?v=market-rewards-1"></script>
+<script src="maou.js"></script>
+<script src="round-summary-ui.js?v=debt-settlement-1"></script>
+
+
+
+    <div 
+
+id="itemRoulette"
+ class="item-roulette">
+
+    <div class="item-roulette-title">
+            宝箱
+    </div>
+    
+    <div id="itemRouletteName" 
+    class="item-roulette-name">---
+</div>
+
+
+</body>
+
+</html>
+

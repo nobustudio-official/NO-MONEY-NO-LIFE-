@@ -1,0 +1,12 @@
+#monsterChoicePopup.monster-choice-popup{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(81vw,1305px);height:calc(90vh - 94px);box-sizing:border-box;padding:0;overflow:hidden;border:1px solid #ccae7b;border-radius:16px;background:url("images/backgrounds/scenes/魔王城.webp") center/cover no-repeat;box-shadow:none;z-index:30001;color:#fcfcfc;font-family:"Yu Gothic",Meiryo,sans-serif}
+#monsterChoicePopup .boss-gate-art{position:absolute;left:50%;top:3%;width:38%;height:73%;transform:translateX(-50%);object-fit:contain;filter:drop-shadow(0 10px 18px #071421aa);pointer-events:none}
+#monsterChoicePopup .boss-gate-choices{left:0;right:0;top:25%;width:100%;display:grid;grid-template-columns:8% calc(18.5% - 12px) 1fr calc(18.5% - 12px) 8%;gap:0;pointer-events:none}
+#monsterChoicePopup .br-card-slot:first-child{grid-column:2}#monsterChoicePopup .br-card-slot:last-child{grid-column:4}
+#monsterChoicePopup .br-card-slot,#monsterChoicePopup .br-card-slot button{animation:none;translate:none}
+#monsterChoicePopup .br-card-slot button{--reward-accent:#f2d58d;pointer-events:auto;padding:22px 12px;font-size:30px}
+#monsterChoicePopup #monsterEscapeButton{--reward-accent:#c4ccd4;box-shadow:0 10px 20px #071c344d,inset 0 0 0 5px #101923,inset 0 0 0 6px #c4ccd433}
+#monsterChoicePopup #monsterEscapeButton:hover,#monsterChoicePopup #monsterEscapeButton:focus-visible{outline-color:#c4ccd4}
+#monsterChoicePopup .boss-gate-banner{position:absolute;left:3%;right:3%;bottom:3%;min-height:160px;padding:22px;box-sizing:border-box;border:1px solid #ccae7b;border-radius:12px;background:linear-gradient(125deg,#18384fe8,#10293cee);display:flex;align-items:center;text-align:left}
+#monsterChoicePopup .boss-gate-banner img{width:80px;height:80px;object-fit:contain;flex:none;margin-right:22px}
+#monsterChoicePopup #monsterChoiceMessage{margin:0;font:600 22px/1.6 "Yu Gothic",Meiryo,sans-serif}
+@media(max-width:1550px){#monsterChoicePopup .boss-gate-choices{grid-template-columns:8% calc(18.5% - 9px) 1fr calc(18.5% - 9px) 8%}#monsterChoicePopup .br-card-slot button{font-size:22px}}

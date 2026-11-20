@@ -1,0 +1,36 @@
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.PonziRules=api;})(typeof window==='undefined'?null:window,function(){
+ 'use strict';
+ const config=Object.freeze({minimumTotalAssetToAppear:300000,investmentUnit:10000,payoutInterval:3,payoutRate:0.3});
+ function prepare(state,totalAssetValue=player=>Number(player?.money)||0){
+  if(!state||!Array.isArray(state.players)||!state.players.length)return;
+  if(!state.ponzi&&state.activePlayerIndex===0&&state.players.every(p=>Number(totalAssetValue(p))>config.minimumTotalAssetToAppear))state.ponzi={phase:'choices',round:0,investments:state.players.map(()=>0),declinedThisRound:state.players.map(()=>false),nextIndex:0,nextPayoutTurn:null,payout:null};
+  const p=state.ponzi;if(!p||p.phase!=='waiting'||state.activePlayerIndex!==0||state.currentTurn<p.nextPayoutTurn)return;
+  const collapseThreshold=(config.minimumTotalAssetToAppear/2)*state.players.length;
+  const totalInvestment=p.investments.reduce((sum,n)=>sum+Number(n||0),0);
+  const failed=totalInvestment>=collapseThreshold
+   || p.declinedThisRound?.length===state.players.length&&p.declinedThisRound.every(Boolean);
+  const amounts=p.investments.map(n=>failed?0:Math.floor(n*config.payoutRate));
+  amounts.forEach((amount,i)=>{state.players[i].money=Number(state.players[i].money)+amount;});
+  p.payout={investments:p.investments.slice(),amounts,failed};p.phase='payout';
+ }
+ function pending(state){const p=state?.ponzi;if(!p)return false;return ['choices','thanks'].includes(p.phase)&&Number(p.nextIndex)===Number(state.activePlayerIndex)||(['payout','ending'].includes(p.phase)&&Number(state.activePlayerIndex)===0);}
+ function advanceChoice(state){const p=state.ponzi;p.nextIndex++;if(p.nextIndex>=state.players.length){p.nextIndex=0;if(p.round===0&&p.investments.every(n=>n<=0)){p.phase='finished';return;}p.phase='waiting';p.nextPayoutTurn=Number(state.currentTurn)+config.payoutInterval;}else p.phase='choices';}
+ function act(state,action,amount){
+  const p=state?.ponzi;if(!pending(state))return 'イベント操作の順番が違います。';
+  if(p.phase==='choices'){
+   const i=state.activePlayerIndex,player=state.players[i];
+   if(action==='invest') {const value=Number(amount);if(!Number.isSafeInteger(value)||value<config.investmentUnit||value%config.investmentUnit||value>player.money)return '出資額が不正です。';player.money-=value;p.investments[i]+=value;p.declinedThisRound[i]=false;p.phase='thanks';return null;}
+   else if(action==='cancel'&&p.round>0){player.money+=p.investments[i];p.investments[i]=0;p.declinedThisRound[i]=false;}
+   else if(action==='decline')p.declinedThisRound[i]=true;
+   else return '選択内容が不正です。';
+   advanceChoice(state);
+  }else if(p.phase==='thanks'&&action==='acknowledge'){
+   advanceChoice(state);
+  }else if(p.phase==='payout'&&action==='continue'){
+   if(p.payout.failed){p.phase='ending';}else{p.phase='choices';p.round++;p.nextIndex=0;p.payout=null;p.declinedThisRound=state.players.map(()=>false);}
+  }else if(p.phase==='ending'&&action==='finish'){p.investments=p.investments.map(()=>0);p.phase='finished';}
+  else return '選択内容が不正です。';
+  return null;
+ }
+ return Object.freeze({config,prepare,pending,act});
+});

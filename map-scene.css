@@ -1,0 +1,68 @@
+/* One viewport-filling ocean under the independently zoomed land/map layers. */
+:root { --map-plane-depth: .9659258263; --map-character-depth: .9659258263; }
+/* Foreshorten the ground markers, preserving their centers and hit targets.
+   Counter-scale pieces so character art remains upright and unchanged. */
+.game-screen .map-node { scale: 1 var(--map-plane-depth); }
+/* Each transformed square is its own stacking context. Raising only its child
+   sprite cannot put that sprite above a later sibling square. */
+.game-screen .map-node:has(.player-piece) { z-index: 6; }
+.game-screen .map-node:has(.player-piece.map-piece-moving) { z-index: 7; }
+/* The overview keeps square centers and interaction highlights, not artwork.
+   Character and boss artwork remain independent and keep their readable size. */
+#mapBoard.map-detail-compact .map-node:not(.boss-node) > .square-icon { display:none; }
+#mapBoard.map-detail-compact .map-node:not(.boss-node):not(.reachable-stop-highlight):not(.observer-reachable-highlight):not(.square-detail-highlight) {
+    background:#dfd8c1;border:1px solid #625d51;border-radius:6px;box-shadow:none;
+}
+#mapBoard .map-node.map-detail-offscreen:not(.boss-node):not(:has(.player-piece)) { visibility:hidden; }
+.game-screen .map-node .player-piece.player-sprite {
+    /* Small per-character surfaces preserve detail after wheel compositing ends. */
+    will-change:transform;
+    width:100px;height:100px;
+    top:calc(50% + 10px / (var(--piece-node-scale,.85) * var(--map-plane-depth)));
+    /* Keep placement outside the readability scale: only the artwork grows
+       around its bottom center, never the offset from its standing square. */
+    transform:translate(-50%,-100%) scale(calc(var(--map-important-scale,1) / var(--piece-node-scale,.85)),calc(var(--map-important-scale,1) * var(--map-character-depth) / (var(--piece-node-scale,.85) * var(--map-plane-depth))));
+    transform-origin:50% 100%;
+    scale:1;
+}
+.map-continent { display: block; width: 100%; height: 100%; }
+/* Promote only during a gesture. A permanent board surface retains the small
+   overview raster and magnifies it, blurring the original character sprites. */
+#mapBoard.map-zoom-interacting { will-change: transform; }
+#mapBoard .map-background { transform: translateZ(0); will-change: transform; }
+#mapBoard:has(> .map-static-background),
+#mapBoard .map-static-background { -webkit-backface-visibility:visible; backface-visibility:visible; will-change:auto; }
+#mapBoard .map-static-background { transform:none; }
+.map-static-background > .map-static-raster {
+    position:absolute; inset:0; width:100%; height:100%; max-width:none; pointer-events:none;
+}
+.map-static-background > .map-static-detail {
+    position:absolute; z-index:1; max-width:none; pointer-events:none; opacity:0; transition:opacity 110ms linear;
+}
+.map-static-background > .map-static-detail[data-level="medium"] { z-index:0; }
+.map-static-background > .map-static-detail[data-level="medium"].is-ready { opacity:var(--map-medium-opacity,0); }
+.map-static-background > .map-static-detail[data-level="native"].is-ready { opacity:var(--map-native-opacity,0); }
+#mapBoard:has(> .map-static-background) .map-road-vector { display:none; }
+/* Only static terrain/stonework swaps; live objects keep their independent layer. */
+.map-background > .map-overview-raster { display:none; }
+.map-background.map-overview-active > .map-overview-raster { display:block; }
+.map-background.map-overview-active > .map-background-raster,
+.map-background.map-overview-active > .map-road-raster { display:none; }
+.map-background.map-background-tiles-pending > .map-background-raster,
+.map-background > .map-background-raster:not([src]) { visibility:hidden; }
+.game-screen > .map-area.map-ocean {
+    background-color: #178bbb;
+    background-image: url("images/map/backgrounds/world/ocean/ripples-repeat.svg"), url("images/map/backgrounds/world/ocean/base-repeat.svg");
+    background-repeat: repeat;
+    background-size: var(--ocean-ripple-size, 768px) var(--ocean-ripple-size, 768px), var(--ocean-base-size, 1024px) var(--ocean-base-size, 1024px);
+    background-attachment: local;
+    background-origin: padding-box;
+}
+
+/* The overview already contains scenery. Squares and characters remain live above it. */
+#mapBoard.map-overview-active > .map-workshop-objects{display:none}
+#mapBoard .map-workshop-objects img:not([src]){visibility:hidden}
+
+/* Only near-viewport object images receive their own native-resolution surface.
+   Release it in the full-map overview and when scrolling away. */
+#mapBoard .map-workshop-objects img.map-object-sharp{will-change:transform}

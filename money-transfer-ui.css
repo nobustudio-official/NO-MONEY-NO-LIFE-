@@ -1,0 +1,60 @@
+:root {
+    --transfer-stage-top: 90px;
+    --transfer-stage-right: 24px;
+    --transfer-stage-bottom: 42px;
+    --transfer-stage-left: 220px;
+    --transfer-stage-width: 1560px;
+    --transfer-panel-side: 19%;
+    --transfer-panel-top: 4%;
+    --transfer-panel-bottom: 180px;
+}
+@media (max-width: 1550px) {
+    :root { --transfer-stage-left: 180px; --transfer-panel-side: 12%; }
+}
+#moneyTransferScreen{position:fixed;z-index:39000;inset:var(--transfer-stage-top) var(--transfer-stage-right) var(--transfer-stage-bottom) var(--transfer-stage-left);max-width:var(--transfer-stage-width);margin:auto;font-family:'Yu Gothic',Meiryo,sans-serif;color:#fcfcfc;pointer-events:none}
+#moneyTransferScreen[hidden]{display:none}
+#moneyTransferScreen *{box-sizing:border-box}
+.mt-panel{position:absolute;inset:var(--transfer-panel-top) var(--transfer-panel-side) var(--transfer-panel-bottom);padding:22px 26px;border:1px solid #ccae7b;border-radius:18px;background:linear-gradient(135deg,#102b40f2,#0b2033ed);box-shadow:0 12px 26px #071a2a55;pointer-events:auto}
+.mt-title{margin:0;padding-bottom:14px;border-bottom:1px solid #ccae7b80;font-size:28px;color:#fff}
+.mt-description{margin:12px 0 0;color:#fff;font-size:16px;line-height:1.5}.mt-panel.has-description .mt-content{inset:126px 26px 65px}
+.mt-back{position:absolute;left:26px;bottom:18px;border:1px solid #ccae7b;border-radius:8px;background:#2c4e6de0;color:#fff;padding:9px 18px;font:700 16px 'Yu Gothic',sans-serif;cursor:pointer}
+.mt-content{position:absolute;inset:86px 26px 65px;display:flex;align-items:center;justify-content:center;gap:18px}
+.mt-targets{display:flex;align-items:center;justify-content:center;gap:12px;width:100%}.mt-target-card{min-width:0;flex:1;max-width:230px;min-height:260px;padding:16px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;border:1px solid #d8ba71;border-radius:13px;background:linear-gradient(155deg,#344b5fef,#172b40f7);text-align:center}.mt-target-card img,.mt-person img{width:76px;height:76px;object-fit:contain}.mt-target-card b,.mt-person b{font-size:19px}.mt-target-card strong{font-size:26px;color:#ffdc83}.mt-target-card small{font-size:12px}.mt-button{border:1px solid #d8ba71;border-radius:9px;background:linear-gradient(#204365,#112a41);color:#fff;padding:9px 17px;font:700 16px 'Yu Gothic',sans-serif;cursor:pointer}.mt-button:disabled,.mt-choice:disabled{opacity:.5;cursor:not-allowed}
+.mt-choices{display:grid;grid-template-columns:1fr 1fr;gap:20px;width:100%}.mt-choice{min-width:0;min-height:270px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:18px;border:1px solid #ccae7b;border-radius:16px;background:linear-gradient(150deg,#1d3d56,#102b43);color:#fff;cursor:pointer;font:700 19px 'Yu Gothic',sans-serif}.mt-choice.is-steal{color:#f2d58d}.mt-choice .mt-route{width:100%;gap:5px}.mt-choice .mt-person img{width:66px;height:66px}.mt-choice small{font-size:15px}.mt-choice-title{font-size:24px}
+.mt-choice:not(:disabled):is(:hover,:focus-visible){outline:3px solid #ffe19a;outline-offset:3px;box-shadow:0 0 18px #f8ce6b88}
+.mt-route{display:grid;grid-template-columns:minmax(0,1fr) 50px minmax(0,1fr);align-items:center;gap:15px;width:min(70%,650px);position:absolute;top:28%;left:50%;transform:translateX(-50%)}.mt-choice .mt-route{position:static;transform:none}.mt-person{min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center}.mt-person strong{font-size:26px;white-space:nowrap}.mt-result .mt-receiver strong{color:#f2d58d}.mt-arrow{width:42px;height:42px;object-fit:contain;transform:rotate(90deg);justify-self:center}
+.mt-form{position:absolute;top:calc(28% + 155px);left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px}.mt-amount-controls{display:flex;align-items:center;gap:8px}.mt-amount{width:180px;height:48px;text-align:right;background:#102b43;border:1px solid #ccae7b;border-radius:8px;color:#fff;font:700 20px 'Yu Gothic',sans-serif;padding:8px}.mt-step{width:40px;height:45px;border:1px solid #ccae7b;border-radius:8px;background:#234b68;color:#fff;font-size:20px;cursor:pointer;touch-action:manipulation;user-select:none}.mt-execute{width:180px;min-height:46px;background:#2c4e6de0;color:#f2d58d}
+.mt-limit-step{width:52px;font-size:14px;letter-spacing:.02em}.mt-limit-step:disabled{opacity:.45;cursor:not-allowed}
+.mt-telop{position:absolute;left:0;right:0;bottom:0;min-height:160px;padding:24px 22px;border:1px solid #ccae7b;border-radius:12px;background:linear-gradient(125deg,#18384fe8,#10293cee);display:flex;align-items:center;gap:22px;font-size:22px;font-weight:600}.mt-telop img{width:80px;height:80px;object-fit:contain}.mt-result .mt-telop{display:none}
+.mt-items {
+    align-self: stretch;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 2px 7px 4px 2px;
+    overflow: auto;
+    scrollbar-color: #ccae7b99 #102b4366;
+    scrollbar-width: thin;
+    list-style: none;
+}
+.mt-item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 56px;
+    padding: 7px 14px;
+    border: 1px solid #a9c8df2b;
+    border-radius: 11px;
+    background: #54708925;
+    font-size: 18px;
+}
+.mt-item-row + .mt-item-row { margin-top: 8px; }
+.mt-item-row:is(:hover, :focus-within) { background: #547a954b; border-color: #ccae7b7a; }
+.mt-item-row b { min-width: 0; overflow-wrap: anywhere; }
+.mt-item-row button { flex: none; width: 104px; }
+.mt-items-empty { padding: 16px; text-align: center; }
+@media(max-width:1550px){.mt-title{font-size:24px}}
+@media(max-height:850px){.mt-target-card{min-height:190px;gap:6px}.mt-choice{min-height:190px;gap:8px}.mt-person img,.mt-target-card img{width:60px;height:60px}.mt-form{top:calc(28% + 130px)}.mt-execute{min-height:38px}}
+#moneyTransferScreen .mt-telop { position:fixed; top:auto; left:var(--an02-left); right:var(--an02-right); bottom:var(--an02-bottom); transform:none; width:auto; max-width:var(--an02-max-width); height:auto; min-height:var(--an02-min-height); max-height:52vh; margin:0 auto; box-sizing:border-box; padding:24px 22px; }
+#moneyTransferScreen .mt-telop .mt-item-name { color:#ffdc83; }

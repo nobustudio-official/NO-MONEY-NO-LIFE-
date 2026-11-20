@@ -1,0 +1,81 @@
+/* Spiffa: repeated CSS light needles emitted across the full magic circle. */
+#battleMainPopup .battle-preview-spiffa-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    overflow: hidden;
+    pointer-events: none;
+}
+#battleMainPopup .battle-preview-spiffa-shot {
+    position: absolute;
+    display: block;
+    height: 5px;
+    transform-origin: left center;
+    will-change: transform, opacity;
+}
+#battleMainPopup .battle-preview-spiffa-shot::before,
+#battleMainPopup .battle-preview-spiffa-shot::after {
+    content: "";
+    position: absolute;
+    display: block;
+}
+#battleMainPopup .battle-preview-spiffa-shot::before {
+    left: 0;
+    top: 1px;
+    width: 100%;
+    height: 3px;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #fffdf100 0%, #fff9d3 18%, #fffef2 53%, #ffffff 82%, #fff7c5 100%);
+    box-shadow: 0 0 4px 1px #fffbe2, 0 0 10px 2px #ffe38baa;
+}
+#battleMainPopup .battle-preview-spiffa-shot::after {
+    right: -1px;
+    top: -2px;
+    width: 15px;
+    height: 9px;
+    clip-path: polygon(0 50%, 100% 0, 76% 50%, 100% 100%);
+    background: #fffde9;
+    filter: drop-shadow(0 0 4px #fffbe2) drop-shadow(0 0 8px #ffe38b);
+}
+#battleMainPopup .battle-preview-spiffa-impact {
+    position: absolute;
+    display: block;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff 0 7%, var(--impact-hue) 18%, #ffd98c 32%, #ffad554f 52%, #ff8c2700 74%);
+    filter: drop-shadow(0 0 5px var(--impact-hue)) drop-shadow(0 0 11px #ffa347);
+    transform: translate(-50%, -50%) scale(.15);
+    will-change: transform, opacity;
+}
+#battleMainPopup .battle-preview-spiffa-impact::before {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    background: #fffaf0;
+    clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+}
+@keyframes battlePreviewSpiffaShot {
+    0% { opacity: 0; transform: rotate(var(--spiffa-angle)) scaleX(.015); }
+    12% { opacity: 1; transform: rotate(var(--spiffa-angle)) scaleX(.42); }
+    72% { opacity: .94; transform: rotate(var(--spiffa-angle)) scaleX(1); }
+    100% { opacity: 0; transform: rotate(var(--spiffa-angle)) scaleX(1); }
+}
+@keyframes battlePreviewSpiffaImpact {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(.12); }
+    24% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(.48); }
+}
+#battleMainPopup .battle-monster-image.battle-preview-spiffa-rattled {
+    transform-origin: 50% 58%;
+    animation: battlePreviewSpiffaRattle 34ms steps(2, end) infinite;
+}
+#battleMainPopup.battle-preview-spiffa-active .battle-monster-area {
+    z-index: 2;
+}
+@keyframes battlePreviewSpiffaRattle {
+    0%, 100% { transform: translate(0, 0) rotate(0); }
+    24% { transform: translate(-6px, 2.4px) rotate(-2deg); }
+    50% { transform: translate(5.2px, -3.6px) rotate(1.7deg); }
+    76% { transform: translate(-2.8px, 2px) rotate(-.9deg); }
+}

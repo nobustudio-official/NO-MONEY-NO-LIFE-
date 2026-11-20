@@ -1,0 +1,16 @@
+.bridge-mugging{position:fixed;inset:0;z-index:52000;overflow:hidden;color:#fcfcfc;font-family:"Yu Gothic",Meiryo,sans-serif;background:transparent}
+.bridge-mugging-frame{position:absolute;z-index:1;left:50%;top:50%;transform:translate(-50%,-50%);width:min(81vw,1305px);height:calc(90vh - 94px);min-height:420px;box-sizing:border-box;overflow:hidden;border:2px solid rgba(255,218,105,.82);border-radius:16px;background:#2d2119;box-shadow:0 10px 34px #0009,0 0 0 1px #32aaff65}
+.bridge-mugging-background{position:absolute;inset:0;background-position:center;background-size:cover;background-repeat:no-repeat}
+.bridge-mugging-character{position:absolute;z-index:1;left:50%;top:2%;height:70%;max-width:38%;transform:translateX(-50%);object-fit:contain;object-position:center bottom;filter:drop-shadow(0 6px 8px #000b)}
+.bridge-mugging-character[hidden]{display:none}
+.bridge-mugging-an06{position:absolute;z-index:2;left:3%;right:3%;bottom:3%;height:160px;box-sizing:border-box;padding:22px;border:1px solid #ccae7b;border-radius:12px;background:linear-gradient(125deg,#18384fe8,#10293cee);color:#fcfcfc;cursor:pointer;outline-offset:4px}
+.bridge-mugging-an06.is-observer{cursor:default}
+.bridge-mugging-speaker{position:absolute;left:22px;top:14px;color:#f2d58d;font-size:15px;font-weight:700}
+.bridge-mugging-player-icon{width:80px;height:80px;object-fit:contain}
+.bridge-mugging-an06.has-player-icon .bridge-mugging-player-icon{position:absolute;left:22px;top:50%;transform:translateY(-50%)}
+.bridge-mugging-player-icon[hidden]{display:none}
+.bridge-mugging-copy{position:absolute;left:22px;right:88px;top:50%;transform:translateY(-50%);margin:0;font-size:clamp(18px,1.35vw,22px);font-weight:700;line-height:1.6}
+.bridge-mugging-an06.has-player-icon .bridge-mugging-copy{left:124px}
+.bridge-mugging-next{position:absolute;right:18px;bottom:8px;font-size:14px;font-weight:600}
+@media(max-width:800px){.bridge-mugging-frame{width:94vw;height:calc(80vh - 72px);min-height:340px}.bridge-mugging-character{height:62%;max-width:50%}.bridge-mugging-an06{height:140px;padding:18px}.bridge-mugging-speaker{left:18px;top:11px}.bridge-mugging-copy{left:18px;right:72px;font-size:17px}.bridge-mugging-an06.has-player-icon .bridge-mugging-player-icon{left:18px}.bridge-mugging-an06.has-player-icon .bridge-mugging-copy{left:120px}}
+@media(max-height:620px){.bridge-mugging-frame{min-height:280px}.bridge-mugging-an06{height:120px}}

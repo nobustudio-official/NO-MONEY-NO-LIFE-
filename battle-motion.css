@@ -1,0 +1,397 @@
+/* Shared normal/boss presentation. The special-boss UI keeps its legacy layout. */
+#battleMainPopup .battle-player-area,
+#battleMainPopup .battle-enemy-status,
+#battleMainPopup .battle-lower-hud,
+#battleMainPopup .battle-refined-only { display: none; }
+#battleMainPopup .battle-combatant-action,
+#battleMainPopup .battle-combatant-idle { width: 100%; height: 100%; min-height: 0; }
+#battleMainPopup .battle-active-buffs { display: none; }
+
+#battleMainPopup.battle-motion-mode .battle-main-screen {
+    --battle-ink: #fcfcfc;
+    --battle-muted: var(--battle-ink);
+    --battle-border: #ccae7b;
+    --battle-gold: #b98b39;
+    --battle-panel-background: rgba(44, 78, 109, .7);
+    --battle-command-background: rgba(44, 78, 109, .84);
+    --battle-button-hover-top: #204365;
+    --battle-button-hover-bottom: #112a41;
+    --battle-panel-height: clamp(70px, 5vw, 92px);
+    --battle-panel-radius: 22px;
+    --battle-status-width: 34%;
+    --battle-content-left: 5%;
+    --battle-content-right: 4%;
+    --battle-panel-gap: 18px;
+    --battle-enemy-status-top: 5%;
+    --battle-player-left: 6%;
+    --battle-player-width: 32%;
+    --battle-player-bottom: -2.5%;
+    --battle-player-height: 60%;
+    --battle-enemy-height: 48%;
+    --battle-log-font-size: clamp(18px, calc(1.4vw - 2px), 25px);
+    position: relative;
+    grid-template-rows: minmax(0, 1fr) clamp(74px, 6vw, 104px);
+    grid-template-areas: "monster" "magic";
+    gap: 8px;
+    padding: 12px;
+    color: var(--battle-ink);
+    font-family: "Yu Mincho", "Hiragino Mincho ProN", "Noto Serif JP", Georgia, serif;
+    background-image: linear-gradient(180deg, #ffffff04, transparent 70%, #25392d1a), var(--battle-scenery, url("images/backgrounds/scenes/戦闘1.webp"));
+    border: 1px solid var(--battle-border);
+    box-shadow: 0 8px 28px #142b4933;
+}
+#battleMainPopup.battle-motion-mode.boss-battle-mode .battle-main-screen { --battle-scenery: url("images/backgrounds/scenes/魔王城.webp"); }
+#battleMainPopup.battle-motion-mode .battle-field {
+    position: relative; display: block; isolation: isolate; overflow: hidden;
+}
+#battleMainPopup.battle-motion-mode .battle-round-badge {
+    position: absolute; top: 18px; left: calc(var(--battle-player-left) + var(--battle-player-width) / 2); right: auto; transform: translateX(-50%);
+    padding: 8px 12px; border: 1px solid var(--battle-border); border-radius: var(--battle-panel-radius); background: var(--battle-panel-background);
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    box-shadow: 0 2px 7px #19331c25, inset 0 1px 0 #ffffffd9;
+    color: var(--battle-ink); font: 500 clamp(18px, 1.3vw, 25px)/1.4 Georgia, "Yu Mincho", serif;
+    letter-spacing: .05em; text-shadow: none; white-space: nowrap; z-index: 4;
+}
+#battleMainPopup.battle-motion-mode .battle-round-badge::before,
+#battleMainPopup.battle-motion-mode .battle-round-badge::after { content: "✦"; margin: 0 12px; color: var(--battle-gold); font-size: .7em; }
+#battleMainPopup.battle-motion-mode .battle-round-badge span { padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: inherit; font: inherit; letter-spacing: inherit; }
+#battleMainPopup.battle-motion-mode .battle-monster-area {
+    position: absolute; display: block; right: 5%; top: 24%; width: 33%; height: var(--battle-enemy-height); z-index: 2;
+}
+#battleMainPopup.battle-motion-mode .battle-player-area {
+    display: block; position: absolute; left: var(--battle-player-left); bottom: var(--battle-player-bottom);
+    width: var(--battle-player-width); height: var(--battle-player-height); clip-path: inset(0 0 10% 0); pointer-events: none; z-index: 5;
+}
+#battleMainPopup.battle-motion-mode .battle-monster-visual-wrap,
+#battleMainPopup.battle-motion-mode .battle-player-visual-wrap { position: relative; width: 100%; height: 100%; min-height: 0; }
+#battleMainPopup.battle-motion-mode .battle-combatant-action,
+#battleMainPopup.battle-motion-mode .battle-combatant-idle { position: relative; transform-origin: 50% 88%; }
+#battleMainPopup.battle-motion-mode:not(.battle-intro-mode) .battle-monster-area .battle-combatant-idle {
+    animation: battleEnemyIdle 2.2s ease-in-out infinite;
+}
+#battleMainPopup.battle-motion-mode:not(.battle-intro-mode):not(.is-visible) .battle-monster-area .battle-combatant-idle,
+#battleMainPopup.battle-motion-mode:not(.battle-intro-mode).battle-enemy-acting .battle-monster-area .battle-combatant-idle { animation-play-state: paused; }
+#battleMainPopup.battle-motion-mode .battle-player-image,
+#battleMainPopup.battle-motion-mode .battle-monster-image {
+    width: 100%; height: 100%; display: block; object-fit: contain; object-position: center bottom;
+    filter: drop-shadow(0 8px 8px #12362f55);
+}
+#battleMainPopup.battle-motion-mode .battle-player-image { position: relative; z-index: 1; }
+#battleMainPopup.battle-motion-mode .battle-active-buffs {
+    position: absolute; top: 4px; right: 8px; z-index: 2;
+    display: flex; align-items: center; justify-content: flex-end; gap: 5px;
+    min-width: 0; height: 38px; pointer-events: none;
+}
+#battleMainPopup.battle-motion-mode .battle-active-buff-icon {
+    display: block; flex: 0 0 32px; width: 32px; height: 32px; object-fit: contain;
+    filter: drop-shadow(0 1px 2px #13283a99);
+}
+#battleMainPopup.battle-motion-mode .battle-buff-tint {
+    position: absolute; inset: 0; z-index: 2; display: block; width: 100%; height: 100%;
+    object-fit: contain; object-position: center bottom; pointer-events: none;
+    clip-path: inset(100% 0 0 0); opacity: 0;
+    animation: battle-buff-tint-rise 453ms cubic-bezier(.18,.72,.25,1) 3 both;
+}
+#battleMainPopup.battle-motion-mode .battle-buff-tint.is-power {
+    --buff-filter: sepia(1) saturate(3.3) hue-rotate(338deg) brightness(1.16) contrast(1.08);
+    --buff-glow-soft: #ff9a327a;
+    --buff-glow-strong: #ff9a32cc;
+    --buff-peak-opacity: .86;
+    --buff-end-opacity: .68;
+}
+#battleMainPopup.battle-motion-mode .battle-buff-tint.is-defense {
+    --buff-filter: sepia(1) saturate(1.4) hue-rotate(83deg) brightness(1.26) contrast(1.02);
+    --buff-glow-soft: #9dffe0a8;
+    --buff-glow-strong: #9dffe0f2;
+    --buff-glow-soft-radius: 10px;
+    --buff-glow-strong-radius: 14px;
+    --buff-peak-opacity: .56;
+    --buff-end-opacity: .44;
+}
+@keyframes battle-buff-tint-rise {
+    0% { clip-path: inset(100% 0 0 0); opacity: 0; filter: var(--buff-filter) drop-shadow(0 0 0 transparent); }
+    18% { opacity: var(--buff-peak-opacity); filter: var(--buff-filter) drop-shadow(0 0 var(--buff-glow-strong-radius, 8px) var(--buff-glow-strong)); }
+    100% { clip-path: inset(0); opacity: var(--buff-end-opacity); filter: var(--buff-filter) drop-shadow(0 0 var(--buff-glow-soft-radius, 6px) var(--buff-glow-soft)); }
+}
+#battleMainPopup.battle-motion-mode .battle-player-fallback { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; color: var(--battle-ink); }
+#battleMainPopup :is(.battle-effects-layer, .battle-casting-layer, .battle-projectile-layer) { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+/* Back chains < monster < spell / front chains < casting circle < player. */
+#battleMainPopup .battle-projectile-layer { z-index: 3; }
+#battleMainPopup .battle-casting-layer { z-index: 4; }
+#battleMainPopup .battle-effects-layer { z-index: 3; }
+#battleMainPopup.battle-motion-mode .td-layer { z-index: 3; }
+
+/* Compact resource card: name, then label / meter / current and maximum. */
+#battleMainPopup.battle-motion-mode .battle-enemy-status,
+#battleMainPopup.battle-motion-mode .battle-player-hp {
+    display: grid; grid-template-columns: 23px minmax(20px, 1fr) auto; grid-template-rows: auto auto;
+    grid-template-areas: "name name name" "label bar value";
+    align-content: center; align-items: center; gap: 4px 10px;
+    min-width: 0; max-width: none; min-height: var(--battle-panel-height); height: auto;
+    padding: 10px 16px; box-sizing: border-box; border: 1px solid var(--battle-border); border-radius: var(--battle-panel-radius);
+    background: var(--battle-panel-background); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    box-shadow: 0 2px 7px #19331c25, inset 0 1px 0 #ffffffd9;
+    color: var(--battle-ink); text-shadow: none; font-variant-numeric: tabular-nums;
+    transform: none; pointer-events: none; z-index: 5;
+}
+#battleMainPopup.battle-motion-mode .battle-enemy-status { position: absolute; top: var(--battle-enemy-status-top); right: var(--battle-content-right); left: auto; bottom: auto; width: var(--battle-status-width); }
+#battleMainPopup.battle-motion-mode .battle-player-hp { position: relative; inset: auto; width: 100%; grid-column: 2; }
+#battleMainPopup.battle-motion-mode .battle-player-hp-status { display: contents; }
+#battleMainPopup.battle-motion-mode .battle-player-hp-icon { display: none; }
+#battleMainPopup.battle-motion-mode .battle-monster-name,
+#battleMainPopup.battle-motion-mode .battle-status-name {
+    grid-area: name; display: block; min-width: 0; margin: 0; padding: 0;
+    font: 600 clamp(18px, 1.25vw, 24px)/1.2 "Yu Mincho", serif;
+    text-align: left; text-shadow: none; overflow-wrap: anywhere;
+}
+#battleMainPopup.battle-motion-mode .battle-monster-hp,
+#battleMainPopup.battle-motion-mode .battle-player-hp-max {
+    grid-area: value; margin: 0; color: inherit; text-shadow: none;
+    font: 500 clamp(18px, 1.35vw, 26px)/1.25 Georgia, "Yu Mincho", serif;
+    letter-spacing: 0; white-space: nowrap; text-align: right;
+}
+#battleMainPopup.battle-motion-mode .battle-status-label { grid-area: label; display: block; color: var(--battle-ink); font-size: clamp(16px, 1.1vw, 21px); line-height: 1.2; text-align: left; }
+#battleMainPopup.battle-motion-mode .battle-hp-bar,
+#battleMainPopup.battle-motion-mode .battle-player-hp-bar {
+    grid-area: bar; width: 100%; max-width: none; height: 12px; margin: 0;
+    border: 1px solid var(--battle-border); box-sizing: border-box; border-radius: 9px; box-shadow: none; background: #17334124; overflow: hidden;
+}
+#battleMainPopup.battle-motion-mode .battle-hp-fill { background: linear-gradient(180deg, #8ce174, #44af58); }
+#battleMainPopup.battle-motion-mode .battle-player-hp-fill { background: linear-gradient(180deg, #f9df84, #e5b74e); }
+
+/* Forecast, instructions and battle messages share the space beside the gold. */
+#battleMainPopup.battle-motion-mode .battle-lower-hud {
+    position: absolute; left: 0; right: 0; bottom: 3.2%; display: grid;
+    /* Shared outer edges; the gold card keeps its previous 34% field width. */
+    grid-template-columns: var(--battle-content-left) var(--battle-status-width) minmax(0, 1fr) var(--battle-content-right);
+    gap: 0; align-items: stretch; z-index: 5;
+}
+#battleMainPopup.battle-motion-mode .battle-context {
+    grid-column: 3; margin-left: var(--battle-panel-gap);
+    min-width: 0; min-height: var(--battle-panel-height); display: flex; align-items: center; padding: 10px 18px;
+    border: 1px solid var(--battle-border); border-radius: var(--battle-panel-radius); background: var(--battle-panel-background);
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); box-shadow: 0 2px 7px #19331c1a; color: var(--battle-ink);
+}
+#battleMainPopup.battle-motion-mode .battle-context[data-mode="message"] { align-items: stretch; }
+#battleMainPopup.battle-motion-mode .battle-selected-magic.battle-selected-magic-layout {
+    position: relative; grid-area: auto; transform: none; display: flex; gap: 10px;
+    width: 100%; height: auto; min-height: 0; margin: 0; padding: 0;
+    border: 0; border-radius: 0; background: transparent; box-shadow: none; overflow: visible;
+}
+#battleMainPopup.battle-motion-mode .battle-selected-magic-icon.battle-selected-magic-icon-layout { width: 36px; height: 42px; flex: 0 0 36px; border: 0; background: transparent; }
+#battleMainPopup.battle-motion-mode .battle-selected-magic-icon img { width: 100%; height: 100%; }
+#battleMainPopup.battle-motion-mode .battle-selected-magic-info { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+#battleMainPopup.battle-motion-mode .battle-selected-magic-name.battle-selected-magic-name-layout { font-size: clamp(18px, 1.2vw, 23px); font-weight: 500; color: var(--battle-ink); }
+#battleMainPopup.battle-motion-mode .battle-selected-magic-effect { display: none; }
+#battleMainPopup.battle-motion-mode .battle-selected-magic-right.battle-selected-magic-right-layout { display: flex; flex-direction: row; gap: 20px; width: max-content; flex: 0 0 auto; }
+#battleMainPopup.battle-motion-mode .battle-selected-magic-value-layout { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; width: auto; }
+#battleMainPopup.battle-motion-mode .battle-selected-magic-damage { order: -1; }
+#battleMainPopup.battle-motion-mode .battle-selected-magic-value-layout > span:first-child { font: 400 clamp(13px, .9vw, 17px)/1.3 system-ui, sans-serif; color: var(--battle-muted); text-align: left; }
+#battleMainPopup.battle-motion-mode .battle-selected-magic-value-layout > strong { width: auto; font: 500 clamp(21px, 1.5vw, 29px)/1.2 Georgia, "Yu Mincho", serif; color: var(--battle-ink); text-align: left; }
+#battleMainPopup.battle-motion-mode .battle-new-message {
+    grid-area: auto; position: relative; inset: auto; transform: none;
+    display: flex; flex-direction: row; align-items: center; column-gap: clamp(8px, 1vw, 16px);
+    width: 100%; height: auto; min-height: 0; max-height: none; max-width: none; margin: 0; padding: 0;
+    border: 0; border-radius: 0; background: transparent; color: var(--battle-ink);
+    font: 600 var(--battle-log-font-size)/1.45 "Yu Mincho", serif;
+    text-align: left; white-space: pre-line; text-shadow: none; box-shadow: none; opacity: 1; visibility: visible; overflow: visible; z-index: auto;
+}
+#battleMainPopup.battle-motion-mode .battle-log-text { flex: 1 1 0; width: auto; }
+#battleMainPopup.battle-motion-mode .battle-log-phrase { display: inline-block; max-width: 100%; white-space: normal; overflow-wrap: anywhere; vertical-align: top; }
+#battleMainPopup.battle-motion-mode .battle-context[data-mode="message"] .battle-selected-magic,
+#battleMainPopup.battle-motion-mode .battle-context[data-mode="preview"] .battle-new-message { display: none; }
+
+/* Shared blue palette. Hover/focus is transient; selection alone adds no fill. */
+#battleMainPopup.battle-motion-mode .battle-magic-panel {
+    position: relative; top: auto; display: flex; align-items: center; gap: 14px;
+    height: 100%; width: auto; margin: 0 var(--battle-content-right) 0 var(--battle-content-left); padding: 12px 18px; box-sizing: border-box;
+    border: 1px solid var(--battle-border); border-radius: var(--battle-panel-radius); background: var(--battle-command-background);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 2px 8px #263d2b28, inset 0 1px 0 #fff; z-index: 4;
+}
+#battleMainPopup.battle-motion-mode .battle-new-magic-list { flex: 1; min-width: 0; height: 100%; align-items: center; gap: 12px; padding: 2px; }
+#battleMainPopup.battle-motion-mode .battle-new-magic-list { scrollbar-width: none; }
+#battleMainPopup.battle-motion-mode .battle-new-magic-list::-webkit-scrollbar { display: none; width: 0; height: 0; }
+#battleMainPopup.battle-motion-mode .battle-new-magic-item,
+#battleMainPopup.battle-motion-mode .battle-new-escape-button {
+    display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 10px;
+    flex: 0 0 clamp(160px, 12vw, 240px); width: auto; min-width: 0; height: 100%; min-height: 44px;
+    padding: 8px 18px; box-sizing: border-box; border: 1px solid var(--battle-border); border-radius: 34px;
+    color: var(--battle-ink); background: transparent;
+    box-shadow: inset 0 1px 0 #ffffffcc; text-shadow: none; font: 500 clamp(17px, 1.2vw, 23px)/1.25 "Yu Mincho", serif;
+}
+#battleMainPopup.battle-motion-mode .battle-new-magic-item:hover:not(:disabled),
+#battleMainPopup.battle-motion-mode .battle-new-magic-item:focus-visible:not(:disabled),
+#battleMainPopup.battle-motion-mode .battle-new-escape-button:hover:not(:disabled),
+#battleMainPopup.battle-motion-mode .battle-new-escape-button:focus-visible:not(:disabled) { background: linear-gradient(180deg, var(--battle-button-hover-top), var(--battle-button-hover-bottom)); }
+#battleMainPopup.battle-motion-mode .battle-new-magic-name { font: inherit; white-space: nowrap; }
+#battleMainPopup.battle-motion-mode .battle-new-magic-icon-wrap { order: -1; flex: 0 0 36px; width: 36px; height: 40px; }
+#battleMainPopup.battle-motion-mode .battle-action-row { position: static; transform: none; flex: 0 0 120px; width: 120px; height: 100%; z-index: auto; }
+#battleMainPopup.battle-motion-mode .battle-new-escape-button { flex: 1; width: 100%; height: 100%; }
+#battleMainPopup.battle-motion-mode .battle-new-escape-button:disabled { color: var(--battle-muted); opacity: .6; }
+
+/* Encounter: a large centered enemy and its announcement until the owner clicks. */
+#battleMainPopup.battle-motion-mode.battle-intro-mode .battle-main-screen {
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: "monster";
+    gap: 0;
+}
+#battleMainPopup.battle-motion-mode.battle-intro-mode :is(.battle-player-area, .battle-enemy-status, .battle-player-hp, .battle-round-badge, .battle-magic-panel, .battle-selected-magic) { display: none; }
+#battleMainPopup.battle-motion-mode.battle-intro-mode .battle-monster-area {
+    left: 50%; right: auto; top: 44%; width: 51%; height: 49.3%;
+    transform: translate(-50%, -50%);
+}
+#battleMainPopup.battle-motion-mode.battle-intro-mode .battle-monster-image { object-position: center; }
+#battleMainPopup.battle-motion-mode.battle-intro-mode .battle-lower-hud {
+    left: 15%; right: 15%; bottom: 8%; display: block;
+}
+#battleMainPopup.battle-motion-mode.battle-intro-mode .battle-new-message { text-align: center; }
+#battleMainPopup.battle-motion-mode.battle-intro-mode .battle-context { margin-left: 0; }
+
+#battleMainPopup .battle-damage-number { display: none; }
+#battleMainPopup.battle-motion-mode .battle-damage-number.is-visible { display: block; position: absolute; z-index: 8; pointer-events: none; font: 900 clamp(24px, 2.2vw, 36px)/1.1 Georgia, serif; white-space: nowrap; color: #ffe699; text-shadow: -2px -2px 2px #182133, 2px -2px 2px #182133, -2px 2px 2px #182133, 2px 2px 2px #182133; transform: translate(-50%, -50%); }
+@keyframes battleEnemyIdle {
+    0%, 100% { transform: translateY(0) rotate(-.35deg) scaleY(1); }
+    50% { transform: translateY(-3px) rotate(.35deg) scaleY(1.008); }
+}
+@media (prefers-reduced-motion: reduce) {
+    #battleMainPopup.battle-motion-mode:not(.battle-intro-mode) .battle-monster-area .battle-combatant-idle { animation: none; }
+}
+
+/* Continuation cue is separate from combat text. */
+#battleMainPopup .battle-new-message { position: relative; padding-bottom: 20px; }
+#battleMainPopup .battle-log-text { display: block; width: 100%; min-width: 0; }
+#battleMainPopup .battle-log-next { position: static; inset: auto; align-self: flex-end; flex: 0 0 auto; margin: 0; font: 600 13px/1.2 "Yu Gothic", sans-serif; white-space: nowrap; }
+#hudGoldValue { font-variant-numeric: tabular-nums; }
+
+
+/* Dark Chain and magic-list interactions copied from the approved battle demo. */
+#battleMainPopup.battle-motion-mode .battle-preview-dark-chain-layer {
+    position: absolute; inset: 0; z-index: 3; overflow: hidden; pointer-events: none;
+}
+#battleMainPopup.battle-motion-mode .battle-preview-dark-chain-back-layer {
+    position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none;
+}
+#battleMainPopup.battle-motion-mode .battle-preview-dark-chain-flight-layer {
+    position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none;
+}
+#battleMainPopup.battle-motion-mode .battle-preview-dark-chain-flight {
+    position: absolute; height: 62px; transform: translateY(-50%) rotate(var(--chain-angle));
+    transform-origin: left center; animation: battlePreviewChainFlight 430ms cubic-bezier(.12,.78,.2,1) var(--flight-delay) both;
+    filter: drop-shadow(0 0 4px #e54cff) drop-shadow(0 0 11px #a52bff);
+}
+#battleMainPopup.battle-motion-mode .battle-preview-chain-svg {
+    display: block; width: 100%; height: 100%; overflow: visible;
+    filter: drop-shadow(0 0 3px #d44aff);
+}
+#battleMainPopup.battle-motion-mode .battle-preview-dark-chain-bind-svg {
+    transform-origin: center center;
+    animation: battlePreviewChainBindExit var(--chain-fade-duration, 260ms) cubic-bezier(.35,0,.65,.2) var(--chain-fade-delay, 1000ms) both;
+}
+#battleMainPopup.battle-motion-mode .battle-preview-dark-chain-bind {
+    position: absolute; inset: 0; pointer-events: none; transform-origin: center center;
+    filter: drop-shadow(0 0 5px #d047ff) drop-shadow(0 0 12px #8f20ec);
+    animation: battlePreviewChainContract var(--chain-impact-duration, 420ms) cubic-bezier(.2,.8,.25,1) var(--chain-impact-delay, 840ms) both;
+}
+#battleMainPopup.battle-motion-mode .battle-preview-dark-chain-bind-back { opacity: .88; }
+#battleMainPopup.battle-motion-mode .battle-preview-dark-chain-bind-front { opacity: 1; }
+#battleMainPopup.battle-motion-mode .battle-preview-chain-wrap-turn {
+    opacity: 0; transform-box: fill-box; transform-origin: center;
+    clip-path: inset(0 0 0 100%);
+    animation: battlePreviewChainWrap 160ms linear var(--turn-delay) both;
+}
+#battleMainPopup.battle-motion-mode .battle-monster-image.battle-preview-chain-crush {
+    transform-origin: 50% 56%;
+    animation: battlePreviewChainCrush var(--chain-impact-duration, 420ms) cubic-bezier(.2,.8,.25,1) var(--chain-impact-delay, 840ms) both;
+}
+#battleMainPopup.battle-motion-mode .battle-preview-dark-chain-layer.battle-preview-chain-playing,
+#battleMainPopup.battle-motion-mode .battle-preview-dark-chain-flight-layer.battle-preview-chain-playing,
+#battleMainPopup.battle-motion-mode .battle-preview-dark-chain-back-layer.battle-preview-chain-playing {
+    animation: battlePreviewChainExit var(--chain-fade-duration, 260ms) cubic-bezier(.35,0,.65,.2) var(--chain-fade-delay, 1000ms) both;
+}
+@keyframes battlePreviewChainFlight {
+    0% { transform: translateY(-50%) rotate(var(--chain-angle)) scaleX(.015); opacity: 0; }
+    12% { opacity: 1; }
+    78% { transform: translateY(-50%) rotate(var(--chain-angle)) scaleX(.92); opacity: 1; }
+    100% { transform: translateY(-50%) rotate(var(--chain-angle)) scaleX(1); opacity: 1; }
+}
+@keyframes battlePreviewChainWrap {
+    0% { opacity: 1; clip-path: inset(0 0 0 100%); transform: scaleX(.96); }
+    100% { opacity: 1; clip-path: inset(0); transform: scaleX(1); }
+}
+@keyframes battlePreviewChainContract {
+    0%, 18% { transform: scale(1); }
+    42% { transform: scale(.72); }
+    60%, 82% { transform: scale(.77); }
+    100% { transform: scale(.96); }
+}
+@keyframes battlePreviewChainCrush {
+    0%, 18% { transform: scale(1); }
+    42% { transform: scale(.72,.64) rotate(1deg); }
+    60%, 82% { transform: scale(.77,.7) rotate(-1deg); }
+    100% { transform: scale(.96,.94); }
+}
+@keyframes battlePreviewChainExit {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+@keyframes battlePreviewChainBindExit {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-28px); }
+}
+#battleMainPopup.battle-motion-mode .battle-new-magic-item { touch-action: none; cursor: grab; }
+#battleMainPopup.battle-motion-mode .battle-new-magic-item.is-dragging { cursor: grabbing; }
+#battle-preview-magic-drag-ghost { z-index: 50000; pointer-events: none; opacity: .94; cursor: grabbing; box-shadow: 0 12px 24px #081b2bb8; }
+#battleMainPopup.battle-motion-mode .battle-preview-drop-slot {
+    flex: 0 0 auto; display: grid; place-items: center; box-sizing: border-box;
+    border: 2px dashed #f2cf7c; border-radius: 34px; background: #e6c78324;
+    color: #ffe4a2; font: 700 clamp(11px, .8vw, 14px)/1.2 "Yu Gothic", sans-serif;
+    text-align: center; text-shadow: 0 1px 4px #15283b; box-shadow: inset 0 0 18px #e6c78322;
+}
+#battleMainPopup.battle-motion-mode .battle-preview-drop-slot::after { content: "ここに配置"; }
+#battleMainPopup.battle-motion-mode .battle-magic-scroll-arrow {
+    flex: 0 0 clamp(38px, 2.5vw, 44px); width: clamp(38px, 2.5vw, 44px); height: 100%; min-height: 44px;
+    display: grid; place-items: center; padding: 0; border: 1px solid var(--battle-border); border-radius: 24px;
+    background: #173a58c9; color: var(--battle-ink); box-shadow: inset 0 1px 0 #ffffffcc;
+    font: 700 clamp(14px, 1vw, 19px)/1 system-ui, sans-serif; touch-action: none; user-select: none;
+}
+#battleMainPopup.battle-motion-mode .battle-magic-scroll-arrow:hover,
+#battleMainPopup.battle-motion-mode .battle-magic-scroll-arrow:focus-visible { background: linear-gradient(180deg, var(--battle-button-hover-top), var(--battle-button-hover-bottom)); }
+#battleMainPopup.battle-motion-mode .battle-magic-scroll-arrow:active { background: #0c2942; }
+#battleMainPopup.battle-motion-mode .battle-new-magic-item.is-selected { border-color: var(--battle-border); background: transparent; box-shadow: inset 0 1px 0 #ffffffcc; }
+#battleMainPopup.battle-motion-mode .battle-new-magic-item:disabled { opacity: .58; }
+#battleMainPopup.battle-motion-mode .battle-action-row { flex: 0 0 120px; width: 120px; height: 100%; }
+#battleMainPopup.battle-motion-mode .battle-new-escape-button { min-height: 44px; }
+
+/* Keep the current compact battle frame, but prevent legacy phone rules from
+   pulling the modern HUD cards and text away from their desktop layout. */
+@media (orientation: landscape) and (max-width: 1000px) and (max-height: 610px) {
+    #battleMainPopup.battle-motion-mode .battle-player-hp {
+        inset: auto !important;
+        width: 100% !important;
+        max-width: none !important;
+        align-items: stretch !important;
+    }
+    #battleMainPopup.battle-motion-mode .battle-player-hp-max {
+        font-size: clamp(18px, 1.35vw, 26px) !important;
+    }
+    #battleMainPopup.battle-motion-mode .battle-selected-magic.battle-selected-magic-layout {
+        transform: none !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+    }
+    #battleMainPopup.battle-motion-mode .battle-selected-magic-name.battle-selected-magic-name-layout {
+        font-size: clamp(18px, 1.2vw, 23px) !important;
+    }
+    #battleMainPopup.battle-motion-mode .battle-selected-magic-value-layout > strong {
+        font-size: clamp(19px, 1.5vw, 29px) !important;
+    }
+    #battleMainPopup.battle-motion-mode .battle-new-message {
+        grid-area: auto !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        transform: none !important;
+    }
+}

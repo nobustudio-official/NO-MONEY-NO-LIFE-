@@ -1,0 +1,2 @@
+.turn-handoff-overlay { position:fixed; inset:0; z-index:120000; background:#050609; opacity:0; transition:opacity 250ms ease; pointer-events:all; }
+.turn-handoff-overlay.is-dark { opacity:1; }

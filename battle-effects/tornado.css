@@ -1,0 +1,128 @@
+/* The tornado renderer is shared by the production battle and the preview lab. */
+:is(#nmnl-ivory-battle, #battleMainPopup) .bt-tornado-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+:is(#nmnl-ivory-battle, #battleMainPopup) .bt-tornado-source {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #f5fff7 0 12%, #caffd8 28%, #71f49d 58%, #46dd7b00 100%);
+    filter: drop-shadow(0 0 5px #8cffad) drop-shadow(0 0 12px #58eb8c);
+    transform: translate(-50%, -50%) scale(.25);
+    opacity: 0;
+    animation: btTornadoSource 240ms ease-out both;
+}
+
+:is(#nmnl-ivory-battle, #battleMainPopup) .bt-tornado-sprite {
+    position: absolute;
+    transform: translate(-50%, -50%) translate(0, 0) scale(.03);
+    transform-origin: 50% 50%;
+    opacity: 0;
+    filter: drop-shadow(0 0 12px #a9ffc65c);
+    will-change: transform, opacity;
+}
+
+:is(#nmnl-ivory-battle, #battleMainPopup) .bt-tornado-body {
+    position: absolute;
+    inset: 0;
+    animation: btTornadoWobble 633ms ease-in-out both;
+    will-change: transform;
+}
+
+:is(#nmnl-ivory-battle, #battleMainPopup) .bt-tornado-image,
+:is(#nmnl-ivory-battle, #battleMainPopup) .bt-tornado-flow {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+:is(#nmnl-ivory-battle, #battleMainPopup) .bt-tornado-image {
+    user-select: none;
+}
+
+:is(#nmnl-ivory-battle, #battleMainPopup) .bt-tornado-flow {
+    background: repeating-linear-gradient(110deg,
+        transparent 0 34px,
+        #f3ffe81c 42px,
+        #f3ffe855 54px,
+        #f3ffe88c 66px,
+        #a3ffc980 74px,
+        #a3ffc940 82px,
+        transparent 96px 98px);
+    -webkit-mask-image: url("assets/tornado-vortex.webp");
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: 100% 100%;
+    mask-image: url("assets/tornado-vortex.webp");
+    mask-mode: alpha;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: 100% 100%;
+    mix-blend-mode: screen;
+    opacity: .5;
+    filter: brightness(1.3);
+    animation: btTornadoFlow 390ms linear infinite;
+}
+
+:is(#nmnl-ivory-battle, #battleMainPopup).bt-tornado-active .battle-monster-area {
+    z-index: 2;
+}
+
+:is(#nmnl-ivory-battle, #battleMainPopup) .bt-tornado-impact {
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    display: block;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffffff 0 10%, #edfff3 18%, #baffd2 32%, #7cf0acb8 52%, #56e98a45 68%, transparent 82%);
+    filter: drop-shadow(0 0 24px #aaffcc);
+    transform: translate(-50%, -50%) scale(.15);
+    opacity: 0;
+    animation: btTornadoImpact 320ms ease-out both;
+}
+
+:is(#nmnl-ivory-battle, #battleMainPopup) .bt-tornado-impact::before {
+    content: "";
+    position: absolute;
+    inset: 12px;
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+    transform: scaleX(1.5) rotate(-20deg);
+}
+
+@keyframes btTornadoSource {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(.25); }
+    18% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.4); }
+}
+
+@keyframes btTornadoFlow {
+    from { background-position: 0 0; }
+    to { background-position: 104px 0; }
+}
+
+@keyframes btTornadoWobble {
+    0%, 28%, 72%, 100% { transform: translateX(0); }
+    42% { transform: translateX(-10.5%); }
+    58% { transform: translateX(10.5%); }
+}
+
+@keyframes btTornadoImpact {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(.15); }
+    26% { opacity: 1; transform: translate(-50%, -50%) scale(1.4); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(2.3); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :is(#nmnl-ivory-battle, #battleMainPopup) .bt-tornado-flow { animation-duration: 3s; }
+}

@@ -1,0 +1,53 @@
+/* Gold overlay for the protected player's map sprite and HUD avatar.
+   Animate only the overlay: the source character keeps its exact size/position. */
+.player-piece.disadvantage-immunity-gold::after,
+.hud-avatar-face.disadvantage-immunity-gold::after {
+    position: absolute;
+    inset: 0;
+    display: block;
+    content: "";
+    background-image: inherit;
+    background-position: inherit;
+    background-size: inherit;
+    background-repeat: inherit;
+    pointer-events: none;
+    opacity: .58;
+    filter: sepia(.9) saturate(2.6) hue-rotate(354deg) brightness(1.12) contrast(1.08)
+        drop-shadow(0 0 4px #ffd45a99);
+    animation: disadvantage-immunity-gold-flame 1.15s ease-in-out infinite;
+}
+
+.player-piece.disadvantage-immunity-gold {
+    isolation: isolate;
+}
+
+.hud-avatar-face.disadvantage-immunity-gold {
+    position: relative;
+    isolation: isolate;
+}
+
+@keyframes disadvantage-immunity-gold-flame {
+    0%, 100% {
+        opacity: .42;
+        filter: sepia(.86) saturate(2.3) hue-rotate(354deg) brightness(1.02) contrast(1.04)
+            drop-shadow(0 0 2px #ffd45a66);
+    }
+    35% {
+        opacity: .76;
+        filter: sepia(1) saturate(3) hue-rotate(354deg) brightness(1.2) contrast(1.12)
+            drop-shadow(0 0 8px #ffd45acc);
+    }
+    68% {
+        opacity: .56;
+        filter: sepia(.94) saturate(2.6) hue-rotate(354deg) brightness(1.08) contrast(1.08)
+            drop-shadow(0 0 5px #ffd45a99);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .player-piece.disadvantage-immunity-gold::after,
+    .hud-avatar-face.disadvantage-immunity-gold::after {
+        animation: none;
+        opacity: .58;
+    }
+}

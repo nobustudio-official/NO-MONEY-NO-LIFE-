@@ -1,0 +1,92 @@
+/* Shared approved PC panels. Shop and holdings gameplay remains in callbacks. */
+:is(#salePopup,#assetPurchasePopup,#assetPopup,#inventoryPopup,#magicPopup,#shopPopup,#magicShopPopup).gp-root {
+ position:fixed;top:90px;bottom:20px;left:220px;right:24px;width:auto;height:auto;max-width:1560px;max-height:none;
+ min-width:0;min-height:0;margin:0 auto;padding:26px;transform:none;box-sizing:border-box;overflow:hidden;
+ border:1px solid #ccae7b;border-radius:22px;isolation:isolate;z-index:30002;background:#17394e;
+ box-shadow:0 16px 55px #07192370;color:#fcfcfc;font-family:"Yu Gothic","Meiryo",sans-serif;text-align:left;
+ --gp-row-height:58px;
+}
+:is(#assetPopup,#inventoryPopup,#magicPopup).gp-owned{left:50%;right:auto;transform:translateX(-50%);width:min(1074px,calc(100vw - 80px));padding:22px 24px 16px;background:linear-gradient(145deg,#14334aee,#123148f5)}
+.gp-root *{box-sizing:border-box}
+.gp-shop{display:none}
+.gp-shop .gp-panel{position:absolute;left:26px;right:calc(27% + 26px);top:26px;bottom:26px;padding:22px 24px 16px;border:1px solid #cfb778b0;border-radius:17px;background:linear-gradient(145deg,#14334aee,#123148f5)}
+.gp-panel{display:flex;flex-direction:column;min-width:0;min-height:0;height:100%}
+.gp-shop .gp-panel{height:auto}
+.gp-background{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1;pointer-events:none}
+.gp-side{position:absolute;left:calc(73% + 26px);right:26px;top:26px;bottom:26px;display:flex;flex-direction:column;justify-content:flex-end;gap:14px}
+.gp-staff{width:100%;flex:1;min-height:0;max-height:620px;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 6px 4px #0c203955)}
+.gp-hello{flex:none;min-height:140px;margin:0;padding:19px 22px;background:linear-gradient(125deg,#18384fe8,#10293cee);border:1px solid #ccae7bad;border-radius:14px;font:600 19px/1.75 "Yu Gothic","Meiryo",sans-serif;color:#fcfcfc;white-space:pre-line;overflow-wrap:anywhere}
+.gp-heading{position:relative;display:flex;align-items:center;gap:20px;flex:none;padding-bottom:18px;border-bottom:1px solid #ccae7b90}
+.gp-heading h1{margin:0;font:700 clamp(23px,1.7vw,31px)/1.35 "Yu Gothic","Meiryo",sans-serif;color:#fcfcfc;white-space:nowrap}
+.gp-summary{margin-left:auto;display:flex;gap:24px;font-size:17px;white-space:nowrap;font-weight:700}
+.gp-summary strong{font-size:28px;color:#f2d58d;margin-left:10px}
+.gp-summary .gp-yield{color:#b7e9d3}
+.gp-inventory .gp-summary strong{font-size:17px;margin-left:0;color:#ffdc83}
+.gp-assets .gp-summary{position:absolute;inset:0 0 auto 0;height:42px;pointer-events:none}
+.gp-assets .gp-summary>span{position:absolute;top:50%;transform:translateY(-50%);display:flex;align-items:baseline}
+.gp-assets .gp-summary>span:first-child{right:calc(30% - 56px)}
+.gp-assets .gp-summary>span:last-child{right:calc(8% - 40px)}
+.gp-sale-assets .gp-heading{padding-bottom:40px}
+.gp-sale-assets .gp-summary{position:absolute;inset:0;height:auto;display:block;margin:0;pointer-events:none}
+.gp-sale-assets .gp-summary>span{position:absolute;top:50%;transform:translateY(-50%);display:grid;grid-template-rows:auto auto;align-content:center;justify-items:end;gap:1px;text-align:right;line-height:1.25}
+.gp-sale-assets .gp-summary>span strong{margin-left:0;font-size:24px}
+.gp-sale-assets .gp-summary .gp-yield{text-align:right;padding-right:0}
+.gp-sale-assets .gp-table td:nth-child(2){text-align:left}
+.gp-scroll{flex:1;min-height:0;min-width:0;margin-top:14px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-gutter:stable;scrollbar-color:#ccae7b99 #18384f44;display:block;max-height:none;padding:0;gap:0}
+.gp-columns{display:grid;grid-template-columns:56% 28% 16%;flex:none;height:38px;align-items:center;margin-top:14px;font-size:17px;font-weight:700}
+.gp-columns:not([hidden])+.gp-scroll{margin-top:0}
+.gp-columns>span:first-child{padding-left:18px}
+.gp-columns>span:nth-child(2){padding-right:24px;text-align:right}
+.gp-magic-list .gp-columns{grid-template-columns:76% 24%}
+.gp-magic-list .gp-columns>span:nth-child(2){padding-right:24px;text-align:right}
+.gp-assets .gp-columns>span:nth-child(2),.gp-sale-assets .gp-columns>span:nth-child(2){padding:0;text-align:left}
+.gp-assets .gp-columns>span:nth-child(3),.gp-assets .gp-columns>span:nth-child(4),.gp-sale-assets .gp-columns>span:nth-child(3),.gp-sale-assets .gp-columns>span:nth-child(4){padding-right:22px;text-align:right}
+.gp-table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0 5px;font:inherit;font-variant-numeric:tabular-nums;color:#fcfcfc}
+.gp-table tr{height:var(--gp-row-height)}
+.gp-table td{vertical-align:middle;line-height:1.2;background:#54708920;border-block:1px solid #a9c8df18;padding:0 12px}
+.gp-table td:first-child{border-left:1px solid #a9c8df18;border-radius:9px 0 0 9px;padding-left:18px}
+.gp-table td:last-child{border-right:1px solid #a9c8df18;border-radius:0 9px 9px 0;padding-right:18px}
+.gp-table tr[data-key]{cursor:pointer}
+.gp-table tr[data-key]:hover td,.gp-table tr[data-selected] td{background:#547a9560;border-color:#ccae7b90}
+.gp-name{display:block;font-size:20px;font-weight:700;white-space:nowrap;color:#fcfcfc}
+.gp-price{font-size:21px;font-weight:700;color:#f2d58d;text-align:right;white-space:nowrap}
+.gp-table td.gp-price{padding-right:24px}
+.gp-yield{font-size:20px;color:#b7e9d3;font-weight:600;text-align:center;white-space:nowrap}
+.gp-assets .gp-price{text-align:right}
+.gp-assets .gp-price .gp-number{display:inline-block;width:112px;text-align:right}
+.gp-assets .gp-yield .gp-number{display:inline-block;width:80px;text-align:right}
+.gp-owner{text-align:center;color:#fcfcfc}
+.gp-owner img{width:28px;height:28px;object-fit:contain}
+.gp-status{text-align:center;color:#fcfcfc;font-size:17px;white-space:nowrap}
+.gp-inventory .gp-status-end{text-align:right;padding-right:18px}
+.gp-action{text-align:center}
+.gp-root .gp-button{position:relative;display:inline-block;width:100px;height:34px;min-height:34px;margin:0;padding:0 8px;border:1px solid #ccae7b;border-radius:8px;background:linear-gradient(#47718a,#2c4e6d);font:700 15px/1.1 "Yu Gothic","Meiryo",sans-serif;color:#fff4dc;cursor:pointer;white-space:nowrap;box-shadow:none}
+.gp-root .gp-button:disabled{background:#304658;color:#a0b2c1;border-color:#71849360;cursor:default}
+.gp-header-action{flex:none;margin-left:auto;padding:8px 18px;border:1px solid #ccae7b;border-radius:8px;background:linear-gradient(#47718a,#2c4e6d);color:#fff4dc;font:700 15px/1.2 "Yu Gothic","Meiryo",sans-serif;cursor:pointer}
+.gp-header-action[hidden]{display:none}
+.gp-branch{font-size:15px;font-weight:700;color:#fcfcfc;line-height:1.4;overflow-wrap:anywhere}
+.gp-sale-assets .gp-yield{text-align:right;padding-right:22px}
+.gp-sale-items .gp-price,.gp-sale-magic .gp-price{text-align:right}
+.gp-row-fading td{opacity:0;transition:opacity 1s ease}
+.gp-root .gp-button.gp-wait{color:#e6c783;border-color:#ccae7b;background:#304e63;cursor:wait;overflow:hidden}
+.gp-wait::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:100%;background:#e6c783;transform-origin:left;animation:gp-wait 1s linear both;animation-delay:var(--gp-wait-delay,0ms)}
+@keyframes gp-wait{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.gp-table .gp-section td{border:0;border-bottom:1px solid #ccae7b80;border-radius:0;background:transparent;color:#fcfcfc;font-size:19px;font-weight:700;text-align:left}
+.gp-empty{text-align:center;color:#b7cddd;font-size:18px}
+.gp-footer{flex:none;display:flex;align-items:center;gap:24px;min-height:90px;margin-top:10px;padding-top:14px;border-top:1px solid #ccae7b66}
+.gp-magic-list .gp-footer{min-height:110px}
+.gp-detail{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
+.gp-detail-icon{flex:none;width:40px;height:40px;object-fit:contain}
+.gp-copy{min-width:0;flex:1}
+.gp-effect{font-size:20px;font-weight:700;line-height:1.5;overflow-wrap:anywhere}
+.gp-note{font-size:17px;font-weight:600;line-height:1.5;color:#fcfcfcb8;margin-top:3px}
+.gp-usage{display:flex;flex:none;width:300px;flex-direction:column;align-items:flex-end;text-align:right;white-space:pre-line;color:#fff;font-size:16px;font-weight:700;line-height:1.45}
+.gp-root .gp-close{position:static;flex:none;display:inline-flex;align-items:center;gap:20px;width:auto;height:auto;margin:0 0 0 auto;padding:12px 20px;border:1px solid #ccae7b;border-radius:9px;background:#2c4e6de0;font:700 16px/1.5 "Yu Gothic","Meiryo",sans-serif;color:#fcfcfc;cursor:pointer;transform:none;box-shadow:none}
+.gp-close:disabled{opacity:.65;cursor:default}
+.gp-arrow{width:30px;height:30px;object-fit:contain;transform:rotate(90deg)}
+.gp-root button:focus-visible,.gp-root [tabindex]:focus-visible{outline:2px solid #a9ddff;outline-offset:2px}
+.gp-root [hidden]{display:none}
+@media(max-width:1550px){:is(#salePopup,#assetPurchasePopup,#shopPopup,#magicShopPopup).gp-root{left:180px;padding:20px}.gp-shop .gp-panel{left:20px;right:270px;top:20px;bottom:20px;padding:18px 18px 12px}.gp-side{left:auto;width:230px;right:20px;top:20px;bottom:20px}.gp-name,.gp-effect{font-size:18px}.gp-price,.gp-yield{font-size:19px}.gp-note{font-size:16px}}
+@media(max-height:850px){.gp-heading{padding-bottom:11px}.gp-name,.gp-effect{font-size:17px}.gp-note{font-size:15px}}
+
+.gp-root[data-readonly] .gp-scroll{pointer-events:none}

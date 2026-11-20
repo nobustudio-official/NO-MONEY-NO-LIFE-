@@ -1,0 +1,10 @@
+/* Only the normal reward phase hides combat controls; the combat log stays until then. */
+#battleMainPopup.battle-reward-mode :is(.battle-lower-hud,.battle-enemy-status,.battle-monster-area,.battle-control-panel,.battle-magic-panel,.battle-selected-magic,.battle-player-hp){display:none}
+#battleMainPopup #rewardPopup.battle-reward-layer{position:absolute;inset:0;transform:none;width:100%;max-width:none;height:100%;max-height:none;margin:0;padding:0;border:0;border-radius:0;box-shadow:none;background:transparent;z-index:20;overflow:visible;text-align:left;color:#fcfcfc;font-family:"Yu Gothic","Meiryo",sans-serif}
+.reward-announcement{position:absolute;left:3%;right:3%;bottom:3%;min-height:160px;padding:22px;box-sizing:border-box;display:flex;align-items:center;border:1px solid #ccae7b;border-radius:12px;background:linear-gradient(125deg,#18384fe8,#10293cee);font:600 22px/1.6 "Yu Gothic","Meiryo",sans-serif}
+#rewardMessage{margin:0;padding:0 90px 0 0;color:#fcfcfc;font:inherit;text-align:left}
+#rewardNext{position:absolute;right:20px;bottom:12px;padding:3px 8px;border:0;border-radius:4px;background:transparent;color:#fcfcfc;font:600 14px "Yu Gothic","Meiryo",sans-serif;cursor:pointer}
+#rewardNext[hidden]{display:none}#rewardNext:disabled{cursor:default}
+.battle-reward-layer .br-money{color:#f2d58d}.battle-reward-layer .br-mana{color:#cce3ff}
+.reward-announcement .announcement-portrait{position:absolute;left:22px;top:50%;transform:translateY(-50%);width:80px;height:80px;object-fit:contain}
+.reward-announcement.has-portrait #rewardMessage{margin-left:102px}

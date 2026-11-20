@@ -1,0 +1,32 @@
+/* Job dialogue, choices, and results use the same in-scene lower banner. */
+#jobPopup.job-approved-layout .job-dialogue-box,
+#jobPopup.job-approved-layout .job-choice-panel {
+ left:3%;right:3%;bottom:3%;min-height:160px;box-sizing:border-box;margin:0;padding:22px;
+ border:1px solid #ccae7b;border-radius:12px;background:linear-gradient(125deg,#18384fe8,#10293cee);
+ color:#fcfcfc;font:600 22px/1.6 "Yu Gothic","Meiryo",sans-serif;text-align:left;
+}
+#jobPopup.job-approved-layout .job-dialogue-box{height:160px}
+#jobPopup.job-approved-layout .job-name,#jobPopup.job-approved-layout .job-question{display:none}
+#jobPopup.job-approved-layout .job-dialogue-text{position:absolute;left:22px;right:125px;top:50%;transform:translateY(-50%);min-height:0;margin:0;font:inherit}
+#jobPopup.job-approved-layout .job-dialogue-next{position:absolute;right:20px;bottom:12px;margin:0;font-size:14px;color:#fcfcfc}
+#jobPopup.job-approved-layout .job-choice-panel{display:flex;flex-direction:column;justify-content:center;gap:14px}
+#jobPopup.job-approved-layout .job-choice-panel[hidden]{display:none}
+#jobPopup.job-approved-layout .job-wage{margin:0;white-space:nowrap;font:inherit;color:#fcfcfc}
+#jobPopup.job-approved-layout .job-wage strong{color:#f2d58d}
+#jobPopup.job-approved-layout .job-choices{position:absolute;left:0;right:0;top:18%;width:100%;display:grid;grid-template-columns:8% calc(18.5% - 12px) 1fr calc(18.5% - 12px) 8%;gap:0;margin:0;pointer-events:none;z-index:3}
+#jobPopup.job-approved-layout .job-scene:has(.job-choice-panel[hidden])>.job-choices{display:none}
+#jobPopup.job-approved-layout .job-choices .br-card-slot:first-child{grid-column:2}
+#jobPopup.job-approved-layout .job-choices .br-card-slot:last-child{grid-column:4}
+#jobPopup.job-approved-layout .job-choices .br-card-slot,#jobPopup.job-approved-layout .job-choices button{animation:none;translate:none}
+#jobPopup.job-approved-layout .job-choices button{--reward-accent:#f2d58d;flex:none;pointer-events:auto;padding:22px 12px;color:#fcfcfc;font:600 30px "Yu Gothic","Meiryo",sans-serif;cursor:pointer}
+#jobPopup.job-approved-layout .job-choices .br-card-front{font:inherit;color:inherit;margin-top:0}
+#jobPopup.job-approved-layout .job-choices button:hover,#jobPopup.job-approved-layout .job-choices button:focus-visible,#jobPopup.job-approved-layout .job-choices button:active{background:rgba(16,25,35,.95)}
+#jobPopup.job-approved-layout .job-choices .job-none-button{--reward-accent:#c4ccd4;box-shadow:0 10px 20px #071c344d,inset 0 0 0 5px #101923,inset 0 0 0 6px #c4ccd433}
+#jobPopup.job-approved-layout .job-choices .job-none-button:hover,#jobPopup.job-approved-layout .job-choices .job-none-button:focus-visible{outline-color:#c4ccd4}
+#jobPopup.job-approved-layout .job-choices button:disabled{cursor:default}
+@media(max-width:1550px){#jobPopup.job-approved-layout .job-choices{grid-template-columns:8% calc(18.5% - 9px) 1fr calc(18.5% - 9px) 8%}#jobPopup.job-approved-layout .job-choices button{font-size:22px}}
+#jobPopup .job-scene #eventPopup.common-announcement.job-result-popup{
+ position:absolute;top:auto;left:3%;right:3%;bottom:3%;width:auto;max-width:none;min-height:160px;
+ max-height:52%;margin:0;transform:none;z-index:4;
+}
+#jobPopup .job-scene #eventPopup.common-announcement .event-popup-button{bottom:12px}

@@ -1,0 +1,122 @@
+/* Approved asset-shop layout. Reusable shop panels; no game logic. */
+#assetPurchasePopup.shop-purchase-frame {
+ position:fixed;top:90px;bottom:20px;left:220px;right:24px;
+ width:auto;height:auto;max-width:1560px;max-height:none;min-height:0;
+ margin:0 auto;padding:26px;transform:none;box-sizing:border-box;
+ overflow:hidden;isolation:isolate;z-index:30002;
+ border:1px solid #ccae7b;border-radius:22px;background:#17394e;
+ box-shadow:0 16px 55px #07192370;
+ --border:#ccae7b;--gold:#e6c783;--ui-font:"Yu Gothic","Meiryo",sans-serif;
+ color:#fcfcfc;font-family:var(--ui-font);text-align:left;
+}
+
+#assetPurchasePopup *,#assetPurchasePopup *::before,#assetPurchasePopup *::after{box-sizing:border-box}
+
+#assetPurchasePopup button,#assetPurchasePopup table{font:inherit;color:inherit}
+
+#assetPurchasePopup .shop-purchase-layout{display:grid;height:100%;min-height:0;grid-template-columns:minmax(0,1fr) minmax(250px,27%);gap:26px}
+
+#assetPurchasePopup .shop-backdrop{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1;pointer-events:none}
+
+#assetPurchasePopup .purchase-panel{min-height:0;min-width:0;display:flex;flex-direction:column;background:linear-gradient(145deg,#14334aee,#123148f5);border:1px solid #cfb778b0;border-radius:17px;padding:22px 24px 16px;box-shadow:0 8px 24px #14283a44}
+#assetPurchasePopup .shop-heading{display:flex;justify-content:space-between;align-items:center;gap:20px;padding-bottom:18px;border-bottom:1px solid #ccae7b90}
+#assetPurchasePopup h1{font-size:clamp(23px,1.7vw,31px);font-weight:700;line-height:1.35;margin:0;overflow-wrap:anywhere}
+#assetPurchasePopup .stock-space{margin-top:14px;flex:1;min-height:0;overflow:hidden}
+#assetPurchasePopup .stock-table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0 5px;font-variant-numeric:tabular-nums}
+#assetPurchasePopup .stock-table .name-column{width:38%}
+#assetPurchasePopup .stock-table .price-column{width:23%}
+#assetPurchasePopup .stock-table .yield-column{width:13%}
+#assetPurchasePopup .stock-table .owner-column{width:12%}
+#assetPurchasePopup .stock-table .action-column{width:14%}
+#assetPurchasePopup .stock-table thead tr{height:30px}
+#assetPurchasePopup .stock-table th{font-size:17px;line-height:1.25;color:#fcfcfc;font-weight:700;text-align:center;padding:0 12px 6px;white-space:nowrap}
+#assetPurchasePopup .stock-table th:first-child{text-align:left;padding-left:18px}
+#assetPurchasePopup .stock-table th:nth-child(2){text-align:center}
+#assetPurchasePopup .stock-table td{background:#54708920;border-top:1px solid #a9c8df18;border-bottom:1px solid #a9c8df18;padding:4px 12px;vertical-align:middle;transition:background .15s}
+#assetPurchasePopup .stock-table td:first-child{border-left:1px solid #a9c8df18;border-radius:9px 0 0 9px;padding-left:18px}
+#assetPurchasePopup .stock-table td:last-child{border-right:1px solid #a9c8df18;border-radius:0 9px 9px 0;padding-right:10px}
+#assetPurchasePopup .asset-name{display:block;font-size:20px;font-weight:700;white-space:nowrap;letter-spacing:.025em}
+#assetPurchasePopup .asset-price{text-align:center;color:#f2d58d;font-size:21px;font-weight:700;white-space:nowrap}
+#assetPurchasePopup .asset-price .unit{font-size:13px;margin-left:3px;color:#d9bd86}
+#assetPurchasePopup .asset-yield{text-align:center;color:#b7e9d3;font-size:20px;font-weight:600;white-space:nowrap}
+#assetPurchasePopup .asset-owner{text-align:center}
+#assetPurchasePopup .owner-label{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;white-space:nowrap;color:#d2e2e8}
+#assetPurchasePopup .owner-label img{width:28px;height:28px;object-fit:contain}
+#assetPurchasePopup .owner-empty{font-size:16px;color:#fcfcfc}
+#assetPurchasePopup .buy-button{width:100%;border-radius:8px;border:1px solid #ccae7b;background:linear-gradient(#47718a,#2c4e6d);color:#fff4dc;font-size:16px;font-weight:700;min-height:34px;padding:5px 8px;white-space:nowrap;transition:background .15s,transform .15s}
+#assetPurchasePopup .buy-button:hover:not(:disabled){background:linear-gradient(#638ca0,#3a627b);box-shadow:0 0 0 1px #d8bf8b}
+#assetPurchasePopup .buy-button:active:not(:disabled){transform:translateY(1px)}
+#assetPurchasePopup .buy-button:disabled{background:#304658;color:#a0b2c1;border-color:#71849360;font-size:13px}
+#assetPurchasePopup .stock-table tr[data-owned="self"] td{background:#335b5633}
+#assetPurchasePopup .stock-table tr[data-owned="self"] .buy-button{color:#abd6c8}
+#assetPurchasePopup .purchase-footer{min-height:64px;border-top:1px solid #ccae7b66;margin-top:10px;padding-top:14px;display:flex;align-items:center;justify-content:flex-end;gap:14px}
+#assetPurchasePopup .purchase-footer button{border:1px solid var(--border);border-radius:9px;background:#2c4e6de0;color:#fff;padding:12px 20px;font-size:16px}
+#assetPurchasePopup .staff-panel{display:flex;flex-direction:column;min-width:0;min-height:0;justify-content:flex-end}
+#assetPurchasePopup .staff-scene{flex:1;min-height:0;display:flex;align-items:flex-end;justify-content:center;position:relative;padding-top:30px}
+#assetPurchasePopup .staff-scene::after{content:"";position:absolute;bottom:0;width:70%;height:15px;border-radius:50%;background:#10233535;filter:blur(8px);z-index:-1}
+#assetPurchasePopup .staff-scene img{width:100%;height:100%;max-height:620px;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 6px 4px #0c203955)}
+#assetPurchasePopup .dialogue{flex:none;min-height:140px;margin-top:14px;background:linear-gradient(125deg,#18384fe8,#10293cee);border:1px solid #ccae7bad;border-radius:14px;padding:19px 22px;box-shadow:0 5px 15px #10233235}
+#assetPurchasePopup .speaker{font-size:13px;font-weight:700;color:var(--gold);letter-spacing:.08em}
+#assetPurchasePopup .speaker span{margin-right:7px}
+#assetPurchasePopup .dialogue p{font-size:19px;font-weight:600;line-height:1.75;margin:12px 0 0;overflow-wrap:anywhere}
+#assetPurchasePopup .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+@media(max-width:1550px){#assetPurchasePopup .purchase-panel{padding:18px 18px 12px}
+#assetPurchasePopup .stock-table td{padding-inline:9px}
+#assetPurchasePopup .asset-name{font-size:18px}
+#assetPurchasePopup .asset-price,#assetPurchasePopup .asset-yield{font-size:19px}
+#assetPurchasePopup .dialogue{padding:16px;min-height:130px}
+#assetPurchasePopup .dialogue p{font-size:17px}
+}
+
+@media(max-height:850px){#assetPurchasePopup .shop-heading{padding-bottom:11px}
+#assetPurchasePopup h1{font-size:24px}
+#assetPurchasePopup .purchase-footer{min-height:52px;padding-top:9px;margin-top:6px}
+#assetPurchasePopup .purchase-footer button{padding:9px 17px}
+#assetPurchasePopup .dialogue{min-height:110px;padding:15px}
+#assetPurchasePopup .dialogue p{font-size:16px;margin-top:8px}
+#assetPurchasePopup .stock-table td{padding-block:2px}
+#assetPurchasePopup .asset-name{font-size:17px}
+#assetPurchasePopup .asset-price,#assetPurchasePopup .asset-yield{font-size:18px}
+#assetPurchasePopup .buy-button{min-height:29px;font-size:14px}
+}
+
+@media(max-height:850px){#assetPurchasePopup .buy-button{padding:3px 6px;min-height:25px;line-height:1.1}
+#assetPurchasePopup .owner-label img{width:22px;height:22px}
+}
+
+
+
+#assetPurchasePopup .stock-table td{padding-block:0;line-height:1.2}
+#assetPurchasePopup .buy-button{line-height:1.1;padding-block:4px;min-height:28px}
+#assetPurchasePopup .owner-label{line-height:1.2}
+
+@media(max-height:850px){#assetPurchasePopup .buy-button{min-height:24px;padding-block:2px;font-size:13px}
+}
+
+
+#assetPurchasePopup .empty-stock{text-align:center;color:#b7cddd;font-size:16px}
+
+
+#assetPurchasePopup .purchase-footer button{display:inline-flex;align-items:center;gap:20px;font-family:var(--ui-font);font-weight:700}
+#assetPurchasePopup .exit-arrow{width:30px;height:30px;object-fit:contain;transform:rotate(90deg)}
+
+#assetPurchasePopup .asset-purchase-button{width:100%;height:auto;margin:0;position:static;transform:none}
+
+#assetPurchasePopup .dialogue p{margin:0}
+
+#assetPurchasePopup button:focus-visible{outline:3px solid #a9ddff;outline-offset:3px}
+
+#assetPurchasePopup button:disabled{cursor:default}
+
+#assetPurchasePopup.shop-stock-overflow .stock-space{overflow-y:auto}
+
+@media(max-width:1550px){#assetPurchasePopup.shop-purchase-frame{left:180px;padding:20px}
+#assetPurchasePopup .shop-purchase-layout{grid-template-columns:minmax(0,1fr) 230px;gap:20px}
+}
+
+@media(max-height:850px){#assetPurchasePopup.shop-purchase-frame{padding:17px}
+}
+
+#assetPurchasePopup .stock-table tbody tr{height:var(--row-height)}
+

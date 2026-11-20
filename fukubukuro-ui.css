@@ -1,0 +1,26 @@
+.fukubukuro-layer{position:fixed;inset:max(90px,4dvh) 0 var(--an02-bottom);z-index:12500;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:clamp(8px,2dvh,20px);pointer-events:none;font-family:"Yu Gothic",Meiryo,sans-serif;color:#fcfcfc}
+.fukubukuro-sp04{justify-self:center;width:min(59.52%,967px);min-height:0;overflow:auto;container-type:inline-size;box-sizing:border-box;display:flex;flex-direction:column;gap:10px;padding:20px 24px;border:1px solid #ccae7b;border-radius:18px;background:linear-gradient(135deg,#102b40f2,#0b2033ed);box-shadow:0 16px 48px #0008;pointer-events:auto}
+.fukubukuro-title{flex:none;margin:0;padding:0 0 12px;border-bottom:1px solid #ccae7b;color:#fcfcfc;font-size:clamp(18px,2vw,30px);font-weight:700;text-align:center}
+.fukubukuro-dice-stage{position:relative;display:flex;min-height:0;flex:1;align-items:center;justify-content:center}
+.fukubukuro-dice{display:block;width:min(740px,calc(100% - 160px));height:auto;max-height:100%;min-height:0;aspect-ratio:2.3 / 1;flex:none;object-fit:contain}
+.fukubukuro-roll{position:absolute;right:0;top:50%;width:128px;height:44px;transform:translateY(-50%);border:1px solid #ccae7b;border-radius:8px;background:#294b68;color:#fcfcfc;font-size:14px;white-space:nowrap;cursor:pointer}
+.fukubukuro-roll:disabled{opacity:.6;cursor:wait}
+.fukubukuro-card-row{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:clamp(4px,.65vw,10px);width:100%;flex:none}
+.fukubukuro-card-slot{min-width:0}
+.fukubukuro-card{--fuku-accent:#c4ccd4;position:relative;box-sizing:border-box;display:flex;min-width:0;height:clamp(112px,16vh,160px);flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:25px 5px;overflow:hidden;border:2px solid var(--fuku-accent);border-radius:13px;background:rgba(16,25,35,.95);box-shadow:0 8px 16px #071c344d,inset 0 0 0 4px #101923,inset 0 0 0 5px color-mix(in srgb,var(--fuku-accent) 20%,transparent);text-align:center}
+.fukubukuro-card[data-frame-id="BT03-G"]{--fuku-accent:#f2d58d}
+.fukubukuro-card:before,.fukubukuro-card:after{position:absolute;left:50%;width:58%;height:6px;content:"";background:var(--fuku-accent);transform:translateX(-50%);clip-path:polygon(0 50%,5% 0,10% 40%,90% 40%,95% 0,100% 50%,95% 100%,90% 60%,10% 60%,5% 100%)}
+.fukubukuro-card:before{top:10px}.fukubukuro-card:after{bottom:10px}
+.fukubukuro-card-number{color:var(--fuku-accent);font-size:clamp(16px,2vw,24px);font-weight:800;line-height:1}
+.fukubukuro-card-name{max-width:100%;font-size:clamp(6px,calc(2.08cqw - 2.25px),14px);font-weight:700;line-height:1.35;overflow-wrap:anywhere;word-break:break-all}
+.fukubukuro-card-row.is-result .fukubukuro-card-slot:nth-child(1){grid-column:2}
+.fukubukuro-card-row.is-result .fukubukuro-card-slot:nth-child(2){grid-column:3/span 2;width:calc(50% - 5px);justify-self:center}
+.fukubukuro-card-row.is-result .fukubukuro-card-slot:nth-child(3){grid-column:5}
+.fukubukuro-an02{justify-self:center;width:min(var(--an02-max-width),calc(100% - var(--an02-left) - var(--an02-right)));min-height:var(--an02-min-height);max-height:52dvh;box-sizing:border-box;display:flex;align-items:center;gap:22px;padding:24px 22px;border:1px solid #ccae7b;border-radius:12px;background:linear-gradient(125deg,#18384fe8,#10293cee);box-shadow:0 5px 20px #07192345;pointer-events:auto}
+.fukubukuro-player-icon{width:80px;height:80px;flex:none;object-fit:contain}
+.fukubukuro-an02-copy{min-width:0;margin:0;padding:0 115px 0 0;color:#fcfcfc;font:600 22px/1.6 "Yu Gothic","Meiryo",sans-serif;overflow-wrap:anywhere;text-align:left}
+.fukubukuro-item-name{color:#f2d58d}
+.fukubukuro-sp04:has(.fukubukuro-roll[hidden]){cursor:pointer}
+@media(max-width:1000px){.fukubukuro-sp04{width:86%;padding:14px}.fukubukuro-card{height:clamp(76px,14dvh,112px);border-radius:8px;padding:16px 3px}.fukubukuro-card:before{top:7px}.fukubukuro-card:after{bottom:7px}}
+@media(max-height:600px){.fukubukuro-layer{inset:64px 0 12px}.fukubukuro-an02{min-height:84px;max-height:26dvh;padding:8px 12px}.fukubukuro-player-icon{width:44px;height:44px}.fukubukuro-an02-copy{padding-right:0;font-size:16px}.fukubukuro-dice-stage{min-height:50px}}
+@media(max-width:700px){.fukubukuro-sp04{width:calc(100% - 20px);padding:10px;gap:7px}.fukubukuro-title{font-size:17px}.fukubukuro-card-name{font-size:clamp(6px,2.2vw,10px)}.fukubukuro-dice{width:calc(100% - 138px)}.fukubukuro-roll{width:118px;height:42px;font-size:12px}}

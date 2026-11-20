@@ -1,0 +1,237 @@
+.lost-magic-overlay {
+    --lost-magic-row-height: 76px;
+    --lost-magic-icon-size: 52px;
+    --lost-magic-icon-column: 64px;
+    --lost-magic-row-gap: 14px;
+    --lost-magic-list-gap: 10px;
+    --lost-magic-row-padding-x: 14px;
+    --lost-magic-button-min-width: 88px;
+    --lost-magic-button-height: 42px;
+    position: fixed;
+    inset: 0;
+    z-index: 45000;
+    color: #fcfcfc;
+    font-family: "Yu Gothic", "Meiryo", sans-serif;
+    pointer-events: auto;
+}
+
+.lost-magic-overlay *,
+.lost-magic-overlay *::before,
+.lost-magic-overlay *::after { box-sizing: border-box; }
+
+.lost-magic-scene {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: min(1560px, 96vw);
+    height: min(970px, 94vh);
+    transform: translate(-50%, -50%);
+}
+
+/* SP04: frame-catalog reference, fixed for every stage. */
+.lost-magic-panel {
+    position: absolute;
+    left: 50%;
+    top: 4%;
+    bottom: calc(3% + 180px);
+    width: 62%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 23px 28px 72px;
+    border: 1px solid #ccae7b;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #102b40f2, #0b2033ed);
+    box-shadow: 0 12px 38px #06172566;
+}
+
+.lost-magic-panel[hidden] { display: none; }
+
+.lost-magic-title {
+    flex: none;
+    margin: 0;
+    padding: 0 0 14px;
+    border-bottom: 1px solid #ccae7b80;
+    color: #fcfcfc;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.lost-magic-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    align-items: stretch;
+    justify-content: center;
+}
+
+.lost-magic-target-grid {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 230px));
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    overflow: auto;
+    padding: 14px 4px;
+}
+
+.lost-magic-target-card {
+    display: flex;
+    width: 230px;
+    height: 260px;
+    min-height: 260px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 20px 12px;
+    border: 1px solid #d8ba71;
+    border-radius: 13px;
+    background: linear-gradient(155deg, #344b5fef, #172b40f7);
+    box-shadow: inset 0 0 18px #f6d98a19, 0 5px 12px #0004;
+    text-align: center;
+}
+
+.lost-magic-target-icon {
+    width: 76px;
+    height: 76px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 7px #ffdc8370);
+}
+
+.lost-magic-target-name { max-width: 100%; font-size: 19px; overflow-wrap: anywhere; }
+
+.lost-magic-target-button,
+.lost-magic-button,
+.lost-magic-back {
+    min-width: var(--lost-magic-button-min-width);
+    min-height: var(--lost-magic-button-height);
+    padding: 7px 14px;
+    border: 1px solid #ccae7b;
+    border-radius: 8px;
+    background: linear-gradient(130deg, #2c4e6d, #18384f);
+    color: #fcfcfc;
+    font: 700 15px "Yu Gothic", "Meiryo", sans-serif;
+    cursor: pointer;
+}
+
+.lost-magic-target-button:hover:not(:disabled),
+.lost-magic-button:hover:not(:disabled),
+.lost-magic-back:hover { border-color: #f2d58d; background: linear-gradient(130deg, #426a87, #234861); }
+
+.lost-magic-target-button:disabled,
+.lost-magic-button:disabled { opacity: 1; color: #fcfcfc; cursor: pointer; }
+
+.lost-magic-no-magic { color: #d6dfe5; font-size: 12px; }
+
+.lost-magic-list {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+    gap: var(--lost-magic-list-gap);
+    overflow-y: auto;
+    padding: 14px 8px 14px 4px;
+    scrollbar-color: #ccae7b #102b4366;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+}
+
+.lost-magic-list::-webkit-scrollbar { width: 10px; }
+.lost-magic-list::-webkit-scrollbar-track { border-radius: 8px; background: #102b4366; }
+.lost-magic-list::-webkit-scrollbar-thumb { border: 2px solid #102b4366; border-radius: 8px; background: #ccae7b; }
+
+.lost-magic-row {
+    display: grid;
+    flex: none;
+    width: 100%;
+    height: var(--lost-magic-row-height);
+    min-height: var(--lost-magic-row-height);
+    max-height: var(--lost-magic-row-height);
+    grid-template-columns: var(--lost-magic-icon-column) minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--lost-magic-row-gap);
+    overflow: hidden;
+    padding: 8px var(--lost-magic-row-padding-x);
+    border: 1px solid #a9c8df45;
+    border-radius: 12px;
+    background: linear-gradient(145deg, #274860c9, #17344edb);
+}
+
+.lost-magic-icon {
+    width: var(--lost-magic-icon-size);
+    height: var(--lost-magic-icon-size);
+    justify-self: center;
+    object-fit: contain;
+}
+
+.lost-magic-overlay .lost-magic-name {
+    min-width: 0;
+    overflow: visible;
+    color: #fcfcfc;
+    font-size: 18px;
+    text-overflow: clip;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+.lost-magic-row.is-lost { animation: lost-magic-fade 520ms ease forwards; pointer-events: none; }
+@keyframes lost-magic-fade { from { opacity: 1; } to { opacity: 0; } }
+.lost-magic-empty { margin: auto; color: #d6dfe5; font-size: 18px; }
+
+.lost-magic-back { position: absolute; left: 28px; bottom: 18px; z-index: 2; }
+.lost-magic-back[hidden] { display: none; }
+
+/* AN02: same width, location and height during intro, selection and result. */
+.lost-magic-an02 {
+    position: absolute;
+    left: 3%;
+    right: 3%;
+    bottom: 3%;
+    display: flex;
+    height: 160px;
+    min-height: 160px;
+    align-items: center;
+    padding: 28px;
+    border: 1px solid #ccae7b;
+    border-radius: 12px;
+    background: linear-gradient(125deg, #18384fe8, #10293cee);
+    box-shadow: 0 5px 20px #07192345;
+}
+
+.lost-magic-an02-icon {
+    position: absolute;
+    left: 22px;
+    top: 50%;
+    width: 80px;
+    height: 80px;
+    transform: translateY(-50%);
+    object-fit: contain;
+}
+
+.lost-magic-an02-copy {
+    min-width: 0;
+    max-height: calc(52vh - 100px);
+    overflow: auto;
+    margin: 0 100px 0 96px;
+    padding: 0 115px 0 0;
+    color: #fcfcfc;
+    font: 600 22px/1.6 "Yu Gothic", "Meiryo", sans-serif;
+    overflow-wrap: anywhere;
+}
+
+.lost-magic-item-name,
+.lost-magic-result-name { color: #f2d58d; }
+
+.lost-magic-an02-next {
+    position: absolute;
+    right: 22px;
+    bottom: 22px;
+    color: #fcfcfc;
+    font: 600 14px "Yu Gothic", "Meiryo", sans-serif;
+}
+
+.lost-magic-an02-next[hidden] { display: none; }
+
