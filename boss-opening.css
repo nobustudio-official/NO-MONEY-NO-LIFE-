@@ -39,6 +39,16 @@
 body:has(.boss-opening-start) .online-recovery-panel { top:12px; bottom:auto; }
 
 @media (pointer: coarse) and (hover: none) and (orientation: landscape) and (max-width: 1100px) {
+ .boss-opening.boss-opening-start.boss-opening-intro-scene .boss-opening-staff { width:46%; height:62%; bottom:24%; }
+ .boss-opening.boss-opening-start .boss-opening-banner {
+  height:18%; min-height:0; grid-template-rows:auto minmax(0,1fr);
+  gap:3px 12px; padding:6px 14px; overflow:hidden;
+ }
+ .boss-opening.boss-opening-start .boss-opening-copy {
+  min-width:0; min-height:0; font-size:clamp(13px,min(3vw,4vh),17px);
+  line-height:1.12; overflow-wrap:anywhere; align-self:center;
+ }
+ .boss-opening.boss-opening-start .boss-opening-next { grid-row:2; align-self:end; }
  .boss-opening:not(.ending-presentation) .boss-opening-main { padding:clamp(9px,1.6vw,16px); gap:clamp(5px,1vh,9px); }
  .boss-opening:not(.ending-presentation) .boss-opening-main h1 { font-size:clamp(16px,2.6vw,21px); padding-bottom:clamp(4px,.9vh,8px); }
  .boss-opening:not(.ending-presentation) .boss-opening-info { width:100%; gap:3%; font-size:clamp(12px,2vw,17px); }

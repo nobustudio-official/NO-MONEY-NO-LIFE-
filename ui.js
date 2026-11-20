@@ -680,7 +680,7 @@ function updateMapZoomUI(zoom, options = {}) {
 
     if (options.preview) {
         const board = document.getElementById('mapBoard');
-        if (board) board.style.transform = `scale(${mapZoomUI})`;
+        if (board) board.style.transform = Math.abs(mapZoomUI - 1) < 1e-6 ? 'none' : `scale(${mapZoomUI})`;
         if (board) window.MapDetailLevel.setZoom(board, mapZoomUI, { preview: true });
         return;
     }
@@ -723,8 +723,9 @@ function applyMapZoomUI() {
     // マップ全体をズーム
     // =========================
 
-    mapBoard.style.transform =
-        `scale(${mapZoomUI})`;
+    mapBoard.style.transform = Math.abs(mapZoomUI - 1) < 1e-6
+        ? 'none'
+        : `scale(${mapZoomUI})`;
 
 
     mapBoard.style.transformOrigin =
