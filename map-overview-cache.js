@@ -39,6 +39,8 @@
             state.loading++;
             entry.image.src = entry.src;
             const reveal = () => {
+                if (entry.image.naturalWidth <= 0) return;
+                entry.ready = true;
                 if (entry.image.isConnected) entry.image.classList.add('is-ready');
             };
             entry.image.decode().then(reveal, () => {
@@ -78,7 +80,11 @@
             }
             // Release outgoing detail promptly while zooming out to cap Safari memory use.
             if (pixelZoom < level.preload && zooming && !zoomingOut) continue;
-            const wanted = pixelZoom < level.preload ? [] : near.filter(({ tile }) => tile[level.source]).slice(0, level.limit);
+            const candidates = pixelZoom < level.preload ? [] : near.filter(({ tile }) => tile[level.source]);
+            // Zooming out exposes more map area, but its shrinking detail is not worth new image decodes.
+            const wanted = candidates
+                .filter(({ tile }) => !zoomingOut || level.images.get(tile)?.ready)
+                .slice(0, level.limit);
             const needed = new Set(wanted.map(({ tile }) => tile));
             for (const [tile, entry] of level.images) {
                 if (needed.has(tile)) continue;
@@ -101,7 +107,7 @@
                     image.dataset.level = level.name;
                     image.style.left = `${tile.x}px`;
                     image.style.top = `${tile.y}px`;
-                    entry = { image, src: tile[level.source], started: false };
+                    entry = { image, src: tile[level.source], started: false, ready: false };
                     level.images.set(tile, entry);
                     background.append(image);
                 }
