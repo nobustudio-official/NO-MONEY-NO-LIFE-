@@ -1105,6 +1105,17 @@ function preloadGameImage(path) {
     });
 }
 
+async function preloadGameImages(paths, concurrency) {
+    let cursor = 0;
+    async function worker() {
+        while (cursor < paths.length) {
+            const path = paths[cursor++];
+            await preloadGameImage(path);
+        }
+    }
+    await Promise.all(Array.from({ length: Math.min(concurrency, paths.length) }, worker));
+}
+
 // =========================
 // マップデータ読み込み
 // =========================
@@ -1227,19 +1238,18 @@ function showGameLoadingScreen() {
 
 function waitForGameAssets() {
 
-    const mapAssets = [
+    // A desktop-sized layout must not imply desktop-sized image allocations.
+    // Phones use the existing baked overview and load detail tiles on demand.
+    const constrained = window.mobileRuntimeTuning === true;
+    const overview = window.MapOverviewRasterData;
+    const mapAssets = constrained ? [overview?.mobileImage || overview?.image] : [
         ...MapScene.assetUrls,
         ...(window.MapBackgroundRasterData?.tiles || []).map(tile => tile.image),
         ...(window.MapRoadRasterData?.tiles || []).map(tile => tile.image),
-        window.MapOverviewRasterData?.image
-    ].filter(Boolean);
-    const assets = [...new Set([...mapAssets, ...GAME_LOADING_ASSETS])];
-    const assetPromise =
-        Promise.all(
-            assets.map(
-                preloadGameImage
-            )
-        );
+        overview?.image
+    ];
+    const assets = [...new Set([...mapAssets, ...GAME_LOADING_ASSETS].filter(Boolean))];
+    const assetPromise = preloadGameImages(assets, constrained ? 2 : 8);
 
     const minimumTimePromise =
         new Promise(function (resolve) {
@@ -1816,7 +1826,7 @@ function showTurnSelectScreen(
 gameStarted = true;
 window.GameViewport?.activate();
 window.OfflineDividends.reset(players);
-const lightweightOpening = !window.GameViewport?.active && window.mobileOpeningLightweight === true && window.matchMedia?.('(pointer: coarse)').matches;
+const lightweightOpening = window.mobileOpeningLightweight === true && (window.mobileRuntimeTuning === true || window.matchMedia?.('(pointer: coarse)').matches);
 
 
 // =========================

@@ -4,7 +4,8 @@
     const states = new WeakMap();
     const threshold = .4;
     const overscan = 220;
-    const touchDevice = window.mobilePerformanceEnabled !== false && Boolean(window.matchMedia?.('(pointer: coarse)').matches);
+    const touchDevice = window.mobileRuntimeTuning === true ||
+        window.mobilePerformanceEnabled !== false && Boolean(window.matchMedia?.('(pointer: coarse)').matches);
 
     function intersects(tile, bounds) {
         return tile.x < bounds.right && tile.x + tile.width > bounds.left &&

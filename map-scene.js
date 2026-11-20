@@ -55,6 +55,13 @@
  }
  function createBackground(squares){
   const background=document.createElement('div');background.className='map-background';
+  // Reuse the validated baked terrain/roads on phones. Building the full-world
+  // SVG and decoding all terrain/road images can exhaust Safari's memory while
+  // the opening is still playing, even though the game is visually scaled down.
+  if(window.mobileRuntimeTuning===true&&window.MapOverviewCache?.mountAsBase(background,squares)){
+   setZoom(typeof window.getMapZoomUI==='function'?window.getMapZoomUI():1);
+   return background;
+  }
   const ns='http://www.w3.org/2000/svg';
   function add(parent,name,attributes){const element=document.createElementNS(ns,name);for(const [key,value] of Object.entries(attributes))element.setAttribute(key,value);parent.append(element);return element;}
   const svg=add(background,'svg',{class:'map-continent',viewBox:`0 0 ${config.width} ${config.height}`,'aria-hidden':'true'});

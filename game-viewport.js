@@ -72,6 +72,7 @@
     root.GameViewport = Object.freeze({
         width: DESKTOP_WIDTH,
         height: DESKTOP_HEIGHT,
+        managed: Boolean(host),
         get active() { return Boolean(host?.active); },
         activate() {
             if (!host) return;

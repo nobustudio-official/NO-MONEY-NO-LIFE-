@@ -56,7 +56,7 @@
             const sequenceKey = String(options.syncKey || '');
             const onlineSync = sequenceKey && window.onlineGame?.isOnline ? window.onlineGame.sync : null;
             let expectedStep = 0, requestPending = false, stopRemoteAdvance = null;
-            const useBakedRoads = options.lightweight === true;
+            const useBakedRoads = options.lightweight === true || window.mobileRuntimeTuning === true;
             const overviewSource = useBakedRoads ? overview.mobileImage || overview.image : overview.cleanImage || overview.image;
             const overviewPreload = new Image();
             if (!useBakedRoads) overviewPreload.src = overviewSource;
@@ -106,10 +106,11 @@
                 } catch (error) { console.warn('[開始演出] SE:', error); }
             }
             function playStop() { new Audio('sounds/ボスルーレット停止2.mp3').play().catch(() => {}); }
-            const cleanup = () => { clearTimeout(timer); clearInterval(interval); cancelAnimationFrame(frame); stopGuideAudio(); stopSound(); stopRemoteAdvance?.(); if (audioContext) audioContext.close().catch(() => {}); root.remove(); };
+            const cleanup = () => { clearTimeout(timer); clearInterval(interval); cancelAnimationFrame(frame); stopGuideAudio(); stopSound(); stopRemoteAdvance?.(); if (audioContext) audioContext.close().catch(() => {}); overviewPreload.removeAttribute('src'); bossPreload.removeAttribute('src'); root.remove(); };
             function showBoss() {
                 stage = 'boss'; next.hidden = false; next.textContent = '次へ▶';
                 main.replaceChildren(element('h1', '', '次の討伐依頼'));
+                overviewPreload.removeAttribute('src');
                 const info = element('div', 'boss-opening-info');
                 const portrait = element('div', 'boss-opening-portrait');
                 const img = element('img'); img.src = bossPreload.getAttribute('src') || boss.icon; img.alt = boss.name;

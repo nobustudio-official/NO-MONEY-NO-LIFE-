@@ -211,7 +211,7 @@ test('mobile map minimum zoom becomes the PC minimum after activation', () => {
     close(page.window.MapScene.getMinZoom(), .1);
 });
 
-test('the real startup hook activates before loading and disables mobile-only opening changes', () => {
+test('the real startup hook keeps the memory-safe opening with the desktop layout active', () => {
     const source = read('game.js');
     const startup = source.slice(source.indexOf('gameStarted = true;'), source.indexOf('// 読み込み画面を表示', source.indexOf('gameStarted = true;')));
     let active = false, resets = 0;
@@ -227,7 +227,7 @@ test('the real startup hook activates before loading and disables mobile-only op
     assert.equal(context.gameStarted, true);
     assert.equal(active, true);
     assert.equal(resets, 1);
-    assert.equal(context.openingLightweight, false);
+    assert.equal(context.openingLightweight, true);
 });
 
 test('all coarse-pointer layout media rules are bounded below the virtual desktop size', () => {
