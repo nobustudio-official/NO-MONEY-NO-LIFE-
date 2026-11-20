@@ -13,8 +13,12 @@
  const resolve=id=>id==='bridge'?'bridge-stone':id;
  async function prepare(){
   if(!loading)loading=Promise.all(Object.entries(styles).flatMap(([id,style])=>['horizontal','vertical'].map(async direction=>{
-   const image=new Image();image.src=assetRoot+style.file+'-bridge-'+direction+'-v'+(style[direction].version??1)+'.webp';
-   try{await image.decode();images.set(id+':'+direction,image);}catch{/* Draw a visible fallback and report missing assets. */}
+   const image=new Image();const source=assetRoot+style.file+'-bridge-'+direction+'-v'+(style[direction].version??1)+'.webp';
+   try{
+    if(root.MapDetailLevel?.touchDevice)await root.MapDetailLevel.loadImage(image,source,2);
+    else{image.src=source;await image.decode();}
+    if(image.naturalWidth)images.set(id+':'+direction,image);
+   }catch{/* Draw a visible fallback and report missing assets. */}
   })));
   await loading;return 4-images.size;
  }

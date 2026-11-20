@@ -37,15 +37,16 @@
             if (!entry.image.isConnected || entry.started) continue;
             entry.started = true;
             state.loading++;
-            entry.image.src = entry.src;
             const reveal = () => {
                 if (entry.image.naturalWidth <= 0) return;
                 entry.ready = true;
                 if (entry.image.isConnected) entry.image.classList.add('is-ready');
             };
-            entry.image.decode().then(reveal, () => {
+            const loading = window.MapDetailLevel?.touchDevice
+                ? window.MapDetailLevel.loadImage(entry.image, entry.src, 1)
+                : (entry.image.src = entry.src, entry.image.decode());
+            Promise.resolve(loading).then(reveal, () => {
                 if (entry.image.naturalWidth > 0) reveal();
-                else entry.image.addEventListener('load', reveal, { once: true });
             }).finally(() => {
                 state.loading--;
                 loadMobileTiles(state);
@@ -99,6 +100,7 @@
                     needed.add(tile);
                     continue;
                 }
+                window.MapDetailLevel?.releaseImage(entry.image);
                 entry.image.remove();
                 entry.image.removeAttribute('src');
                 level.images.delete(tile);
@@ -139,8 +141,8 @@
             Object.assign(image.style, { position: 'absolute', left: '0', top: '0',
                 width: data.width + 'px', height: data.height + 'px', maxWidth: 'none',
                 pointerEvents: 'none', zIndex: '3' });
-            image.src = data.image;
-            await image.decode();
+            if (window.MapDetailLevel?.touchDevice) await window.MapDetailLevel.loadImage(image, data.image, 0);
+            else { image.src = data.image; await image.decode(); }
             if (!background.isConnected) return;
             background.append(image);
             state.ready = true;

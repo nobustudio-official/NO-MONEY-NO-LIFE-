@@ -39,8 +39,10 @@
             ...[...new Set(objects.map(o=>o.templateId))].map(async id => {
                 const template=templates.get(id);
                 if (!template?.asset) throw Error('オブジェクト画像がありません: '+id);
-                const image=new Image(); image.src=template.asset;
-                await image.decode(); images.set(id,image);
+                const image=new Image();
+                if(window.MapDetailLevel?.touchDevice) await window.MapDetailLevel.loadImage(image,template.asset,2);
+                else { image.src=template.asset; await image.decode(); }
+                if(image.naturalWidth) images.set(id,image);
             })
         ]);
         return preparing;
@@ -131,22 +133,27 @@
         }
         if(hasVisibleEffect)state.effectTimer=window.setTimeout(()=>updateMagicEffects(board,state),50);
     }
-    function setViewport(board,bounds) {
+    function setViewport(board,bounds,visibleBounds=bounds) {
         const state=boards.get(board);if(!state)return;
         state.bounds=bounds;
+        state.visibleBounds=visibleBounds;
         const overview=board.classList.contains('map-overview-active');
         const zooming=board.classList.contains('map-zoom-interacting');
         for(const row of state.rows){
             const {image,extent}=row;
             const visible=!overview&&extent.left<bounds.right&&extent.right>bounds.left&&extent.top<bounds.bottom&&extent.bottom>bounds.top;
+            const onScreen=visible&&extent.left<visibleBounds.right&&extent.right>visibleBounds.left&&extent.top<visibleBounds.bottom&&extent.bottom>visibleBounds.top;
             if(row.sharp!==visible){
                 row.sharp=visible;
                 image?.classList.toggle('map-object-sharp',visible);
             }
             if(!image)continue;
             if(state.streamImages){
-                if(visible&&!zooming&&image.getAttribute('src')!==row.asset)image.src=row.asset;
-                else if(!visible&&image.hasAttribute('src'))image.removeAttribute('src');
+                if(visible&&!zooming&&image.getAttribute('src')!==row.asset){
+                    const centerX=(visibleBounds.left+visibleBounds.right)/2,centerY=(visibleBounds.top+visibleBounds.bottom)/2;
+                    const distance=(row.object.x-centerX)**2+(row.object.y-centerY)**2;
+                    window.MapDetailLevel?.requestImage(image,row.asset,onScreen?0:1,distance).catch(()=>{});
+                } else if(!visible)window.MapDetailLevel?.releaseImage(image);
             }
         }
         if(!state.effectTimer)updateMagicEffects(board,state);
@@ -186,7 +193,7 @@
                 row.extent=objectExtent(row);
                 image.style.height=height+'px';
                 const board=layer.parentElement,state=boards.get(board);
-                if(state?.bounds)setViewport(board,state.bounds);
+                if(state?.bounds)setViewport(board,state.bounds,state.visibleBounds);
             });
             layer.append(image);
         }
@@ -196,7 +203,7 @@
             const board=background.closest('#mapBoard');
             if(!board)return;
             board.append(layer);
-            boards.set(board,{rows,bounds:null,pairs:effects.pairs,effectTimer:0,streamImages:useStreaming});
+            boards.set(board,{rows,bounds:null,visibleBounds:null,pairs:effects.pairs,effectTimer:0,streamImages:useStreaming});
             window.MapDetailLevel?.setZoom(board,getMapZoomUI());
         });
     }

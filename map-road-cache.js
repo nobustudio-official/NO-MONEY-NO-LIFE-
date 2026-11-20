@@ -173,11 +173,12 @@
             const view = board.closest('.map-area').getBoundingClientRect();
             const rect = board.getBoundingClientRect();
             const zoom = getMapZoomUI();
+            const overscan = window.MapDetailLevel?.touchDevice ? 96 : 220;
             setViewport(board, {
-                left: (view.left - 220 - rect.left) / zoom,
-                right: (view.right + 220 - rect.left) / zoom,
-                top: (view.top - 220 - rect.top) / zoom,
-                bottom: (view.bottom + 220 - rect.top) / zoom
+                left: (view.left - overscan - rect.left) / zoom,
+                right: (view.right + overscan - rect.left) / zoom,
+                top: (view.top - overscan - rect.top) / zoom,
+                bottom: (view.bottom + overscan - rect.top) / zoom
             });
             window.MapRoadRenderer?.setBridgeCollapse(svg, squares, window.bridgeCollapseVisualState);
             svg.dataset.roadCache = 'ready';

@@ -43,14 +43,19 @@
                 images.push({ image: sprites[key] = new root.Image(), src: new URL(path, appRoot || root.location?.href).href });
             }
             images.push({ image: sprites.tornado = new root.Image(), src: new URL("images/effects/battle/tornado-vortex.webp", appRoot || root.location?.href).href });
-            assetsReady = Promise.all(images.map(({ image: asset, src }) => new Promise(resolve => {
-                asset.onload = () => {
-                    if (typeof asset.decode === "function") asset.decode().catch(() => {}).then(resolve);
-                    else resolve();
-                };
-                asset.onerror = () => resolve();
-                asset.src = src;
-            })));
+            assetsReady = Promise.all(images.map(({ image: asset, src }) => {
+                if (root.MapDetailLevel?.touchDevice) {
+                    return root.MapDetailLevel.loadImage(asset, src, 2).catch(() => null);
+                }
+                return new Promise(resolve => {
+                    asset.onload = () => {
+                        if (typeof asset.decode === "function") asset.decode().catch(() => {}).then(resolve);
+                        else resolve();
+                    };
+                    asset.onerror = () => resolve();
+                    asset.src = src;
+                });
+            }));
         }
         return assetsReady || Promise.resolve();
     }

@@ -2,15 +2,18 @@
 (function () {
     'use strict';
     const states = new WeakMap();
-    const overscan = 220;
     const touchDevice = Boolean(window.matchMedia?.('(pointer: coarse)').matches);
+    const overscan = touchDevice ? 96 : 220;
     const pendingImages = new Map();
     const activeImages = new Set();
+    const activeRequests = new Map();
     const maxMobileImageLoads = 2;
     let pumpScheduled = false;
+    let imageLoadsPaused = false;
 
     function pumpImageLoads() {
         pumpScheduled = false;
+        if (imageLoadsPaused) return;
         while (activeImages.size < maxMobileImageLoads && pendingImages.size) {
             const [element, request] = [...pendingImages.entries()].sort((a, b) =>
                 a[1].priority - b[1].priority || a[1].distance - b[1].distance)[0];
@@ -18,13 +21,25 @@
             const token = Number(element.dataset.mapLoadToken || 0) + 1;
             element.dataset.mapLoadToken = String(token);
             activeImages.add(element);
+            element.decoding = 'async';
+            if ('fetchPriority' in element) element.fetchPriority = request.priority === 0 ? 'high' : 'low';
             const finish = () => {
                 if (Number(element.dataset.mapLoadToken) !== token) return;
                 activeImages.delete(element);
+                activeRequests.delete(element);
+                if (request.resolve) request.resolve(element.naturalWidth ? element : null);
                 scheduleImagePump();
             };
+            const fail = () => {
+                if (Number(element.dataset.mapLoadToken) !== token) return;
+                activeImages.delete(element);
+                activeRequests.delete(element);
+                request.reject?.(new Error(`画像を読み込めません: ${request.image}`));
+                scheduleImagePump();
+            };
+            activeRequests.set(element, request);
             element.addEventListener('load', finish, { once: true });
-            element.addEventListener('error', finish, { once: true });
+            element.addEventListener('error', fail, { once: true });
             element.src = request.image;
         }
     }
@@ -36,12 +51,45 @@
     }
 
     function releaseImage(element) {
+        const pending = pendingImages.get(element);
         pendingImages.delete(element);
+        pending?.resolve?.(null);
         if (!element.hasAttribute('src')) return;
         element.dataset.mapLoadToken = String(Number(element.dataset.mapLoadToken || 0) + 1);
         activeImages.delete(element);
+        activeRequests.get(element)?.resolve?.(null);
+        activeRequests.delete(element);
         element.removeAttribute('src');
         scheduleImagePump();
+    }
+
+    function enqueueImage(element, image, priority = 1, distance = 0) {
+        if (element.getAttribute('src') === image) {
+            const pending = pendingImages.get(element);
+            if (pending) {
+                pending.priority = priority;
+                pending.distance = distance;
+                return pending.promise || Promise.resolve(null);
+            }
+            const active = activeRequests.get(element);
+            if (active) return active.promise || Promise.resolve(null);
+            if (element.complete) return Promise.resolve(element.naturalWidth ? element : null);
+            return Promise.resolve(null);
+        }
+        releaseImage(element);
+        let resolve, reject;
+        const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
+        pendingImages.set(element, { image, priority, distance, promise, resolve, reject });
+        scheduleImagePump();
+        return promise;
+    }
+
+    function loadImage(element, image, priority = 1) {
+        if (!touchDevice) {
+            if (element.getAttribute('src') !== image) element.src = image;
+            return typeof element.decode === 'function' ? element.decode().then(() => element) : Promise.resolve(element);
+        }
+        return enqueueImage(element, image, priority, 0);
     }
 
     function imagePriority(tile, visible) {
@@ -70,7 +118,7 @@
             if (!element.hasAttribute('src')) {
                 if (touchDevice) {
                     const rank = imagePriority(tile, visible);
-                    pendingImages.set(element, { image: tile.image, ...rank });
+                    enqueueImage(element, tile.image, rank.priority, rank.distance).catch(() => {});
                 } else element.src = tile.image;
             }
             if (visible && intersects(tile, visible) && !(element.complete && element.naturalWidth)) ready = false;
@@ -83,7 +131,7 @@
         let state = states.get(board);
         if (state) return state;
         const area = board.closest('.map-area');
-        state = { area, nodes: [], important: [], bossPieces: [], zoom: 1, frame: 0 };
+        state = { area, nodes: [], important: [], bossPieces: [], zoom: 1, frame: 0, scrollSettleTimer: 0 };
         states.set(board, state);
         const schedule = () => {
             if (state.frame) return;
@@ -96,7 +144,18 @@
             });
         };
         state.schedule = schedule;
-        area?.addEventListener('scroll', schedule, { passive: true });
+        area?.addEventListener('scroll', () => {
+            if (touchDevice) {
+                imageLoadsPaused = true;
+                clearTimeout(state.scrollSettleTimer);
+                state.scrollSettleTimer = setTimeout(() => {
+                    imageLoadsPaused = false;
+                    scheduleImagePump();
+                    schedule();
+                }, 160);
+            }
+            schedule();
+        }, { passive: true });
         new ResizeObserver(schedule).observe(area || board);
         return state;
     }
@@ -114,7 +173,7 @@
         const near = { left, right, top, bottom };
         window.MapBackgroundCache?.setViewport(board, near, visible);
         window.MapRoadCache?.setViewport(board, near, visible);
-        window.MapWorkshopScene?.setViewport(board, near);
+        window.MapWorkshopScene?.setViewport(board, near, visible);
         for (const row of state.nodes) {
             const outside = row.x < left || row.x > right || row.y < top || row.y > bottom;
             if (row.outside === outside) continue;
@@ -164,5 +223,6 @@
         cull(board, state);
     }
     window.MapDetailLevel = Object.freeze({ refresh, refreshPieces, setZoom, touchDevice, setTileSources,
+        loadImage, requestImage: enqueueImage, releaseImage,
         scheduleViewport: board => stateFor(board).schedule() });
 })();

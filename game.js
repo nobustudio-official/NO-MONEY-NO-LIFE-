@@ -1089,6 +1089,11 @@ function preloadGameImage(path) {
         const image =
             new Image();
 
+        if (window.MapDetailLevel?.touchDevice) {
+            window.MapDetailLevel.loadImage(image, path, 2).then(resolve, resolve);
+            return;
+        }
+
         image.onload =
             function () {
                 resolve();

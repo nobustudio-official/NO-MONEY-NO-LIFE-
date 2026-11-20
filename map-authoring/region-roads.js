@@ -14,8 +14,12 @@
  const materials=new Map();let loading=null;
  async function prepare(){
   if(!loading)loading=Promise.all(Object.entries(styles).map(async([id,style])=>{
-   const image=new Image();image.src=assetRoot+style.asset;
-   try{await image.decode();materials.set(id,image);}catch{/* A color fallback keeps the road editable if an image is unavailable. */}
+   const image=new Image();
+   try{
+    if(root.MapDetailLevel?.touchDevice)await root.MapDetailLevel.loadImage(image,assetRoot+style.asset,2);
+    else{image.src=assetRoot+style.asset;await image.decode();}
+    if(image.naturalWidth)materials.set(id,image);
+   }catch{/* A color fallback keeps the road editable if an image is unavailable. */}
   }));
   await loading;return Object.keys(styles).filter(id=>!materials.has(id));
  }
