@@ -7,12 +7,6 @@
    sprite cannot put that sprite above a later sibling square. */
 .game-screen .map-node:has(.player-piece) { z-index: 6; }
 .game-screen .map-node:has(.player-piece.map-piece-moving) { z-index: 7; }
-/* The overview keeps square centers and interaction highlights, not artwork.
-   Character and boss artwork remain independent and keep their readable size. */
-#mapBoard.map-detail-compact .map-node:not(.boss-node) > .square-icon { display:none; }
-#mapBoard.map-detail-compact .map-node:not(.boss-node):not(.reachable-stop-highlight):not(.observer-reachable-highlight):not(.square-detail-highlight) {
-    background:#dfd8c1;border:1px solid #625d51;border-radius:6px;box-shadow:none;
-}
 #mapBoard .map-node.map-detail-offscreen:not(.boss-node):not(:has(.player-piece)) { visibility:hidden; }
 .game-screen .map-node .player-piece.player-sprite {
     /* Small per-character surfaces preserve detail after wheel compositing ends. */

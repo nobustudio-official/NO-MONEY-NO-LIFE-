@@ -2,7 +2,6 @@
 (function () {
     'use strict';
     const states = new WeakMap();
-    const threshold = .4;
     const overscan = 220;
     const touchDevice = window.mobileRuntimeTuning === true ||
         window.mobilePerformanceEnabled !== false && Boolean(window.matchMedia?.('(pointer: coarse)').matches);
@@ -30,7 +29,7 @@
         let state = states.get(board);
         if (state) return state;
         const area = board.closest('.map-area');
-        state = { area, nodes: [], important: [], bossPieces: [], zoom: 1, frame: 0, compact: null };
+        state = { area, nodes: [], important: [], bossPieces: [], zoom: 1, frame: 0 };
         states.set(board, state);
         const schedule = () => {
             if (state.frame) return;
@@ -74,13 +73,8 @@
         const state = stateFor(board);
         state.zoom = zoom;
         window.MapOverviewCache?.setZoom(board, zoom);
-        const compact = zoom <= threshold;
-        if (state.compact !== compact) {
-            state.compact = compact;
-            board.classList.toggle('map-detail-compact', compact);
-        }
         // Avoid invalidating inherited styles on every road, SVG and icon.
-        const emphasis = compact ? 1 / zoom : 1;
+        const emphasis = zoom < 1 ? 1 / zoom : 1;
         const value = String(emphasis);
         for (const element of state.important) {
             if (element.style.getPropertyValue('--map-important-scale') !== value) {
@@ -114,6 +108,6 @@
         refreshPieces(board, zoom);
         cull(board, state);
     }
-    window.MapDetailLevel = Object.freeze({ refresh, refreshPieces, setZoom, threshold, touchDevice, setTileSources,
+    window.MapDetailLevel = Object.freeze({ refresh, refreshPieces, setZoom, touchDevice, setTileSources,
         scheduleViewport: board => stateFor(board).schedule() });
 })();
