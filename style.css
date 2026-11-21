@@ -928,16 +928,16 @@
             min(40vw, 760px);
 
         height:
-            clamp(140px, 40vh, 160px);
+            clamp(120px, 32vh, 130px);
 
         min-height:
-            clamp(140px, 40vh, 160px);
+            clamp(120px, 32vh, 130px);
 
         box-sizing:
             border-box;
 
         padding:
-            16px 20px;
+            10px 20px;
 
         background:
             linear-gradient(125deg, #18384fe8, #10293cee);
@@ -969,7 +969,7 @@
 
         font-weight: bold;
 
-        margin-bottom: 14px;
+        margin-bottom: 8px;
     }
 
 
@@ -3397,10 +3397,10 @@ GAME OVER
         left: 50%;
         transform: translate(-50%, -50%);
         width: min(40vw, 760px);
-        height: clamp(140px, 40vh, 160px);
-        min-height: clamp(140px, 40vh, 160px);
+        height: clamp(120px, 32vh, 130px);
+        min-height: clamp(120px, 32vh, 130px);
         box-sizing: border-box;
-        padding: 16px 20px;
+        padding: 10px 20px;
         background: linear-gradient(125deg, #18384fe8, #10293cee);
         border: 1px solid #ccae7b;
         border-radius: 12px;
@@ -3412,7 +3412,7 @@ GAME OVER
     .item-roulette-title {
         font-size: 24px;
         font-weight: bold;
-        margin-bottom: 14px;
+        margin-bottom: 8px;
     }
 
     .item-roulette-name {
