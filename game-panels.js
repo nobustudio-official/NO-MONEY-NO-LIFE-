@@ -4,6 +4,37 @@
     const views=new Map(), format=n=>Number(n).toLocaleString('ja-JP');
     const clock=()=>window.onlineGame?.sync?.serverNow?.() ?? Date.now();
     const node=(tag,cls,text)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el;};
+    function anchorInventory(v) {
+        v.anchorCleanup?.();v.anchorCleanup=null;
+        if(v.config?.kind!=='inventory')return;
+        const root=v.root,screen=document.querySelector('.game-screen'),banner=screen?.querySelector('.game-hud'),dice=screen?.querySelector('#rouletteButton');
+        if(!screen||!banner||!dice)return;
+        const update=()=>{
+            if(root.style.display==='none'||!root.isConnected)return;
+            const bounds=screen.getBoundingClientRect(),header=banner.getBoundingClientRect(),button=dice.getBoundingClientRect();
+            if(!bounds.width||!bounds.height||!header.height||!button.width)return;
+            const top=header.bottom+17,left=button.right+49,right=bounds.right-45,bottom=bounds.bottom-21;
+            if(right<=left||bottom<=top)return;
+            root.style.setProperty('--gp-inv-top',`${top}px`);
+            root.style.setProperty('--gp-inv-left',`${left}px`);
+            root.style.setProperty('--gp-inv-width',`${right-left}px`);
+            root.style.setProperty('--gp-inv-height',`${bottom-top}px`);
+            root.setAttribute('data-anchored','');
+        };
+        let frame=0;
+        const schedule=()=>{if(!frame)frame=requestAnimationFrame(()=>{frame=0;update();});};
+        const observer=new ResizeObserver(schedule);[screen,banner,dice].forEach(el=>observer.observe(el));
+        window.addEventListener('resize',schedule,{passive:true});
+        window.visualViewport?.addEventListener('resize',schedule,{passive:true});
+        window.visualViewport?.addEventListener('scroll',schedule,{passive:true});
+        v.anchorCleanup=()=>{
+            observer.disconnect();window.removeEventListener('resize',schedule);
+            window.visualViewport?.removeEventListener('resize',schedule);
+            window.visualViewport?.removeEventListener('scroll',schedule);
+            if(frame)cancelAnimationFrame(frame);root.removeAttribute('data-anchored');
+        };
+        schedule();
+    }
     function make(id,listId,closeId,shop) {
         const root=document.getElementById(id);
         let view=views.get(id);if(view?.root===root){if(!view.scroll.contains(view.table))view.scroll.replaceChildren(view.table);return view;}
@@ -128,7 +159,7 @@
         v.root.classList.toggle('gp-inventory',c.kind==='inventory');
         v.root.classList.toggle('gp-magic-list',c.kind==='magic-list');
         v.close.textContent=c.closeLabel||(c.scene?'店を出る':'閉じる');
-        v.close.onclick=()=>{if(!c.canAct())return;v.root.style.display='none';c.onClose?.();};
+        v.close.onclick=()=>{if(!c.canAct())return;v.anchorCleanup?.();v.root.style.display='none';c.onClose?.();};
         v.headerAction.hidden=!c.headerAction;v.headerAction.textContent=c.headerAction?.label||'';v.headerAction.onclick=()=>{if(c.canAct())c.headerAction?.onClick?.();};
         if(v.hello){const notice=v.data.find(row=>row.key===v.notice);if(notice)v.noticeText=notice.name+'\n'+(c.actionThanks||c.purchaseThanks||'お買い上げありがとう！');v.hello.textContent=v.noticeText||c.greeting||'';}
         describe(v);buttons(v);v.scroll.scrollTop=previousScroll;requestAnimationFrame(()=>fit(v));
@@ -139,7 +170,7 @@
         v.config=config;v.player=config.player;
         if(config.scene){v.background.src=config.scene.backgroundImage;v.staff.src=config.scene.staffImage;v.staff.alt=config.scene.name+'の店員';
             if(config.voice&&!v.presentation)v.presentation=ShopPresentation.create(v.root,{voice:config.voice});}
-        v.root.style.display='block';draw(v);if(config.voice!==false)v.presentation?.present();return v;
+        v.root.style.display='block';draw(v);anchorInventory(v);if(config.voice!==false)v.presentation?.present();return v;
     }
     function remote(screenType,data,playerIndex) {
         const v=[...views.values()].find(entry=>entry.config?.screenType===screenType&&entry.root.style.display==='block'&&entry.config.playerIndex===playerIndex);

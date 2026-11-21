@@ -7,6 +7,7 @@
  --gp-row-height:58px;
 }
 :is(#assetPopup,#inventoryPopup,#magicPopup).gp-owned{top:clamp(76px,8vh,90px);bottom:clamp(16px,5vh,40px);left:auto;right:5.2vw;transform:none;width:min(73.6vw,1450px);padding:clamp(10px,2vh,22px) clamp(14px,2vw,24px) clamp(8px,1.5vh,16px);font-size:clamp(12px,1.5vw,18px);background:linear-gradient(145deg,#14334aee,#123148f5)}
+#inventoryPopup.gp-root.gp-inventory[data-anchored]{top:var(--gp-inv-top);right:auto;bottom:auto;left:var(--gp-inv-left);width:var(--gp-inv-width);height:var(--gp-inv-height);max-width:none;max-height:none;margin:0;transform:none}
 .gp-root *{box-sizing:border-box}
 .gp-shop{display:none}
 .gp-shop .gp-panel{position:absolute;left:26px;right:calc(27% + 26px);top:26px;bottom:26px;padding:22px 24px 16px;border:1px solid #cfb778b0;border-radius:17px;background:linear-gradient(145deg,#14334aee,#123148f5)}
