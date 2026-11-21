@@ -57,18 +57,15 @@
         let fadeTimer = 0, sceneGeneration = 0, bgmGain = 1, endingConfirmed = false;
         const canControl = () => !sync || window.onlineGame?.playerId ===
             (sync.state?.endingPresentation?.ownerId || sync.state?.players?.[sync.state?.activePlayerIndex]?.id);
-        const seSlider = document.getElementById('seVolumeSlider'), bgmSlider = document.getElementById('bgmVolumeSlider');
+        const seSlider = document.getElementById('seVolumeSlider');
         const seVolume = () => Math.max(0, Math.min(1, Number(seSlider?.value ?? 50) / 100));
-        const bgmVolume = () => Math.max(0, Math.min(1, Number(bgmSlider?.value ?? 10) / 100));
         const liveSounds = new Set();
         let bgmFadeFrame = 0;
 
         function updateVolumes() {
             liveSounds.forEach(audio => { audio.volume = seVolume(); });
-            if (bgm) bgm.volume = bgmVolume() * bgmGain;
         }
         seSlider?.addEventListener('input', updateVolumes);
-        bgmSlider?.addEventListener('input', updateVolumes);
 
         function playEffect(path) {
             const audio = new Audio(path);
@@ -108,8 +105,11 @@
         }
         function startBGM() {
             if (bgm) return;
-            window.stopAllBGM?.();
-            bgm = new Audio('BGM/配当.mp3'); bgm.loop = true; bgm.volume = bgmVolume();
+            bgm = window.DividendBGMController?.start() || null;
+            if (!bgm) {
+                console.warn('[新・エンディング] 共通の配当BGM制御が利用できません。');
+                return;
+            }
             const alignMusic = () => {
                 if (!ending?.startedAt || !Number.isFinite(bgm?.duration) || bgm.duration <= 0) return;
                 bgm.currentTime = Math.max(0, ((sync?.serverNow?.() ?? Date.now()) - ending.startedAt) / 1000) % bgm.duration;
@@ -126,7 +126,7 @@
                 if (!bgm || disposed) return;
                 const progress = Math.min(1, (now - startedAt) / duration);
                 bgmGain = startingGain * (1 - progress);
-                bgm.volume = bgmVolume() * bgmGain;
+                window.DividendBGMController?.setFade(bgmGain);
                 if (progress < 1) bgmFadeFrame = requestAnimationFrame(fade);
                 else { bgm.pause(); bgmFadeFrame = 0; }
             };
@@ -134,7 +134,7 @@
         }
         function stopBGM() {
             cancelAnimationFrame(bgmFadeFrame); bgmFadeFrame = 0;
-            if (bgm) { bgm.pause(); bgm.currentTime = 0; bgm = null; }
+            if (bgm) { window.DividendBGMController?.stop(); bgm = null; }
         }
         function cancelScene() {
             sceneGeneration++;
@@ -472,7 +472,7 @@
             close(keepScreen = false) {
                 if (disposed) return; disposed = true;
                 cancelScene(); listener?.(); stopBGM();
-                seSlider?.removeEventListener('input', updateVolumes); bgmSlider?.removeEventListener('input', updateVolumes);
+                seSlider?.removeEventListener('input', updateVolumes);
                 if (!keepScreen) { root.remove(); current = null; }
             }
         };

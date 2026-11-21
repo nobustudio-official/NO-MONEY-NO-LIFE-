@@ -23,6 +23,7 @@ let bgmAudioContext = null;
 let adventureBGMGain = null;
 let townBGMGain = null;
 let dividendBGMGain = null;
+let dividendBGMFadeMultiplier = 1;
 let grasslandBGMGain = null;
 let desertBGMGain = null;
 let volcanoBGMGain = null;
@@ -218,6 +219,35 @@ function setTownBGMGain(
 function setDividendBGMGain(gain) {
     dividendBGMGain = gain;
 }
+
+function startDividendBGM() {
+    dividendBGMFadeMultiplier = 1;
+    setupBGM(dividendBGM, dividendBGMGain, setDividendBGMGain);
+    return dividendBGM;
+}
+
+function setDividendBGMFade(multiplier) {
+    dividendBGMFadeMultiplier = Math.max(0, Math.min(1, Number(multiplier) || 0));
+    const volume = currentBGMVolume * dividendBGMFadeMultiplier;
+    if (location.protocol === "file:" || !bgmAudioContext || !dividendBGMGain) {
+        dividendBGM.volume = volume;
+    } else {
+        dividendBGMGain.gain.value = volume;
+    }
+}
+
+function stopDividendBGM() {
+    dividendBGM.pause();
+    dividendBGM.currentTime = 0;
+    dividendBGM.preload = "none";
+    setDividendBGMFade(1);
+}
+
+window.DividendBGMController = Object.freeze({
+    start: startDividendBGM,
+    setFade: setDividendBGMFade,
+    stop: stopDividendBGM
+});
 
 function setForestBGMGain(gain) {
     forestBGMGain = gain;
@@ -735,7 +765,10 @@ function setBGMVolume(volume) {
 
     }
 
-    for (const [track, gain] of [[dividendBGM, dividendBGMGain], [forestBGM, forestBGMGain], [snowBGM, snowBGMGain], [ancientRuinsBGM, ancientRuinsBGMGain]]) {
+    if (dividendBGMGain) dividendBGMGain.gain.value = volume * dividendBGMFadeMultiplier;
+    else dividendBGM.volume = volume * dividendBGMFadeMultiplier;
+
+    for (const [track, gain] of [[forestBGM, forestBGMGain], [snowBGM, snowBGMGain], [ancientRuinsBGM, ancientRuinsBGMGain]]) {
         if (gain) gain.gain.value = volume;
         else track.volume = volume;
     }
