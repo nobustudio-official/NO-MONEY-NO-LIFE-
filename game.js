@@ -10775,6 +10775,7 @@ function setupScenePopup(
 
     // Return the shared result element before replacing an earlier job scene.
     window.JobPresentation?.restoreResult();
+    window.JobPresentation?.releaseChoices({popup});
     window.Plane02Layout?.release(popup.querySelector(".job-scene"));
     popup.classList.remove('job-approved-layout');
     // 画面を初期化
@@ -11119,6 +11120,7 @@ function stopJobVoice() {
                 }
 
                 window.Plane02Layout?.release(jobPopup.querySelector(".job-scene"));
+                window.JobPresentation?.releaseChoices({popup:jobPopup});
                 jobPopup.style.display = "none";
                 finishCallback();
             }
@@ -11167,6 +11169,7 @@ startSceneDialogue(scene, {
         // 会話終了後に選択肢を表示
         dialogueBox.style.display = "none";
         choicePanel.hidden = false;
+        window.JobPresentation?.placeChoices(scene);
         sceneSync.update("choices", dialogueLines.length);
     }
 });
@@ -11252,6 +11255,7 @@ function startJob(
 
             if (jobPopup) {
                 window.Plane02Layout?.release(jobPopup.querySelector(".job-scene"));
+                window.JobPresentation?.releaseChoices({popup:jobPopup});
                 jobPopup.style.display = "none";
             }
 

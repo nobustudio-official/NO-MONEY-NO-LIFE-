@@ -1,7 +1,7 @@
 /* AN02 / approved B: one shared blue lower-screen text panel. */
 :root { --an02-left:clamp(16px,12vw,230px); --an02-right:clamp(16px,10vw,192px); --an02-bottom:clamp(16px,4vh,43px); --an02-max-width:1560px; --an02-min-height:clamp(74px,18.5vh,200px); --an02-copy-max-height:max(32px, calc(18.5vh - 24px)); }
 :is(#eventPopup,#slotArrivalBanner,#treasureBonusBanner).common-announcement,
-#jobPopup.job-approved-layout .job-dialogue-box {
+#jobPopup.job-approved-layout :is(.job-dialogue-box,.job-choice-panel) {
  position:fixed;top:auto;left:var(--an02-left);right:var(--an02-right);bottom:var(--an02-bottom);transform:none;
  width:auto;max-width:var(--an02-max-width);min-width:0;height:var(--an02-min-height);min-height:var(--an02-min-height);max-height:52vh;
  margin:0 auto;padding:clamp(8px,2.2vh,24px) clamp(14px,1.2vw,22px);box-sizing:border-box;
@@ -48,7 +48,7 @@
 
 @media (max-width:700px), (pointer:coarse) and (max-height:500px) {
  :is(#eventPopup,#slotArrivalBanner,#treasureBonusBanner).common-announcement,
- #jobPopup.job-approved-layout .job-dialogue-box { padding:clamp(8px,2.2vh,16px);column-gap:12px; }
+ #jobPopup.job-approved-layout :is(.job-dialogue-box,.job-choice-panel) { padding:clamp(8px,2.2vh,16px);column-gap:12px; }
  :is(#eventPopup,#slotArrivalBanner,#treasureBonusBanner).common-announcement:not(.announcement-no-portrait) { grid-template-columns:48px minmax(0,1fr); }
  :is(#eventPopup,#slotArrivalBanner,#treasureBonusBanner).common-announcement .announcement-portrait { left:16px;width:48px;height:48px; }
  :is(#eventPopup,#slotArrivalBanner,#treasureBonusBanner).common-announcement .event-popup-message { padding-right:72px; }

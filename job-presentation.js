@@ -2,9 +2,33 @@
 (function(){
  'use strict';
  const homes=new WeakMap();
+ const choiceCleanups=new WeakMap();
  const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const gold=value=>Number(value).toLocaleString('ja-JP')+'G';
  function workResult(name,turns,reward){return escape(name)+'は'+Number(turns)+'ターン、バイトをします。<br>報酬 <strong>'+gold(reward)+'</strong> は、バイト終了時に受け取ります。';}
+ function releaseChoices(scene){const root=scene?.popup?.querySelector('.job-scene');choiceCleanups.get(root)?.();}
+ function placeChoices(scene){
+  const root=scene?.popup?.querySelector('.job-scene'),cards=root?.querySelector('.job-choices'),panel=root?.querySelector('.job-choice-panel'),staff=root?.querySelector('.job-staff');
+  if(!root||!cards||!panel||!staff)return;
+  releaseChoices(scene);
+  const update=()=>{
+   if(!root.isConnected||panel.hidden||scene.popup.style.display==='none')return;
+   const frame=root.getBoundingClientRect(),person=staff.getBoundingClientRect(),telop=panel.getBoundingClientRect();
+   if(!frame.height||!person.height||!telop.height)return;
+   const center=(person.top+person.bottom)/2,bottom=telop.top-8;
+   const height=Math.max(48,2*(bottom-center)),top=bottom-height;
+   cards.style.left='0';cards.style.right='0';cards.style.top=(top-frame.top)+'px';cards.style.bottom='auto';cards.style.height=height+'px';
+  };
+  let frameId=0;
+  const schedule=()=>{if(!frameId)frameId=requestAnimationFrame(()=>{frameId=0;update();});};
+  const observer=new ResizeObserver(schedule);[root,panel,staff].forEach(node=>observer.observe(node));
+  window.addEventListener('resize',schedule,{passive:true});
+  window.visualViewport?.addEventListener('resize',schedule,{passive:true});
+  window.visualViewport?.addEventListener('scroll',schedule,{passive:true});
+  let done=false;
+  const cleanup=()=>{if(done)return;done=true;observer.disconnect();window.removeEventListener('resize',schedule);window.visualViewport?.removeEventListener('resize',schedule);window.visualViewport?.removeEventListener('scroll',schedule);if(frameId)cancelAnimationFrame(frameId);['left','right','top','bottom','height'].forEach(property=>cards.style.removeProperty(property));choiceCleanups.delete(root);};
+  choiceCleanups.set(root,cleanup);schedule();
+ }
  function paintChoices(scene,wage){
   scene.popup.classList.add('job-approved-layout');
   if(!scene.wage)return;
@@ -33,5 +57,5 @@
   }else if(popup.parentElement!==homes.get(popup)&&homes.get(popup)?.isConnected){homes.get(popup).append(popup);}
  }
  function restoreResult(){const popup=document.getElementById('eventPopup');if(popup)placeResult(popup,null);}
- window.JobPresentation=Object.freeze({paintChoices,workResult,refusalResult:name=>escape(name)+'はバイトを断った。',placeResult,restoreResult});
+ window.JobPresentation=Object.freeze({paintChoices,placeChoices,releaseChoices,workResult,refusalResult:name=>escape(name)+'はバイトを断った。',placeResult,restoreResult});
 })();
