@@ -4560,8 +4560,10 @@ GAME OVER
             position: fixed;
             inset: 0;
             width: auto;
-            height: auto;
+            height: var(--game-visible-height, 100dvh);
             min-height: 0;
+            top: var(--game-visible-top, 0px);
+            bottom: auto;
         }
 
         .game-screen {
