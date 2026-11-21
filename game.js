@@ -10491,13 +10491,12 @@ function centerPlayerOnMap(
             const squareRect = mapNode.getBoundingClientRect();
             const viewRect = mapArea.getBoundingClientRect();
             const limits = window.MapScene?.getCameraLimits?.();
-            const zoom = Math.max(0.01, Number(getMapZoomUI?.()) || 1);
             const maxScrollLeft = Math.max(0, mapArea.scrollWidth - mapArea.clientWidth);
             const maxScrollTop = Math.max(0, mapArea.scrollHeight - mapArea.clientHeight);
             const targetScrollLeft = mapArea.scrollLeft + (squareRect.left + squareRect.width / 2
-                - viewRect.left - viewRect.width / 2) / zoom;
+                - viewRect.left - viewRect.width / 2);
             const targetScrollTop = mapArea.scrollTop + (squareRect.top + squareRect.height / 2
-                - viewRect.top - viewRect.height / 2) / zoom;
+                - viewRect.top - viewRect.height / 2);
             const finalScrollLeft = Math.max(limits?.minLeft ?? 0,
                 Math.min(targetScrollLeft, limits?.maxLeft ?? maxScrollLeft));
             const finalScrollTop = Math.max(limits?.minTop ?? 0,
