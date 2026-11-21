@@ -209,6 +209,8 @@
 
     function setSquareIconDetail(board, lowDetail) {
         for (const image of board.querySelectorAll('.map-space-icon')) {
+            // Keep the boss marker recognizable in the lightweight overview.
+            if (image.closest('.boss-node')) continue;
             const source = image.dataset.highQualitySrc || image.getAttribute('src');
             if (!source) continue;
             image.dataset.highQualitySrc = source;

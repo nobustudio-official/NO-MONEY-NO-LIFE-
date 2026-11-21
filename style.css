@@ -4889,13 +4889,14 @@ GAME OVER
 
     .map-low-detail-icon { display:none; }
     #mapBoard.map-low-detail-active .map-space-icon { display:none; }
-    #mapBoard.map-low-detail-active .map-low-detail-icon {
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-size:1.7rem;
-        line-height:1;
+    #mapBoard.map-low-detail-active .map-node:not(.boss-node) .square-icon { font-size: 0; }
+    #mapBoard.map-low-detail-active .map-node:not(.boss-node) .map-low-detail-icon { display:none; }
+    #mapBoard.map-low-detail-active .map-node.boss-node .map-space-icon {
+        display:block;
+        width:78px;
+        height:78px;
     }
+    #mapBoard.map-low-detail-active .map-node.boss-node .map-low-detail-icon { display:none; }
 
     .square-number {
         display: none;
@@ -10413,15 +10414,21 @@ max-height:
     }
 
     .game-hud .hud-player-name,
-    .game-hud .hud-value,
-    .game-hud .hud-destination-value,
-    .game-hud .hud-turn {
-        font-size: clamp(10px, 2.5vw, 24px);
+    .game-hud .hud-gold .hud-value,
+    .game-hud .hud-magic .hud-value {
+        font-size: clamp(11px, 1.8vw, 21px) !important;
+        min-width: 0;
+        max-width: 100%;
     }
 
-    .game-hud .hud-destination-label {
-        /* Use the mobile font size even when the desktop fitter sets an inline value. */
-        font-size: clamp(8px, 2vw, 18px) !important;
+    .game-hud .hud-destination-label,
+    .game-hud .hud-destination-value {
+        /* Keep destination text compact enough to stay inside its own HUD cell. */
+        font-size: clamp(9px, 1.45vw, 16px) !important;
+    }
+
+    .game-hud .hud-turn {
+        font-size: clamp(12px, 1.85vw, 22px) !important;
     }
 }
 
