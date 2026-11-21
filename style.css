@@ -1755,10 +1755,10 @@
 
     .inventory-item-use-button {
         flex:
-            0 0 80px;
+            0 0 72px;
 
         height:
-            40px;
+            34px;
 
         border:
             1px solid
@@ -2251,13 +2251,10 @@
 
         .inventory-item-use-button {
             flex:
-                0 0 65px;
+                0 0 72px;
 
             height:
-                38px;
-
-            font-size:
-                13px;
+                34px;
         }
 
 
