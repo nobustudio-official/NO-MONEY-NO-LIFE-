@@ -3546,6 +3546,8 @@ const fallbackIcon =
         ? "👹"
         : (MAP_TYPE_ICON_FALLBACKS[square.type] || square.icon || "❔");
 
+squareIcon.dataset.lowDetailFallback = fallbackIcon;
+
 if (isBossSquare) {
 
     node.classList.add(
@@ -3567,6 +3569,8 @@ if (iconPath) {
     iconImage.src =
         iconPath;
 
+    iconImage.dataset.highQualitySrc = iconPath;
+
     iconImage.alt =
         square.name || fallbackIcon;
 
@@ -3587,6 +3591,11 @@ if (iconPath) {
     squareIcon.appendChild(
         iconImage
     );
+
+    const lowDetailIcon = document.createElement("span");
+    lowDetailIcon.className = "map-low-detail-icon";
+    lowDetailIcon.textContent = fallbackIcon;
+    squareIcon.appendChild(lowDetailIcon);
 
 } else {
 
@@ -9220,10 +9229,24 @@ function updateNextPlayerView() {
     // guidebook-view guard; that guard is for incidental refreshes only.
     const focusIndex = currentPlayer;
     const requestId = ++nextPlayerCameraRequest;
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-        if (requestId !== nextPlayerCameraRequest || focusIndex !== currentPlayer) return;
-        centerPlayerOnMap(focusIndex, 'smooth', null, true);
-    }));
+    const waitForCamera = window.TurnHandoff?.isBlack?.() === true;
+    if (waitForCamera) {
+        const cameraReady = new Promise(resolve => {
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                if (requestId !== nextPlayerCameraRequest || focusIndex !== currentPlayer) {
+                    resolve();
+                    return;
+                }
+                centerPlayerOnMap(focusIndex, 'smooth', resolve, true);
+            }));
+        });
+        window.TurnHandoff.waitFor(cameraReady);
+    } else {
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            if (requestId !== nextPlayerCameraRequest || focusIndex !== currentPlayer) return;
+            centerPlayerOnMap(focusIndex, 'smooth', null, true);
+        }));
+    }
 
     // 現在プレイヤーの最短ルートを再描画
     refreshShortestPathToBoss();

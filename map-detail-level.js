@@ -131,7 +131,7 @@
         let state = states.get(board);
         if (state) return state;
         const area = board.closest('.map-area');
-        state = { area, nodes: [], important: [], bossPieces: [], zoom: 1, frame: 0, scrollSettleTimer: 0 };
+        state = { area, nodes: [], important: [], bossPieces: [], zoom: 1, frame: 0, scrollSettleTimer: 0, lowDetail: null };
         states.set(board, state);
         const schedule = () => {
             if (state.frame) return;
@@ -187,6 +187,11 @@
         const state = stateFor(board);
         state.zoom = zoom;
         if (options.preview !== true || touchDevice) window.MapOverviewCache?.setZoom(board, zoom);
+        const lowDetail = touchDevice && zoom <= .6;
+        if (state.lowDetail !== lowDetail) {
+            state.lowDetail = lowDetail;
+            setSquareIconDetail(board, lowDetail);
+        }
         // Avoid invalidating inherited styles on every road, SVG and icon.
         const emphasis = zoom < 1 ? 1 / zoom : 1;
         const value = String(emphasis);
@@ -200,6 +205,19 @@
             row.piece.style.setProperty('--piece-node-scale', String(row.base * emphasis));
         }
         if (options.preview !== true) state.schedule();
+    }
+
+    function setSquareIconDetail(board, lowDetail) {
+        for (const image of board.querySelectorAll('.map-space-icon')) {
+            const source = image.dataset.highQualitySrc || image.getAttribute('src');
+            if (!source) continue;
+            image.dataset.highQualitySrc = source;
+            if (lowDetail) {
+                if (image.hasAttribute('src')) image.removeAttribute('src');
+            } else if (image.getAttribute('src') !== source) {
+                image.src = source;
+            }
+        }
     }
 
     function refreshPieces(board, zoom) {

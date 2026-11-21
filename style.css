@@ -4885,6 +4885,16 @@ GAME OVER
         filter: drop-shadow(0 3px 3px rgba(0,0,0,0.38));
     }
 
+    .map-low-detail-icon { display:none; }
+    #mapBoard.map-low-detail-active .map-space-icon { display:none; }
+    #mapBoard.map-low-detail-active .map-low-detail-icon {
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:1.7rem;
+        line-height:1;
+    }
+
     .square-number {
         display: none;
     }

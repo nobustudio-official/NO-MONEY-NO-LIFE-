@@ -1,7 +1,16 @@
 /* Presentation-only handoff: the game/server remains responsible for turn state. */
 (function () {
     'use strict';
-    let phase = 'idle', element = null, queued = null, blackCallbacks = [];
+    let phase = 'idle', element = null, queued = null, blackCallbacks = [], waits = new Set();
+    function waitFor(promise) {
+        if (phase !== 'black') return false;
+        let tracked;
+        tracked = Promise.resolve(promise)
+            .catch(error => console.error('[turn-handoff] 待機処理に失敗:', error))
+            .finally(() => waits.delete(tracked));
+        waits.add(tracked);
+        return true;
+    }
     function onBlack(callback) {
         if (phase === 'black') { callback(); return true; }
         if (phase === 'waiting' || phase === 'fading-out') { blackCallbacks.push(callback); return true; }
@@ -13,6 +22,7 @@
             return false;
         }
         phase = 'waiting';
+        waits.clear();
         const popup = document.getElementById('eventPopup');
         if (popup) popup.style.display = 'none';
         window.UndergroundUI?.prepareTurnHandoff?.();
@@ -30,15 +40,20 @@
                 const callbacks = blackCallbacks; blackCallbacks = [];
                 for (const callback of callbacks) { try { callback(); } catch (error) { console.error('[turn-handoff]', error); } }
                 try { apply(); } catch (error) { console.error('[turn-handoff]', error); }
-                requestAnimationFrame(() => requestAnimationFrame(() => {
+                const fadeInWhenReady = () => {
                     if (!element) return;
+                    if (waits.size) {
+                        Promise.all([...waits]).then(() => requestAnimationFrame(fadeInWhenReady));
+                        return;
+                    }
                     phase = 'fading-in';
                     element.classList.remove('is-dark');
                     setTimeout(() => { element?.remove(); element = null; phase = 'idle'; if (queued) { const next = queued; queued = null; run(next); } }, 260);
-                }));
+                };
+                requestAnimationFrame(() => requestAnimationFrame(fadeInWhenReady));
             }, 260);
         }, 1000);
         return true;
     }
-    window.TurnHandoff = Object.freeze({ run, onBlack, isActive: () => phase !== 'idle', isWaiting: () => phase === 'waiting' || phase === 'fading-out', isBlack: () => phase === 'black' });
+    window.TurnHandoff = Object.freeze({ run, onBlack, waitFor, isActive: () => phase !== 'idle', isWaiting: () => phase === 'waiting' || phase === 'fading-out', isBlack: () => phase === 'black' });
 })();

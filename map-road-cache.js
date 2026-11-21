@@ -22,9 +22,10 @@
         const state = boards.get(board);
         if (!state) return;
         if (state.streaming) {
-            const overview = board.classList.contains('map-overview-active');
+            const overview = board.classList.contains('map-overview-active') ||
+                (MapDetailLevel.touchDevice && getMapZoomUI() <= .6);
             const ready = MapDetailLevel.setTileSources(state.tiles, overview ? null : bounds, visibleBounds);
-            MapDetailLevel.setTileSources(state.bridges, bounds);
+            MapDetailLevel.setTileSources(state.bridges, overview ? null : bounds);
             if (state.layer) {
                 state.vector.style.display = ready ? '' : 'inline';
                 state.layer.style.visibility = ready ? '' : 'hidden';

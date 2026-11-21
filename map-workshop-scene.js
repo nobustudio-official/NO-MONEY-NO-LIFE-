@@ -138,10 +138,11 @@
         state.bounds=bounds;
         state.visibleBounds=visibleBounds;
         const overview=board.classList.contains('map-overview-active');
+        const lowDetail=window.MapDetailLevel?.touchDevice&&getMapZoomUI()<=.6;
         const zooming=board.classList.contains('map-zoom-interacting');
         for(const row of state.rows){
             const {image,extent}=row;
-            const visible=!overview&&extent.left<bounds.right&&extent.right>bounds.left&&extent.top<bounds.bottom&&extent.bottom>bounds.top;
+            const visible=!overview&&!lowDetail&&extent.left<bounds.right&&extent.right>bounds.left&&extent.top<bounds.bottom&&extent.bottom>bounds.top;
             const onScreen=visible&&extent.left<visibleBounds.right&&extent.right>visibleBounds.left&&extent.top<visibleBounds.bottom&&extent.bottom>visibleBounds.top;
             if(row.sharp!==visible){
                 row.sharp=visible;

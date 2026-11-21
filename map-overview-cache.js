@@ -58,6 +58,12 @@
         const background = board.querySelector('.map-static-background');
         const state = mobileStates.get(background);
         if (!state) return;
+        // Full-map view uses its prebuilt overview image only. Do not let a
+        // viewport refresh enqueue the native detail tiles again at low zoom.
+        if (board.classList.contains('map-overview-active') || board.classList.contains('map-low-detail-active')) {
+            releaseMobileDetail(board);
+            return;
+        }
 
         const centerX = (bounds.left + bounds.right) / 2;
         const centerY = (bounds.top + bounds.bottom) / 2;
@@ -179,9 +185,13 @@
     function setZoom(board, zoom) {
         const background = board.querySelector('.map-background');
         const state = states.get(background);
+        const lowDetail=Boolean(window.MapDetailLevel?.touchDevice&&zoom<=.6);
+        const wasLowDetail=board.classList.contains('map-low-detail-active');
+        board.classList.toggle('map-low-detail-active',lowDetail);
+        if(lowDetail&&!wasLowDetail)releaseTouchDetails(board);
         if (!state?.ready) return;
         // Hysteresis prevents repeated swaps around the full-map viewing range.
-        const limit = window.MapDetailLevel?.touchDevice ? (state.active ? .48 : .4)
+        const limit = window.MapDetailLevel?.touchDevice ? (state.active ? .63 : .6)
             : MapScene.getMinZoom() * (state.active ? 1.8 : 1.45);
         const roadState = board.querySelector('.map-stone-roads')?.dataset.roadCache;
         // On phones the high-resolution road raster is intentionally omitted;

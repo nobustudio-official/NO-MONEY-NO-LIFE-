@@ -81,12 +81,11 @@
   if(!state)return;
   const overview=board.classList.contains('map-overview-active');
   const zoom=typeof getMapZoomUI==='function'?getMapZoomUI():1;
-  // At full-map scale, never decode the entire high-resolution tile set on a
-  // phone while the overview image is still becoming available. Keep the
-  // lightweight map visible as a fallback and release all sharp tile sources.
-  if(window.mobileRuntimeTuning===true&&zoom<=.4&&!overview){
+  const lowDetail=window.MapDetailLevel?.touchDevice&&zoom<=.6;
+  // Below the mobile detail threshold, never request native-resolution tiles.
+  if(lowDetail){
    MapDetailLevel.setTileSources(state.tiles,null,visible);
-   state.svg.style.display='';
+   state.svg.style.display=overview?'none':'';
    state.background.classList.remove('map-background-tiles-pending');
    return;
   }
