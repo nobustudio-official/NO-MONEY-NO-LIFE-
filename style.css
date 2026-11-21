@@ -10479,7 +10479,7 @@ max-height:
         left: max(4px, env(safe-area-inset-left, 0px));
         gap: 3px;
         font-size: clamp(10px, 3.8dvh, 16px);
-        width: calc(6em + var(--mobile-action-icon-size) + 16px);
+        width: calc(4.4em + var(--mobile-action-icon-size) + 14px);
     }
 
     .game-screen > .action-menu .action-menu-button {
