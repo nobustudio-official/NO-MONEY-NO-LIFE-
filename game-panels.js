@@ -13,7 +13,8 @@
             if(root.style.display==='none'||!root.isConnected)return;
             const bounds=screen.getBoundingClientRect(),header=banner.getBoundingClientRect(),button=dice.getBoundingClientRect();
             if(!bounds.width||!bounds.height||!header.height||!button.width)return;
-            const top=header.bottom+17,left=button.right+49,right=bounds.right-45,bottom=bounds.bottom-21;
+            const gap=17,top=header.bottom+gap,left=button.right+gap;
+            const right=bounds.right-(45+(49-gap)),bottom=bounds.bottom-21;
             if(right<=left||bottom<=top)return;
             root.style.setProperty('--gp-inv-top',`${top}px`);
             root.style.setProperty('--gp-inv-left',`${left}px`);
