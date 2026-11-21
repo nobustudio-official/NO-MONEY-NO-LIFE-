@@ -66,6 +66,45 @@ const PLAYER_DIRECTIONS = {
     right: { row: 1, column: 1 }
 };
 
+// Keep the four direction images for the player currently taking a turn
+// decoded before movement starts, so changing direction does not trigger a
+// first-use image decode during a camera move.
+let activePlayerDirectionPreloadKey = '';
+let activePlayerDirectionPreloadImages = [];
+let activePlayerDirectionPreloadPromise = Promise.resolve();
+
+function preloadPlayerDirectionSprites(player) {
+    const character = PLAYER_CONTENTS[player?.characterId];
+    if (!character) return Promise.resolve();
+    const directions = character.spriteDirections || {};
+    const sources = [...new Set(['down', 'up', 'left', 'right']
+        .map(direction => directions[direction] || character.sprite)
+        .filter(Boolean))];
+    const key = sources.join('|');
+    if (!key || key === activePlayerDirectionPreloadKey) return activePlayerDirectionPreloadPromise;
+
+    activePlayerDirectionPreloadKey = key;
+    activePlayerDirectionPreloadImages = [];
+    activePlayerDirectionPreloadPromise = Promise.all(sources.map(source => {
+        const image = new Image();
+        image.decoding = 'async';
+        image.src = source;
+        if (typeof image.decode === 'function') {
+            return image.decode().then(() => image, () => null);
+        }
+        return new Promise(resolve => {
+            image.onload = () => resolve(image);
+            image.onerror = () => resolve(null);
+            if (image.complete) resolve(image.naturalWidth ? image : null);
+        });
+    })).then(images => {
+        if (key === activePlayerDirectionPreloadKey) {
+            activePlayerDirectionPreloadImages = images.filter(Boolean);
+        }
+    });
+    return activePlayerDirectionPreloadPromise;
+}
+
 
 // =========================
 // プレイヤー画像取得
@@ -9221,6 +9260,9 @@ function showAssetRankingPopup(callback, serverRanking = null, displayOptions = 
 let nextPlayerCameraRequest = 0;
 function updateNextPlayerView() {
 
+    const activePlayer = players[currentPlayer];
+    if (activePlayer) preloadPlayerDirectionSprites(activePlayer);
+
     // ターン表示を更新
     renderTurn();
 
@@ -9763,6 +9805,7 @@ function beginPlayerTurn(player) {
     const online = window.onlineGame?.isOnline;
     const canonical = online ? window.onlineGame.sync?.state : null;
     if (online && (!isLocalOnlineTurn() || (canonical?.matchPhase && canonical.matchPhase !== 'playing'))) return;
+    preloadPlayerDirectionSprites(player);
     const turnKey = `${currentTurn}:${currentPlayer}`;
     const expiringOffline = !online && player.disadvantageImmunityTurnKey && player.disadvantageImmunityTurnKey !== turnKey;
     const immunityPending = online ? canonical?.disadvantageImmunityExpiry === turnKey : Boolean(expiringOffline || offlineImmunityExpiry === turnKey);
