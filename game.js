@@ -3494,59 +3494,84 @@ if (!existingRoads) mapBoard.appendChild(
 
 // =========================
 // マス詳細表示
-// マスを右クリックしたときに表示
+// PCでは右クリック、タッチ端末では1秒長押しで表示
 // =========================
 
-node.addEventListener(
-    "contextmenu",
-    function (event) {
-
-        // ブラウザ標準の右クリックメニューを抑止
-        event.preventDefault();
-
-        // 移動中はマス詳細を表示しない
-        if (window.isSquareMovementInProgress) {
-            return;
-        }
-
-        if (
-            typeof window.showSquareDetail !==
-            "function"
-        ) {
-            return;
-        }
-
-        // 表示中のマスをもう一度右クリックしたら詳細を閉じる
-        if (node.classList.contains("square-detail-highlight")) {
-            if (typeof window.hideSquareDetail === "function") {
-                window.hideSquareDetail();
-            }
-
-            return;
-        }
-
-        // 以前のマスの緑色の強調を解除
-        document
-            .querySelectorAll(".map-node.square-detail-highlight")
-            .forEach(function (node) {
-                node.classList.remove("square-detail-highlight");
-            });
-
-        // 右クリックしたマスを取得
-        const detailNode = document.querySelector(
-            `.map-node[data-square-id="${square.id}"]`
-        );
-
-        // 右クリックしたマスを緑色に強調
-        if (detailNode) {
-            detailNode.classList.add("square-detail-highlight");
-        }
-
-        // マス詳細を表示
-        window.showSquareDetail(square);
-
+const showSquareDetailForNode = function () {
+    if (window.isSquareMovementInProgress || typeof window.showSquareDetail !== "function") return;
+    if (node.classList.contains("square-detail-highlight")) {
+        if (typeof window.hideSquareDetail === "function") window.hideSquareDetail();
+        return;
     }
-);
+    document.querySelectorAll(".map-node.square-detail-highlight").forEach(function (highlighted) {
+        highlighted.classList.remove("square-detail-highlight");
+    });
+    const detailNode = document.querySelector(`.map-node[data-square-id="${square.id}"]`);
+    if (detailNode) detailNode.classList.add("square-detail-highlight");
+    window.showSquareDetail(square);
+};
+
+node.addEventListener("contextmenu", function (event) {
+    event.preventDefault();
+    // タッチ長押し時にOS標準メニューが先に出ても、独自の1秒判定を優先する。
+    if (event.pointerType === "touch" || event.sourceCapabilities?.firesTouchEvents || touchPointerActive) return;
+    showSquareDetailForNode();
+});
+
+let longPressTimer = 0;
+let longPressTriggered = false;
+let touchPointerActive = false;
+let touchPointerId = null;
+let longPressStartX = 0;
+let longPressStartY = 0;
+let suppressNextMapClick = false;
+let suppressClickResetTimer = 0;
+const clearLongPress = function () {
+    if (longPressTimer) window.clearTimeout(longPressTimer);
+    longPressTimer = 0;
+};
+node.addEventListener("pointerdown", function (event) {
+    if (event.pointerType !== "touch" || event.isPrimary === false) return;
+    clearLongPress();
+    touchPointerActive = true;
+    touchPointerId = event.pointerId;
+    longPressStartX = event.clientX;
+    longPressStartY = event.clientY;
+    longPressTriggered = false;
+    suppressNextMapClick = false;
+    window.clearTimeout(suppressClickResetTimer);
+    longPressTimer = window.setTimeout(function () {
+        longPressTimer = 0;
+        if (!touchPointerActive || window.isSquareMovementInProgress) return;
+        longPressTriggered = true;
+        suppressNextMapClick = true;
+        showSquareDetailForNode();
+    }, 1000);
+});
+node.addEventListener("pointermove", function (event) {
+    if (!touchPointerActive || event.pointerId !== touchPointerId || longPressTriggered) return;
+    if (Math.hypot(event.clientX - longPressStartX, event.clientY - longPressStartY) > 10) clearLongPress();
+});
+const finishLongPress = function (event) {
+    if (touchPointerActive && event.pointerId === touchPointerId) {
+        clearLongPress();
+        touchPointerActive = false;
+        touchPointerId = null;
+        if (longPressTriggered) {
+            window.clearTimeout(suppressClickResetTimer);
+            suppressClickResetTimer = window.setTimeout(function () { suppressNextMapClick = false; }, 1000);
+        }
+    }
+};
+node.addEventListener("pointerup", finishLongPress);
+node.addEventListener("pointercancel", finishLongPress);
+node.addEventListener("click", function (event) {
+    if (!suppressNextMapClick) return;
+    suppressNextMapClick = false;
+    window.clearTimeout(suppressClickResetTimer);
+    event.preventDefault();
+    event.stopImmediatePropagation();
+}, true);
 
 
 // マスからカーソルが離れても詳細は閉じない。
