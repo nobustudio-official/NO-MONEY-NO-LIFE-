@@ -85,10 +85,14 @@
   // Below the mobile detail threshold, never request native-resolution tiles.
   if(lowDetail){
    MapDetailLevel.setTileSources(state.tiles,null,visible);
-   state.svg.style.display=overview?'none':'';
+   state.svg.style.display='none';
+   const fallback=state.svg.querySelector('image[href]');
+   if(fallback){fallback.dataset.fallbackImage ||= fallback.getAttribute('href');fallback.removeAttribute('href');}
    state.background.classList.remove('map-background-tiles-pending');
    return;
   }
+  const fallback=state.svg.querySelector('image[data-fallback-image]');
+  if(fallback&&fallback.getAttribute('href')!==fallback.dataset.fallbackImage)fallback.setAttribute('href',fallback.dataset.fallbackImage);
   const ready=MapDetailLevel.setTileSources(state.tiles,overview?null:bounds,visible);
   state.svg.style.display=ready?'none':'';
   state.background.classList.toggle('map-background-tiles-pending',!ready);
@@ -97,7 +101,13 @@
   const state=windows.get(board);
   if(!state)return;
   MapDetailLevel.setTileSources(state.tiles,null,null);
-  state.svg.style.display='';
+  const lowDetail=window.MapDetailLevel?.touchDevice&&getMapZoomUI()<=.6;
+  state.svg.style.display=lowDetail?'none':'';
+  const fallback=state.svg.querySelector('image[href],image[data-fallback-image]');
+  if(fallback){
+   if(lowDetail){fallback.dataset.fallbackImage ||= fallback.getAttribute('href');fallback.removeAttribute('href');}
+   else if(fallback.getAttribute('href')!==fallback.dataset.fallbackImage)fallback.setAttribute('href',fallback.dataset.fallbackImage);
+  }
   state.background.classList.remove('map-background-tiles-pending');
  }
  window.MapBackgroundCache=Object.freeze({prepare,bake,setViewport,releaseDetail});

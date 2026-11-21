@@ -4,3 +4,15 @@
 @media(prefers-reduced-motion:reduce){.map-road-overlay .map-road-shortest-highlight{animation:none}}
 .map-stone-roads[data-road-cache="ready"] > .map-road-vector { display:none; }
 .map-road-material-replaced { display:none; }
+#mapBoard.map-low-detail-active .map-stone-roads > .map-road-vector { display:inline !important; }
+#mapBoard.map-low-detail-active .map-stone-roads .map-road-shadows,
+#mapBoard.map-low-detail-active .map-stone-roads .map-road-material-fallback,
+#mapBoard.map-low-detail-active .map-road-raster,
+#mapBoard.map-low-detail-active .map-road-bridge-art { display:none !important; }
+#mapBoard.map-low-detail-active .map-stone-roads .map-road-material-replaced { display:inline; }
+#mapBoard.map-low-detail-active .map-stone-roads .map-stone-edge > g > rect:not(:first-child),
+#mapBoard.map-low-detail-active .map-stone-roads .map-stone-edge > rect:not(:first-child) { display:none; }
+#mapBoard.map-low-detail-active .map-stone-roads .map-stone-edge > g > rect:first-child,
+#mapBoard.map-low-detail-active .map-stone-roads .map-stone-edge > rect:first-child {
+    fill:#e8c49a !important; stroke:#b9946d !important; stroke-width:1.5;
+}

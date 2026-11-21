@@ -1259,7 +1259,7 @@ function waitForGameAssets() {
     // Phones use the existing baked overview and load detail tiles on demand.
     const constrained = window.mobileRuntimeTuning === true;
     const overview = window.MapOverviewRasterData;
-    const mapAssets = constrained ? [overview?.mobileImage || overview?.image] : [
+    const mapAssets = constrained ? [overview?.mobileImage || overview?.image, overview?.lowDetailMobileImage] : [
         ...MapScene.assetUrls,
         ...(window.MapBackgroundRasterData?.tiles || []).map(tile => tile.image),
         overview?.image

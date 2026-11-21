@@ -21,6 +21,13 @@
     function setViewport(board, bounds, visibleBounds = bounds) {
         const state = boards.get(board);
         if (!state) return;
+        if (state.simpleMode) {
+            if (state.streaming) {
+                MapDetailLevel.setTileSources(state.tiles, null, null);
+                MapDetailLevel.setTileSources(state.bridges, null, null);
+            }
+            return;
+        }
         if (state.streaming) {
             const overview = board.classList.contains('map-overview-active') ||
                 (MapDetailLevel.touchDevice && getMapZoomUI() <= .6);
@@ -170,7 +177,8 @@
             });
             if (bridges.length) background.append(bridgeLayer);
             token.bridgeLayer = bridgeLayer;
-            boards.set(board, { tiles, bridges, streaming, layer, vector });
+            boards.set(board, { tiles, bridges, streaming, layer, vector,
+                simpleMode: Boolean(board.classList.contains('map-low-detail-active')) });
             const view = board.closest('.map-area').getBoundingClientRect();
             const rect = board.getBoundingClientRect();
             const zoom = getMapZoomUI();
@@ -182,6 +190,7 @@
                 bottom: (view.bottom + overscan - rect.top) / zoom
             });
             window.MapRoadRenderer?.setBridgeCollapse(svg, squares, window.bridgeCollapseVisualState);
+            window.MapRoadRenderer?.setSimpleMode(svg, boards.get(board)?.simpleMode);
             svg.dataset.roadCache = 'ready';
             window.MapDetailLevel?.setZoom(board, getMapZoomUI());
         } catch (error) {
@@ -199,11 +208,29 @@
             bridge.element.style.display = bridge.collapsed || bridge.visible === false ? 'none' : '';
         }
     }
+    function setSimpleMode(board, enabled) {
+        const state = boards.get(board);
+        if (!state || state.simpleMode === Boolean(enabled)) return;
+        state.simpleMode = Boolean(enabled);
+        window.MapRoadRenderer?.setSimpleMode(board.querySelector('.map-stone-roads'), state.simpleMode);
+        if (state.simpleMode) {
+            if (state.streaming) {
+                MapDetailLevel.setTileSources(state.tiles, null, null);
+                MapDetailLevel.setTileSources(state.bridges, null, null);
+            }
+            for (const tile of state.tiles) tile.element.style.display = 'none';
+            for (const bridge of state.bridges) bridge.element.style.display = 'none';
+        } else {
+            for (const tile of state.tiles) tile.element.style.display = '';
+            for (const bridge of state.bridges) bridge.element.style.display = '';
+            MapDetailLevel.scheduleViewport(board);
+        }
+    }
     function releaseDetail(board) {
         const state = boards.get(board);
         if (!state?.streaming) return;
         MapDetailLevel.setTileSources(state.tiles, null, null);
         MapDetailLevel.setTileSources(state.bridges, null, null);
     }
-    window.MapRoadCache = Object.freeze({ signature, prepare, setViewport, setBridgeCollapse, releaseDetail, recipe });
+    window.MapRoadCache = Object.freeze({ signature, prepare, setViewport, setBridgeCollapse, setSimpleMode, releaseDetail, recipe });
 })();

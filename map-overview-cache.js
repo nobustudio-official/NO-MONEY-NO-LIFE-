@@ -19,9 +19,28 @@
         image.alt = '';
         image.draggable = false;
         image.className = 'map-static-raster';
-        image.src = data.mobileImage || data.image;
+        const baseImage = data.mobileImage || data.image;
+        image.dataset.mapBaseImage = baseImage;
+        image.src = baseImage;
         background.classList.add('map-static-background');
         background.append(image);
+        if (window.MapDetailLevel?.touchDevice && data.lowDetailMobileImage) {
+            const lowDetailImage = new Image(data.width, data.height);
+            lowDetailImage.alt = '';
+            lowDetailImage.draggable = false;
+            lowDetailImage.className = 'map-low-detail-raster';
+            Object.assign(lowDetailImage.style, { position: 'absolute', left: '0', top: '0',
+                width: data.width + 'px', height: data.height + 'px', maxWidth: 'none',
+                pointerEvents: 'none', zIndex: '3' });
+            background.append(lowDetailImage);
+            const loading = window.MapDetailLevel.loadImage(lowDetailImage, data.lowDetailMobileImage, 0);
+            Promise.resolve(loading).then(loaded => {
+                if (!loaded || !background.isConnected) return;
+                lowDetailImage.classList.add('is-ready');
+                const board = background.closest('#mapBoard');
+                if (board && getMapZoomUI() <= .6) setZoom(board, getMapZoomUI());
+            }).catch(error => console.warn('[map] 軽量マップ背景を読み込めません。', error));
+        }
         if (data.mobileImage) window.MapWorkshopScene?.mount(background, { bakedScenery: true });
         if (data.detailTiles?.length) {
             const levels = mobileLevels.map(level => ({ ...level, images: new Map(), opacity: 0 }));
@@ -157,6 +176,17 @@
         window.MapWorkshopScene?.releaseDetail(board);
         releaseMobileDetail(board);
     }
+    function releaseMobileBase(board) {
+        const image = board.querySelector('.map-static-background > .map-static-raster');
+        if (image?.hasAttribute('src')) window.MapDetailLevel?.releaseImage(image);
+    }
+    function restoreMobileBase(board) {
+        const image = board.querySelector('.map-static-background > .map-static-raster');
+        const source = image?.dataset.mapBaseImage;
+        if (source && image.getAttribute('src') !== source) {
+            window.MapDetailLevel?.loadImage(image, source, 0).catch(() => {});
+        }
+    }
     async function prepare(background) {
         if (states.has(background)) return;
         const state = { ready: false, active: false };
@@ -164,6 +194,27 @@
         const data = window.MapOverviewRasterData;
         if (!data || data.signature !== signature()) return;
         try {
+            if (window.MapDetailLevel?.touchDevice) {
+                if (!data.lowDetailMobileImage) return;
+                let lowImage = background.querySelector('.map-low-detail-raster');
+                if (!lowImage) {
+                    lowImage = new Image(data.width, data.height);
+                    lowImage.alt = '';
+                    lowImage.draggable = false;
+                    lowImage.className = 'map-low-detail-raster';
+                    Object.assign(lowImage.style, { position: 'absolute', left: '0', top: '0',
+                        width: data.width + 'px', height: data.height + 'px', maxWidth: 'none',
+                        pointerEvents: 'none', zIndex: '3' });
+                    background.append(lowImage);
+                }
+                await window.MapDetailLevel.loadImage(lowImage, data.lowDetailMobileImage, 0);
+                if (!background.isConnected) return;
+                lowImage.classList.add('is-ready');
+                state.ready = true;
+                const board = background.closest('#mapBoard');
+                if (board) window.MapDetailLevel?.setZoom(board, getMapZoomUI());
+                return;
+            }
             const image = new Image();
             image.alt = '';
             image.draggable = false;
@@ -187,12 +238,17 @@
         const state = states.get(background);
         const lowDetail=Boolean(window.MapDetailLevel?.touchDevice&&zoom<=.6);
         const wasLowDetail=board.classList.contains('map-low-detail-active');
-        board.classList.toggle('map-low-detail-active',lowDetail);
-        if(lowDetail&&!wasLowDetail)releaseTouchDetails(board);
+        const lowImageReady = Boolean(background?.querySelector('.map-low-detail-raster.is-ready'));
+        const useLowDetail = lowDetail && lowImageReady;
+        board.classList.toggle('map-low-detail-active',useLowDetail);
+        if (useLowDetail) releaseMobileBase(board);
+        else if (wasLowDetail) restoreMobileBase(board);
+        window.MapRoadCache?.setSimpleMode(board, useLowDetail);
+        if(useLowDetail&&!wasLowDetail)releaseTouchDetails(board);
         if (!state?.ready) return;
-        // Hysteresis prevents repeated swaps around the full-map viewing range.
-        const limit = window.MapDetailLevel?.touchDevice ? (state.active ? .63 : .6)
-            : MapScene.getMinZoom() * (state.active ? 1.8 : 1.45);
+        // Mobile swaps at the same 0.6 threshold as its road/object detail.
+        // Desktop keeps its existing hysteresis around the overview range.
+        const limit = MapScene.getMinZoom() * (state.active ? 1.8 : 1.45);
         const roadState = board.querySelector('.map-stone-roads')?.dataset.roadCache;
         // On phones the high-resolution road raster is intentionally omitted;
         // the baked overview already contains the roads. A valid vector
@@ -200,7 +256,9 @@
         const roadsReady = roadState === 'ready' || (state.tuned && roadState === 'fallback');
         const valid = signature() === window.MapOverviewRasterData.signature && roadsReady &&
             background.dataset.rasterState === 'ready';
-        const active = Boolean(valid && zoom <= limit);
+        const active = window.MapDetailLevel?.touchDevice
+            ? useLowDetail
+            : Boolean(valid && zoom <= limit);
         if (state.active === active) return;
         state.active = active;
         background.classList.toggle('map-overview-active', active);

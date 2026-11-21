@@ -64,7 +64,7 @@
    const shadow=svg.querySelector(`[data-shadow-edge="${key}"]`);if(shadow)shadow.style.display='none';
   }
   const overlay=add(svg,'g',{class:'map-road-overlay'});
-  scenes.set(svg,{edges,overlay,active:new Set()});
+  scenes.set(svg,{edges,overlay,active:new Set(),simpleMode:false,collapseState:window.bridgeCollapseVisualState});
   queueMicrotask(()=>window.MapRoadCache?.prepare(svg,squares));
  }
  function setShortestPath(svg,path){
@@ -90,17 +90,31 @@
   }
   scene.active=next;
  }
+ function syncBridgeVisibility(svg,scene){
+  for(const [key,edge] of scene.edges){
+   if(!edge.group.classList.contains('map-road-bridge-edge'))continue;
+   const [aId,bId]=key.split(':').map(Number);
+   const closed=Boolean(scene.collapseState&&window.BridgeCollapseRules?.isClosed(scene.collapseState,aId,bId));
+   edge.group.style.display=scene.simpleMode&&!closed?'':'none';
+  }
+ }
+ function setSimpleMode(svg,enabled){
+  const scene=scenes.get(svg);if(!scene)return;
+  scene.simpleMode=Boolean(enabled);syncBridgeVisibility(svg,scene);
+ }
  function setBridgeCollapse(svg,squares,state){
   if(!svg)return;
+  const scene=scenes.get(svg);if(scene){scene.collapseState=state;syncBridgeVisibility(svg,scene);}
   svg.querySelector(':scope > .map-bridge-collapse-markers')?.remove();
   for(const [aId,bId] of window.BridgeCollapseRules?.edges||[]){
    const key=edgeKey(aId,bId),closed=Boolean(state&&window.BridgeCollapseRules.isClosed(state,aId,bId));
    for(const element of svg.querySelectorAll(`[data-road-edge="${key}"]`)){
-    element.style.display=element.classList.contains('map-road-bridge-edge')||closed?'none':'';
+    if(element.classList.contains('map-road-bridge-edge'))element.style.display=scene?.simpleMode&&!closed?'':'none';
+    else element.style.display=closed?'none':'';
    }
   }
   window.MapRoadCache?.setBridgeCollapse(svg,state);
  }
- window.MapRoadRenderer={draw,setShortestPath,setBridgeCollapse,
+ window.MapRoadRenderer={draw,setShortestPath,setBridgeCollapse,setSimpleMode,
   cacheRecipe:JSON.stringify(palette)+pattern.toString()+definitions.toString()+draw.toString()};
 })();

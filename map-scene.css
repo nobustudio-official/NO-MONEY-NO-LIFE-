@@ -34,6 +34,7 @@
 .map-static-background > .map-static-raster {
     position:absolute; inset:0; width:100%; height:100%; max-width:none; pointer-events:none;
 }
+.map-background > .map-low-detail-raster { display:none; }
 .map-static-background > .map-static-detail {
     position:absolute; z-index:1; max-width:none; pointer-events:none; opacity:0; transition:opacity 110ms linear;
 }
@@ -49,8 +50,12 @@
 #mapBoard.map-overview-active .map-stone-roads > .map-road-vector { display:none; }
 .map-background.map-low-detail-active > .map-background-raster,
 .map-background.map-low-detail-active > .map-road-raster { display:none; }
+#mapBoard.map-low-detail-active .map-static-background > .map-static-raster,
+#mapBoard.map-low-detail-active .map-background > .map-overview-raster { display:none; }
+#mapBoard.map-low-detail-active .map-background > .map-low-detail-raster.is-ready { display:block; }
 #mapBoard.map-low-detail-active .map-static-background > .map-static-detail,
-#mapBoard.map-low-detail-active > .map-workshop-objects { display:none; }
+#mapBoard.map-low-detail-active .map-workshop-objects,
+#mapBoard.map-low-detail-active .map-workshop-magic-effects { display:none; }
 .map-background.map-zoom-preview-active > .map-overview-raster { display:block; }
 .map-background.map-zoom-preview-active > .map-background-raster,
 .map-background.map-zoom-preview-active > .map-road-raster { display:none; }
