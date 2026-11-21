@@ -176,14 +176,15 @@
         v.close.textContent=c.closeLabel||(c.scene?'店を出る':'閉じる');
         v.close.onclick=()=>{if(!c.canAct())return;v.anchorCleanup?.();v.root.style.display='none';c.onClose?.();};
         v.headerAction.hidden=!c.headerAction;v.headerAction.textContent=c.headerAction?.label||'';v.headerAction.onclick=()=>{if(c.canAct())c.headerAction?.onClick?.();};
-        if(v.hello){const notice=v.data.find(row=>row.key===v.notice);if(notice)v.noticeText=notice.name+'\n'+(c.actionThanks||c.purchaseThanks||'お買い上げありがとう！');v.hello.textContent=v.noticeText||c.greeting||'';}
+        if(v.hello){const notice=v.data.find(row=>row.key===v.notice);if(notice)v.noticeText=notice.name+'\n'+(c.actionThanks||c.purchaseThanks||'お買い上げありがとう！');v.hello.textContent=v.root.classList.contains('gp-shop-no-staff')?'':v.noticeText||c.greeting||'';}
         describe(v);buttons(v);v.scroll.scrollTop=previousScroll;requestAnimationFrame(()=>fit(v));
     }
     function show(config) {
         const v=make(config.id,config.listId,config.closeId,Boolean(config.scene));
         if(v.root.style.display==='none'||v.player!==config.player){v.selected=null;v.hovered=null;v.notice=null;v.noticeText=null;v.waits.clear();v.busy.clear();v.scroll.scrollTop=0;}
         v.config=config;v.player=config.player;
-        if(config.scene){v.background.src=config.scene.backgroundImage;v.staff.src=config.scene.staffImage;v.staff.alt=config.scene.name+'の店員';
+        v.root.classList.toggle('gp-shop-no-staff',Boolean(config.scene&&['item-list','magic-menu','asset-purchase','sale-list'].includes(config.screenType)));
+        if(config.scene){v.background.src=config.scene.backgroundImage;if(v.root.classList.contains('gp-shop-no-staff')){v.staff.removeAttribute('src');v.staff.alt='';if(v.hello)v.hello.textContent='';}else{v.staff.src=config.scene.staffImage;v.staff.alt=config.scene.name+'の店員';}
             if(config.voice&&!v.presentation)v.presentation=ShopPresentation.create(v.root,{voice:config.voice});}
         v.root.style.display='block';draw(v);anchorOwnedPanel(v);if(config.voice!==false)v.presentation?.present();return v;
     }

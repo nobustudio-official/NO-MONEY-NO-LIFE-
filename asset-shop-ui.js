@@ -3,7 +3,7 @@
  'use strict';
  function render({player,playerIndex,assets,title,canPurchase,ownerIcon,onBuy,onClose,headerAction,suppressGreeting=false}){
   GamePanels.show({id:'assetPurchasePopup',listId:'assetPurchaseList',closeId:'assetPurchaseCloseButton',kind:'asset-shop',
-   player,playerIndex,screenType:'asset-purchase',title,scene:ASSET_SCENE_CONTENTS,voice:suppressGreeting?false:'sounds/voices/マス/不動産店員.mp3',
+   player,playerIndex,screenType:'asset-purchase',title,scene:ASSET_SCENE_CONTENTS,voice:false,
    greeting:'本日はどの子をご指名ですか？',purchaseThanks:'ご指名ありがとうございます。',feedback:false,onClose,headerAction,widths:['38%','23%','13%','12%','14%'],canAct:()=>canPurchase,
    onView:panel=>window.syncOnlineScreenView?.('asset-purchase',player,'open',{panel,suppressGreeting}),
    rows:()=>assets.filter(Boolean).sort(compareAssetPurchaseOrder)
