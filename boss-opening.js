@@ -175,6 +175,21 @@
                     // outside the land-only clipping group.
                     svg.append(shape); shapes.push({ region:{ id:'lake', name:'湖' }, shape });
                 }
+                // The overview artwork contains terrain and regular roads,
+                // while bridges are stored in a separate lightweight layer.
+                // Reuse those exact map-coordinate overlays in the lottery view.
+                for (const bridge of window.MapRoadRasterData?.bridges || []) {
+                    if (window.BridgeCollapseRules?.isClosed(window.bridgeCollapseVisualState, bridge.from, bridge.to)) continue;
+                    svg.append(svgElement('image', {
+                        href:bridge.image,
+                        x:bridge.x,
+                        y:bridge.y,
+                        width:bridge.width,
+                        height:bridge.height,
+                        preserveAspectRatio:'none',
+                        'pointer-events':'none'
+                    }));
+                }
                 map.append(svg); main.append(map);
                 function finishRoll() {
                     if (stage !== 'rolling') return;
