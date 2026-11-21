@@ -925,10 +925,19 @@
             translate(-50%, -50%);
 
         width:
-            min(90%, 500px);
+            min(40vw, 760px);
+
+        height:
+            clamp(140px, 40vh, 160px);
+
+        min-height:
+            clamp(140px, 40vh, 160px);
+
+        box-sizing:
+            border-box;
 
         padding:
-            30px 20px;
+            16px 20px;
 
         background:
             linear-gradient(125deg, #18384fe8, #10293cee);
@@ -956,11 +965,11 @@
 
 
     .gold-roulette-title {
-        font-size: 28px;
+        font-size: 24px;
 
         font-weight: bold;
 
-        margin-bottom: 25px;
+        margin-bottom: 14px;
     }
 
 
@@ -3390,8 +3399,11 @@ GAME OVER
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        width: min(90%, 500px);
-        padding: 30px 20px;
+        width: min(40vw, 760px);
+        height: clamp(140px, 40vh, 160px);
+        min-height: clamp(140px, 40vh, 160px);
+        box-sizing: border-box;
+        padding: 16px 20px;
         background: linear-gradient(125deg, #18384fe8, #10293cee);
         border: 1px solid #ccae7b;
         border-radius: 12px;
@@ -3401,9 +3413,9 @@ GAME OVER
     }
 
     .item-roulette-title {
-        font-size: 28px;
+        font-size: 24px;
         font-weight: bold;
-        margin-bottom: 25px;
+        margin-bottom: 14px;
     }
 
     .item-roulette-name {

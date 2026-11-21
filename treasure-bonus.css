@@ -6,7 +6,7 @@
 
 body.treasure-bonus-moving #itemRoulette {
     left: 28%;
-    width: min(43vw, 500px);
+    width: min(40vw, 760px);
     transform: translate(-50%, -50%) scale(.94);
 }
 
@@ -21,7 +21,7 @@ body.treasure-bonus-dice #diceRoulette {
 @media (max-width: 700px) {
     body.treasure-bonus-moving #itemRoulette {
         left: 27%;
-        width: 48vw;
+        width: min(40vw, 760px);
     }
     body.treasure-bonus-dice #diceRoulette {
         left: 69%;
