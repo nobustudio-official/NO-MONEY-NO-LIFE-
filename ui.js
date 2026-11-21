@@ -637,7 +637,7 @@ setupMapMouseDragUI();
 // PC：マウスホイールでマップ拡大縮小
 // =========================
 
-const MAP_INITIAL_ZOOM = 1;
+const MAP_INITIAL_ZOOM = 0.8;
 let mapZoomUI = MAP_INITIAL_ZOOM;
 
 const MAP_ZOOM_MIN = window.MapScene?.config.minZoom ?? 0.3;

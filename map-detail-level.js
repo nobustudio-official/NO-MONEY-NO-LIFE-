@@ -193,7 +193,9 @@
             setSquareIconDetail(board, lowDetail);
         }
         // Avoid invalidating inherited styles on every road, SVG and icon.
-        const emphasis = zoom < 1 ? 1 / zoom : 1;
+        // Keep pieces at their normal map-relative size above 0.6. Below that
+        // point, counter-scale from 0.6 so they stay legible without a jump.
+        const emphasis = zoom < .6 ? .6 / zoom : 1;
         const value = String(emphasis);
         for (const element of state.important) {
             if (element.style.getPropertyValue('--map-important-scale') !== value) {

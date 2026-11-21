@@ -10646,7 +10646,7 @@ if (destinationButton) {
 // 初期表示
 // =========================
 
-// A new match starts at normal scale, regardless of the previous map view.
+// A new match starts slightly zoomed out, regardless of the previous map view.
 window.resetMapZoomUI?.();
 
 renderMap();
