@@ -1912,6 +1912,9 @@ loadMapData()
 
     .then(function () {
         // Map assets are ready before the game screen and opening scene are shown.
+        // Keep setup on the phone's native portrait layout, then scale the
+        // complete playable UI from the desktop layout on mobile devices.
+        window.GameViewport?.activate();
         window.gameOpeningComplete = false;
         showGameScreen(players, maxTurns);
         const isOnline = Boolean(window.onlineGame && window.onlineGame.isOnline);
