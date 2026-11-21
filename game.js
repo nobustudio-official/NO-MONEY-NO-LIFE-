@@ -11134,7 +11134,7 @@ function stopJobVoice() {
 choicePanel.hidden = true;
 jobPopup.style.display = "block";
 window.Plane02Layout?.apply(jobPopup.querySelector(".job-scene"));
-dialogueBox.style.display = "block";
+dialogueBox.style.display = "flex";
 
 startSceneDialogue(scene, {
     onLine(line, lineIndex) {

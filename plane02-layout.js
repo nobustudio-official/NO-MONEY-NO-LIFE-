@@ -21,8 +21,8 @@
 
             const left = header.left;
             const right = header.right;
-            const top = header.bottom + 17;
-            const bottom = viewport.bottom - 17;
+            const top = header.bottom + 8;
+            const bottom = viewport.bottom - 8;
             if (right <= left || bottom <= top) return;
 
             frame.dataset.plane02 = 'true';
