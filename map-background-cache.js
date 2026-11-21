@@ -94,5 +94,12 @@
   state.svg.style.display=ready?'none':'';
   state.background.classList.toggle('map-background-tiles-pending',!ready);
  }
- window.MapBackgroundCache=Object.freeze({prepare,bake,setViewport});
+ function releaseDetail(board){
+  const state=windows.get(board);
+  if(!state)return;
+  MapDetailLevel.setTileSources(state.tiles,null,null);
+  state.svg.style.display='';
+  state.background.classList.remove('map-background-tiles-pending');
+ }
+ window.MapBackgroundCache=Object.freeze({prepare,bake,setViewport,releaseDetail});
 })();

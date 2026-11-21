@@ -158,6 +158,15 @@
         }
         if(!state.effectTimer)updateMagicEffects(board,state);
     }
+    function releaseDetail(board) {
+        const state=boards.get(board);if(!state?.streamImages)return;
+        for(const row of state.rows){
+            if(!row.image)continue;
+            row.sharp=false;
+            row.image.classList.remove('map-object-sharp');
+            window.MapDetailLevel?.releaseImage(row.image);
+        }
+    }
     function objectExtent({object,width,height}) {
         const angle=object.rotation*Math.PI/180,cos=Math.cos(angle),sin=Math.sin(angle);
         const corners=[[-width/2,-height],[width/2,-height],[-width/2,0],[width/2,0]].map(([x,y])=>({
@@ -211,5 +220,5 @@
         const board=document.getElementById('mapBoard'),state=boards.get(board);
         if(state&&!state.effectTimer)updateMagicEffects(board,state);
     });
-    window.MapWorkshopScene=Object.freeze({roadStyle,roadPoints,arrowPlacement,prepare,prepareRoads,drawRoad,drawObjects,mount,setViewport});
+    window.MapWorkshopScene=Object.freeze({roadStyle,roadPoints,arrowPlacement,prepare,prepareRoads,drawRoad,drawObjects,mount,setViewport,releaseDetail});
 })();

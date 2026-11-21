@@ -127,6 +127,30 @@
         state.pending = pending.map(({ entry }) => entry);
         loadMobileTiles(state);
     }
+    function releaseMobileDetail(board) {
+        if (!window.MapDetailLevel?.touchDevice) return;
+        const background=board.querySelector('.map-static-background');
+        const state=mobileStates.get(background);
+        if(!state)return;
+        state.pending.length=0;
+        for(const level of state.levels){
+            for(const entry of level.images.values()){
+                window.MapDetailLevel.releaseImage(entry.image);
+                entry.image.remove();
+            }
+            level.images.clear();
+            level.opacity=0;
+        }
+        background.style.setProperty('--map-medium-opacity','0');
+        background.style.setProperty('--map-native-opacity','0');
+        state.lastPixelZoom=0;
+    }
+    function releaseTouchDetails(board) {
+        window.MapBackgroundCache?.releaseDetail(board);
+        window.MapRoadCache?.releaseDetail(board);
+        window.MapWorkshopScene?.releaseDetail(board);
+        releaseMobileDetail(board);
+    }
     async function prepare(background) {
         if (states.has(background)) return;
         const state = { ready: false, active: false };
@@ -171,6 +195,26 @@
         state.active = active;
         background.classList.toggle('map-overview-active', active);
         board.classList.toggle('map-overview-active', active);
+        if(active&&window.MapDetailLevel?.touchDevice){
+            // The overview is a prebuilt image. Release decoded detail layers as
+            // soon as it takes over, rather than retaining them through the pinch.
+            releaseTouchDetails(board);
+        }
     }
-    window.MapOverviewCache = Object.freeze({ prepare, setZoom, signature, mountAsBase, setMobileViewport });
+    function setPreview(board, enabled) {
+        if (!window.MapDetailLevel?.touchDevice) return false;
+        if (!enabled) {
+            board.classList.remove('map-zoom-preview-active');
+            return true;
+        }
+        const background=board.querySelector('.map-background');
+        const state=states.get(background);
+        const valid=state?.ready && signature()===window.MapOverviewRasterData?.signature &&
+            background?.dataset.rasterState==='ready';
+        if(!valid)return false;
+        board.classList.add('map-zoom-preview-active');
+        releaseTouchDetails(board);
+        return true;
+    }
+    window.MapOverviewCache = Object.freeze({ prepare, setZoom, setPreview, signature, mountAsBase, setMobileViewport });
 })();

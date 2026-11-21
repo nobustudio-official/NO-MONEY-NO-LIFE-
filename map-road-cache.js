@@ -198,5 +198,11 @@
             bridge.element.style.display = bridge.collapsed || bridge.visible === false ? 'none' : '';
         }
     }
-    window.MapRoadCache = Object.freeze({ signature, prepare, setViewport, setBridgeCollapse, recipe });
+    function releaseDetail(board) {
+        const state = boards.get(board);
+        if (!state?.streaming) return;
+        MapDetailLevel.setTileSources(state.tiles, null, null);
+        MapDetailLevel.setTileSources(state.bridges, null, null);
+    }
+    window.MapRoadCache = Object.freeze({ signature, prepare, setViewport, setBridgeCollapse, releaseDetail, recipe });
 })();
