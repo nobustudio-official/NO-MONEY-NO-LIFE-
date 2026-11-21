@@ -10441,6 +10441,9 @@ max-height:
     }
 
     .game-screen > .game-hud {
+        top: max(8px, env(safe-area-inset-top, 0px));
+        left: max(8px, env(safe-area-inset-left, 0px));
+        right: max(8px, env(safe-area-inset-right, 0px));
         height: var(--mobile-hud-height);
     }
 
@@ -10456,8 +10459,8 @@ max-height:
     }
 
     .game-screen > .action-menu {
-        top: calc(var(--mobile-hud-height) + 19px);
-        left: 4px;
+        top: calc(max(8px, env(safe-area-inset-top, 0px)) + var(--mobile-hud-height) + 19px);
+        left: max(4px, env(safe-area-inset-left, 0px));
         gap: 3px;
         font-size: clamp(10px, 3.8dvh, 16px);
         width: calc(6em + var(--mobile-action-icon-size) + 16px);
