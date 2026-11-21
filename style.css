@@ -12499,19 +12499,7 @@ canvas {
    バイト結果ポップアップの位置調整
    ========================================= */
 
-#eventPopup.job-result-popup {
-    top: 68%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 30002;
-}
-
-/* 画面の高さが低い場合 */
-@media (max-height: 600px) {
-    #eventPopup.job-result-popup {
-        top: 62%;
-    }
-}
+#eventPopup.job-result-popup { z-index: 40000; }
 
 /* =========================================
    魔法店：会話終了後の購入画面レイアウト

@@ -12,5 +12,8 @@
 .bridge-mugging-copy{position:absolute;left:22px;right:88px;top:50%;transform:translateY(-50%);margin:0;font-size:clamp(18px,1.35vw,22px);font-weight:700;line-height:1.6}
 .bridge-mugging-an06.has-player-icon .bridge-mugging-copy{left:124px}
 .bridge-mugging-next{position:absolute;right:18px;bottom:8px;font-size:14px;font-weight:600}
-@media(max-width:800px){.bridge-mugging-frame{width:94vw;height:calc(80vh - 72px);min-height:340px}.bridge-mugging-character{height:62%;max-width:50%}.bridge-mugging-an06{height:140px;padding:18px}.bridge-mugging-speaker{left:18px;top:11px}.bridge-mugging-copy{left:18px;right:72px;font-size:17px}.bridge-mugging-an06.has-player-icon .bridge-mugging-player-icon{left:18px}.bridge-mugging-an06.has-player-icon .bridge-mugging-copy{left:120px}}
-@media(max-height:620px){.bridge-mugging-frame{min-height:280px}.bridge-mugging-an06{height:120px}}
+/* AN02-compatible text area: same viewport anchor and height as square arrivals. */
+.bridge-mugging-an06{position:fixed;left:var(--an02-left);right:var(--an02-right);bottom:var(--an02-bottom);width:auto;max-width:var(--an02-max-width);height:var(--an02-min-height);min-height:var(--an02-min-height);max-height:52vh;margin:0 auto;padding:clamp(8px,2.2vh,24px) clamp(14px,1.2vw,22px)}
+@media(max-width:700px),(pointer:coarse) and (max-height:500px){.bridge-mugging-an06{padding:clamp(8px,2.2vh,16px)}}
+@media(max-width:800px){.bridge-mugging-frame{width:94vw;height:calc(80vh - 72px);min-height:340px}.bridge-mugging-character{height:62%;max-width:50%}.bridge-mugging-an06{height:var(--an02-min-height);min-height:var(--an02-min-height);padding:clamp(8px,2.2vh,16px)}.bridge-mugging-speaker{left:16px;top:11px}.bridge-mugging-copy{left:18px;right:72px;font-size:17px}.bridge-mugging-an06.has-player-icon .bridge-mugging-player-icon{left:16px;width:48px;height:48px}.bridge-mugging-an06.has-player-icon .bridge-mugging-copy{left:76px}}
+@media(max-height:620px){.bridge-mugging-frame{min-height:280px}.bridge-mugging-an06{height:var(--an02-min-height);min-height:var(--an02-min-height)}}

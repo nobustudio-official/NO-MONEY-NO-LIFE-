@@ -522,6 +522,10 @@
 
         element.classList.add("is-visible");
 
+        if (id === "battleMainPopup") {
+            window.Plane02Layout?.apply(element.querySelector(".battle-main-screen"));
+        }
+
     }
 
 
@@ -548,6 +552,10 @@
         );
 
         element.classList.remove("is-visible");
+
+        if (id === "battleMainPopup") {
+            window.Plane02Layout?.release(element.querySelector(".battle-main-screen"));
+        }
 
     }
 

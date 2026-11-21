@@ -62,7 +62,8 @@
             function playGuide(name) { stopGuide(); guide = new Audio(`sounds/ガイド/${name}.mp3`); const slider = document.getElementById('seVolumeSlider'); guide.volume = slider ? Number(slider.value) / 100 : .7; const playback = window.GameSE ? window.GameSE.playLocal(guide) : guide.play(); Promise.resolve(playback).catch(error => console.warn(`[ボス討伐] 音声を再生できません: ${name}`, error)); }
             function header(title) { main.className = 'bf-main'; main.replaceChildren(); const h = document.createElement('h1'); h.textContent = title; main.append(h); }
             function message(text) { copy.innerHTML = text; }
-            function hide() { clearTimeout(timer); cancelAnimationFrame(frame); stopGuide(); if (loop) { loop.pause(); loop = null; } root.remove(); battleScreen?.classList.remove('battle-aftermath-active'); battleScreen?.closest('#battleMainPopup')?.classList.remove('boss-aftermath-battle-hidden'); }
+            window.Plane02Layout?.apply(root);
+            function hide() { clearTimeout(timer); cancelAnimationFrame(frame); stopGuide(); if (loop) { loop.pause(); loop = null; } window.Plane02Layout?.release(root); root.remove(); battleScreen?.classList.remove('battle-aftermath-active'); battleScreen?.closest('#battleMainPopup')?.classList.remove('boss-aftermath-battle-hidden'); }
             function showReward() {
                 stage = 'reward'; header('討伐報酬'); next.hidden = false;
                 const rows = [awards.first && ['先着報酬', awards.first], ...(awards.damageAwards || []).filter(row => Number(row.value) > 0).map(row => ['ダメージ報酬', row]), ['討伐報酬', awards.defeat]].filter(Boolean);
@@ -182,7 +183,7 @@
     let onlineTimer, onlineFrame, onlineKey = '', onlineSound;
     function closeOnline() {
         clearTimeout(onlineTimer); cancelAnimationFrame(onlineFrame); if (onlineSound) { if (window.GameSE) window.GameSE.stop(onlineSound); else onlineSound.pause(); } onlineSound = null; onlineKey = '';
-        document.getElementById('boss-aftermath')?.remove();
+        const root=document.getElementById('boss-aftermath');window.Plane02Layout?.release(root);root?.remove();
         document.querySelector('#battleMainPopup .battle-main-screen')?.classList.remove('battle-aftermath-active');
         document.getElementById('battleMainPopup')?.classList.remove('boss-aftermath-battle-hidden');
     }
@@ -197,6 +198,7 @@
         if (changedStage && onlineSound) { if (window.GameSE) window.GameSE.stop(onlineSound); else onlineSound.pause(); onlineSound = null; }
         let root = document.getElementById('boss-aftermath');
         if (!root) { root = document.createElement('section'); root.id = 'boss-aftermath'; document.body.append(root); }
+        window.Plane02Layout?.apply(root);
         const scene = document.querySelector('#battleMainPopup .battle-main-screen');
         scene?.classList.add('battle-aftermath-active');
         scene?.closest('#battleMainPopup')?.classList.add('boss-aftermath-battle-hidden');

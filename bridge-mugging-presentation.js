@@ -23,8 +23,8 @@
         const speaker=$('span','bridge-mugging-speaker'),icon=$('img','bridge-mugging-player-icon');icon.alt=player.name||'プレイヤー';
         icon.src=options.playerIcon||'';
         const copy=$('p','bridge-mugging-copy'),next=$('span','bridge-mugging-next','次へ ▶');
-        panel.append(speaker,icon,copy,next);frame.append(background,character,panel);root.append(frame);document.body.append(root);
-        return {root,character,panel,speaker,icon,copy,next};
+        panel.append(speaker,icon,copy,next);frame.append(background,character,panel);root.append(frame);document.body.append(root);window.Plane02Layout?.apply(frame);
+        return {root,frame,character,panel,speaker,icon,copy,next};
     }
     function render(view,lineIndex,triggered){
         const {character,panel,speaker,icon,copy}=view;
@@ -86,7 +86,7 @@
     }
     function finish(view){
         if(active!==view)return;
-        view.stopPageAdvance?.();view.root.remove();active=null;view.onComplete?.();
+        view.stopPageAdvance?.();window.Plane02Layout?.release(view.frame);view.root.remove();active=null;view.onComplete?.();
     }
     function renderRemote(data){
         if(!data||!Number.isInteger(Number(data.playerIndex)))return;
@@ -107,7 +107,7 @@
         render(view,view.lineIndex,view.triggered);
     }
     function closeRemote(eventId){
-        if(active&&(!eventId||active.eventId===eventId)){active.stopPageAdvance?.();active.root.remove();active=null;}
+        if(active&&(!eventId||active.eventId===eventId)){active.stopPageAdvance?.();window.Plane02Layout?.release(active.frame);active.root.remove();active=null;}
     }
     function isOpen(){return Boolean(active);}
     window.BridgeMuggingPresentation=Object.freeze({show,renderRemote,closeRemote,isOpen});

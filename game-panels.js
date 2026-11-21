@@ -43,6 +43,10 @@
     }
     function anchorOwnedPanel(v) {
         v.anchorCleanup?.();v.anchorCleanup=null;
+        if(v.config?.scene){
+            v.anchorCleanup=window.Plane02Layout?.apply(v.root)||null;
+            return;
+        }
         if(!['inventory','assets','magic-list'].includes(v.config?.kind))return;
         v.anchorCleanup=anchorFrame(v.root);
     }

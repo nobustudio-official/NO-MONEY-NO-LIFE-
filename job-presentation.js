@@ -27,7 +27,7 @@
   if(!homes.has(popup))homes.set(popup,popup.parentElement);
   const job=document.getElementById('jobPopup'),scene=job?.querySelector('.job-scene');
   if(metadata?.common&&popup.classList.contains('job-result-popup')&&scene&&job.style.display!=='none'){
-   scene.append(popup);
+   document.body.append(popup);
    const choices=scene.querySelector('.job-choice-panel'),dialogue=scene.querySelector('.job-dialogue-box');
    if(choices)choices.hidden=true;if(dialogue)dialogue.style.display='none';
   }else if(popup.parentElement!==homes.get(popup)&&homes.get(popup)?.isConnected){homes.get(popup).append(popup);}
