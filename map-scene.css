@@ -56,17 +56,6 @@
 #mapBoard.map-low-detail-active .map-static-background > .map-static-detail,
 #mapBoard.map-low-detail-active .map-workshop-objects,
 #mapBoard.map-low-detail-active .map-workshop-magic-effects { display:none; }
-.map-background.map-zoom-preview-active > .map-overview-raster { display:block; }
-.map-background.map-zoom-preview-active > .map-background-raster,
-.map-background.map-zoom-preview-active > .map-road-raster { display:none; }
-#mapBoard.map-zoom-preview-active .map-stone-roads > .map-road-vector,
-#mapBoard.map-zoom-preview-active > .map-workshop-objects { display:none; }
-#mapBoard.map-zoom-preview-active .map-static-background > .map-static-detail { display:none; }
-/* Keep the animated camera preview to the overview raster and occupied squares.
-   Repaint the full set of square icons only after the gesture settles. */
-#mapBoard.map-zoom-preview-active > .map-lines,
-#mapBoard.map-zoom-preview-active > .map-stone-roads,
-#mapBoard.map-zoom-preview-active > .map-node:not(.boss-node):not(:has(.player-piece)) { display:none !important; }
 .map-background.map-background-tiles-pending > .map-background-raster,
 .map-background > .map-background-raster:not([src]) { visibility:hidden; }
 .game-screen > .map-area.map-ocean {

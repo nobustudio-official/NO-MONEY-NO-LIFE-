@@ -95,6 +95,7 @@
    if(!edge.group.classList.contains('map-road-bridge-edge'))continue;
    const [aId,bId]=key.split(':').map(Number);
    const closed=Boolean(scene.collapseState&&window.BridgeCollapseRules?.isClosed(scene.collapseState,aId,bId));
+   edge.group.classList.toggle('is-collapsed',closed);
    edge.group.style.display=scene.simpleMode&&!closed?'':'none';
   }
  }

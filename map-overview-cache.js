@@ -271,18 +271,11 @@
     }
     function setPreview(board, enabled) {
         if (!window.MapDetailLevel?.touchDevice) return false;
-        if (!enabled) {
-            board.classList.remove('map-zoom-preview-active');
-            return true;
-        }
-        const background=board.querySelector('.map-background');
-        const state=states.get(background);
-        const valid=state?.ready && signature()===window.MapOverviewRasterData?.signature &&
-            background?.dataset.rasterState==='ready';
-        if(!valid)return false;
-        board.classList.add('map-zoom-preview-active');
-        releaseTouchDetails(board);
-        return true;
+        // Keep the loaded map scene visible throughout wheel and pinch zoom.
+        // The former preview removed the roads, squares, objects and detail
+        // tiles on every gesture, leaving no matching preview layer on mobile.
+        board.classList.remove('map-zoom-preview-active');
+        return false;
     }
     window.MapOverviewCache = Object.freeze({ prepare, setZoom, setPreview, signature, mountAsBase, setMobileViewport });
 })();

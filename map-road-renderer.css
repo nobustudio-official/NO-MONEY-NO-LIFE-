@@ -16,3 +16,9 @@
 #mapBoard.map-low-detail-active .map-stone-roads .map-stone-edge > rect:first-child {
     fill:#e8c49a !important; stroke:#b9946d !important; stroke-width:1.5;
 }
+#mapBoard.map-low-detail-active .map-stone-roads .map-road-bridge-edge:not(.is-collapsed) {
+    display:inline !important;
+}
+#mapBoard.map-low-detail-active .map-stone-roads .map-road-bridge-edge.is-collapsed {
+    display:none !important;
+}
