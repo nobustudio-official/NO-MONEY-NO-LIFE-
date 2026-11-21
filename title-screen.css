@@ -584,6 +584,12 @@
 
 /* Player setup on a portrait phone keeps navigation visible while its fields scroll. */
 @media (orientation: portrait) and (max-width: 700px) {
+    /* The setup panel's top/bottom safe-space is asymmetric. Offset both
+       setup stages together so their frames sit just above screen center. */
+    .title-screen.is-setup .title-screen__setup-card {
+        transform: translateY(-clamp(16px, 4.8vh, 40px));
+    }
+
     .title-screen.is-setup[data-setup-stage="players"] .title-screen__setup-card {
         width: min(1120px, 100%);
         height: min(760px, 100%);
