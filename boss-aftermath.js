@@ -102,7 +102,7 @@
                     return true;
                 });
             }
-            function draw(time) { return dice.draw({ phase:rollPhase, count:1, results:[value], began, stopped, showIndividualResults:false, diceScale:.7, cornerLaunch:true, centerLanding:true, canvasLanding:true, launchHeight:.22 }, time); }
+            function draw(time) { return dice.draw({ phase:rollPhase, count:1, results:[value], began, stopped, showIndividualResults:false, diceScale:window.DiceAnimation.gameplayScale, cornerLaunch:true, centerLanding:true, canvasLanding:true, launchHeight:.22 }, time); }
             function animate(time) { if (!dice) return; const done = draw(time); if (rollPhase === 'stopping' && done) { rollPhase = 'result'; draw(time); showFormula(); return; } frame = requestAnimationFrame(animate); }
             function showPenalty() {
                 if (!target) { hide(); resolve({ target:null, amount:0 }); return; }
@@ -260,7 +260,7 @@
                 else if (stage === 'formula') line('お仕置き額は <strong>'+fmt(c.rawAmount ?? c.amount)+'G</strong> です。');
                 else if (stage === 'surcharge') line(surchargeMessage);
                 else { next.hidden=true; line('そして、一番遠い冒険者にはお仕置きです。<br>ボスを討伐した'+esc(players[snapshot.playerIndex].name)+'さんは、サイコロを振ってください。'); if(owner){ const button=document.createElement('button');button.className='bf-action bf-roll';button.textContent=stage==='rolling'?'クリックして止める':'サイコロを振る';button.onclick=()=>sendOnce(stage==='rolling'?'stop':'roll');content.append(button); } }
-                const canvas=content.querySelector('canvas'); const renderer=DiceAnimation.createRenderer(canvas,{theme:'black',stopMotion:window.DiceStopMotion.sample}); const start=performance.now(); const diceState={phase:stage==='rolling'?'rolling':stage==='formula'?'stopping':'result',count:1,results:[c.die||1],began:start,stopped:start,showIndividualResults:false,diceScale:.7,cornerLaunch:true,centerLanding:true,canvasLanding:true,launchHeight:.22};
+                const canvas=content.querySelector('canvas'); const renderer=DiceAnimation.createRenderer(canvas,{theme:'black',stopMotion:window.DiceStopMotion.sample}); const start=performance.now(); const diceState={phase:stage==='rolling'?'rolling':stage==='formula'?'stopping':'result',count:1,results:[c.die||1],began:start,stopped:start,showIndividualResults:false,diceScale:window.DiceAnimation.gameplayScale,cornerLaunch:true,centerLanding:true,canvasLanding:true,launchHeight:.22};
                 const draw=t=>{const done=renderer.draw(diceState,t);if(stage==='rolling'||stage==='formula'&&!done)onlineFrame=requestAnimationFrame(draw)};onlineFrame=requestAnimationFrame(draw);
             }
         }

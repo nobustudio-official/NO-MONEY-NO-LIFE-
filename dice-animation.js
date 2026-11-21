@@ -101,5 +101,5 @@
   return phase==='stopping' && t-stopped>=STOP_DURATION+(count()-1)*STOP_STAGGER;
  }};
  }
- window.DiceAnimation={createRenderer,duration:count=>STOP_DURATION+(count-1)*STOP_STAGGER};
+ window.DiceAnimation={createRenderer,duration:count=>STOP_DURATION+(count-1)*STOP_STAGGER,gameplayScale:.52};
 })();

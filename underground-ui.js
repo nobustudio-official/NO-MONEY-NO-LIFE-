@@ -215,7 +215,7 @@
             if (!results && rolling !== side) return null;
             const phase = flow.stage === 'cheat' && side === 'foreman' ? 'rolling' : rolling === side ? 'rolling' : stopping === side ? 'stopping' : 'result';
             return { renderer, state:{ phase, results:results || [], count:3, began:started, stopped:started,
-                showIndividualResults:false, centerLanding:true, canvasLanding:true, diceScale:0.65 }, side };
+                showIndividualResults:false, centerLanding:true, canvasLanding:true, diceScale:window.DiceAnimation.gameplayScale }, side };
         }).filter(Boolean);
         if (stopping) busy = true;
         function animate(now) {
@@ -459,7 +459,7 @@
             const canvas = root.querySelector('.ug-normal-dice canvas');
             const renderer = window.DiceAnimation.createRenderer(canvas, {stopMotion:window.DiceStopMotion.sample});
             const began = performance.now(), current = generation;
-            const diceState = { phase:stage === 'rolling' ? 'rolling' : 'stopping', count:1, results:stage === 'diceResult' ? [flow.move] : [], began, stopped:began, showIndividualResults:false, centerLanding:true, cornerLaunch:true, launchHeight:.22, diceScale:.7, landingOffsetY:80 };
+            const diceState = { phase:stage === 'rolling' ? 'rolling' : 'stopping', count:1, results:stage === 'diceResult' ? [flow.move] : [], began, stopped:began, showIndividualResults:false, centerLanding:true, cornerLaunch:true, launchHeight:.22, diceScale:window.DiceAnimation.gameplayScale, landingOffsetY:80 };
             if (stage === 'rolling') cue('サイコロ.wav', .83);
             else { cue('サイコロ停止.mp3'); busy = true; }
             const draw = time => {

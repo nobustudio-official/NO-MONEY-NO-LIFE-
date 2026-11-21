@@ -24,7 +24,7 @@
   const landingTarget=options.alignWithSlot?document.getElementById('itemRouletteName'):null;
   const preview=options.preview===true;
   const renderer=DiceAnimation.createRenderer(canvas,{stopMotion:window.DiceStopMotion.sample});
-  let state={phase:preview?'idle':'rolling',results:[],began:performance.now(),stopped:0,count,showIndividualResults:false,centerLanding:true,cornerLaunch:true,launchHeight:.22,diceScale:.7,landingOffsetY:80},raf=0,paint=0,closed=false,stopping=false,resolveStop=null,readOnly=options.readOnly===true,confirmed=false,resultNotified=false;
+  let state={phase:preview?'idle':'rolling',results:[],began:performance.now(),stopped:0,count,showIndividualResults:false,centerLanding:true,cornerLaunch:true,launchHeight:.22,diceScale:DiceAnimation.gameplayScale,landingOffsetY:80},raf=0,paint=0,closed=false,stopping=false,resolveStop=null,readOnly=options.readOnly===true,confirmed=false,resultNotified=false;
   const loop=()=>{if(diceSound.currentTime>=.83)diceSound.currentTime=0;};
   let stopCuePlayed=false;
   function startLoop(){diceSound.loop=false;sound(diceSound,{loopEnd:.83});diceSound.addEventListener('timeupdate',loop);}
