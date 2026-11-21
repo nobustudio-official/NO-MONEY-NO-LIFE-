@@ -3334,6 +3334,7 @@ playSharedSE(buttonSound)
 
                 if (soundPopup) {
                     soundPopup.style.display = "block";
+                    window.GamePanels?.anchorFrame("soundSettingsPopup");
                 }
                 syncOnlineScreenView("sound-settings", players[currentPlayer]);
 
@@ -3891,6 +3892,7 @@ document.getElementById(
 
         popup.style.display =
             "block";
+        window.GamePanels?.anchorFrame("soundSettingsPopup");
         syncOnlineScreenView("sound-settings", players[currentPlayer]);
 
     };
@@ -3910,6 +3912,7 @@ document.getElementById(
 
         popup.style.display =
             "none";
+        window.GamePanels?.releaseFrame("soundSettingsPopup");
         syncOnlineScreenView("", players[currentPlayer], "close");
 
     };
@@ -6803,7 +6806,7 @@ inventoryButton.disabled =
                 }
                 else if (data.screenType === "sound-settings") {
                     const popup = document.getElementById("soundSettingsPopup");
-                    if (popup) popup.style.display = "block";
+                    if (popup) { popup.style.display = "block"; window.GamePanels?.anchorFrame("soundSettingsPopup"); }
                 }
                 else if (data.screenType === "asset-list") showAssetPopup(shopPlayer);
                 else if (data.screenType === "sale-list") ApprovedCommerce.showSales(shopPlayer,data.screenData?.category,()=>{},true);
@@ -7130,6 +7133,7 @@ inventoryButton.disabled =
                 ["shopPopup", "magicShopPopup", "powerShopPopup", "assetPopup", "assetPurchasePopup", "inventoryPopup", "magicPopup", "otherMenuPopup", "soundSettingsPopup"].forEach(function (id) {
                     const popup = document.getElementById(id);
                     if (popup) popup.style.display = "none";
+                    if (id === "soundSettingsPopup") window.GamePanels?.releaseFrame(id);
                 });
                 remoteShopViewActive = false;
                 document.body.classList.remove("magic-shop-dual-layout");

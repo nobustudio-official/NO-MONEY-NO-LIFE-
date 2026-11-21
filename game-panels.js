@@ -4,11 +4,12 @@
     const views=new Map(), format=n=>Number(n).toLocaleString('ja-JP');
     const clock=()=>window.onlineGame?.sync?.serverNow?.() ?? Date.now();
     const node=(tag,cls,text)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el;};
-    function anchorInventory(v) {
-        v.anchorCleanup?.();v.anchorCleanup=null;
-        if(v.config?.kind!=='inventory')return;
-        const root=v.root,screen=document.querySelector('.game-screen'),banner=screen?.querySelector('.game-hud'),dice=screen?.querySelector('#rouletteButton');
-        if(!screen||!banner||!dice)return;
+    const anchorCleanups=new WeakMap();
+    function anchorFrame(root) {
+        anchorCleanups.get(root)?.();
+        if(root.id==='soundSettingsPopup')root.style.display='flex';
+        const screen=document.querySelector('.game-screen'),banner=screen?.querySelector('.game-hud'),dice=screen?.querySelector('#rouletteButton');
+        if(!screen||!banner||!dice)return null;
         const update=()=>{
             if(root.style.display==='none'||!root.isConnected)return;
             const bounds=screen.getBoundingClientRect(),header=banner.getBoundingClientRect(),button=dice.getBoundingClientRect();
@@ -28,13 +29,22 @@
         window.addEventListener('resize',schedule,{passive:true});
         window.visualViewport?.addEventListener('resize',schedule,{passive:true});
         window.visualViewport?.addEventListener('scroll',schedule,{passive:true});
-        v.anchorCleanup=()=>{
+        let cleaned=false;
+        const cleanup=()=>{
+            if(cleaned)return;cleaned=true;
             observer.disconnect();window.removeEventListener('resize',schedule);
             window.visualViewport?.removeEventListener('resize',schedule);
-            window.visualViewport?.removeEventListener('scroll',schedule);
+            window.visualViewport?.removeEventListener('scroll',schedule);anchorCleanups.delete(root);
             if(frame)cancelAnimationFrame(frame);root.removeAttribute('data-anchored');
         };
+        anchorCleanups.set(root,cleanup);
         schedule();
+        return cleanup;
+    }
+    function anchorOwnedPanel(v) {
+        v.anchorCleanup?.();v.anchorCleanup=null;
+        if(!['inventory','assets','magic-list'].includes(v.config?.kind))return;
+        v.anchorCleanup=anchorFrame(v.root);
     }
     function make(id,listId,closeId,shop) {
         const root=document.getElementById(id);
@@ -171,7 +181,7 @@
         v.config=config;v.player=config.player;
         if(config.scene){v.background.src=config.scene.backgroundImage;v.staff.src=config.scene.staffImage;v.staff.alt=config.scene.name+'の店員';
             if(config.voice&&!v.presentation)v.presentation=ShopPresentation.create(v.root,{voice:config.voice});}
-        v.root.style.display='block';draw(v);anchorInventory(v);if(config.voice!==false)v.presentation?.present();return v;
+        v.root.style.display='block';draw(v);anchorOwnedPanel(v);if(config.voice!==false)v.presentation?.present();return v;
     }
     function remote(screenType,data,playerIndex) {
         const v=[...views.values()].find(entry=>entry.config?.screenType===screenType&&entry.root.style.display==='block'&&entry.config.playerIndex===playerIndex);
@@ -185,5 +195,5 @@
         return true;
     }
     function refresh(){for(const v of views.values())if(v.root.style.display==='block'){if(v.config.rebuild)v.config.rebuild();else draw(v);}}
-    window.GamePanels=Object.freeze({show,remote,refresh,fade:(id,key,row)=>{const v=views.get(id);if(v)fade(v,key,row);},setNotice:(id,name)=>{const v=views.get(id);if(v)setNotice(v,name);},isOpen:id=>views.get(id)?.root.style.display==='block',get:id=>views.get(id),snapshot:id=>snapshot(views.get(id))});
+    window.GamePanels=Object.freeze({show,remote,refresh,anchorFrame:id=>{const root=document.getElementById(id);return root?anchorFrame(root):null;},releaseFrame:id=>{const root=document.getElementById(id);if(root)anchorCleanups.get(root)?.();},fade:(id,key,row)=>{const v=views.get(id);if(v)fade(v,key,row);},setNotice:(id,name)=>{const v=views.get(id);if(v)setNotice(v,name);},isOpen:id=>views.get(id)?.root.style.display==='block',get:id=>views.get(id),snapshot:id=>snapshot(views.get(id))});
 })();

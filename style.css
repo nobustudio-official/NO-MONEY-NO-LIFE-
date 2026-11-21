@@ -12888,6 +12888,14 @@ body.bridge-collapse-shake > :not(script):not(style) {
     background:linear-gradient(145deg,#14334aee,#123148f5);
     box-shadow:0 16px 55px #07192370;color:#fcfcfc;text-align:left;
 }
+#soundSettingsPopup[data-anchored]{
+    top:var(--gp-inv-top);left:var(--gp-inv-left);right:auto;bottom:auto;
+    width:var(--gp-inv-width);height:var(--gp-inv-height);max-width:none;max-height:none;
+    margin:0;padding:clamp(10px,2vh,22px) clamp(14px,2vw,24px) clamp(8px,1.5vh,16px);
+    display:flex;flex-direction:column;transform:none;overflow:hidden;
+}
+#soundSettingsPopup[data-anchored] .inventory-list{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+#soundSettingsPopup[data-anchored] .inventory-close-button{flex:none;align-self:flex-end;margin:10px 0 0}
 #soundSettingsPopup .inventory-popup-title{
     margin:0 0 14px;padding:0 0 14px;border-bottom:1px solid #ccae7b90;
     color:#fcfcfc;font-size:24px;font-weight:700;text-align:left;
