@@ -65,7 +65,7 @@
         if(!oldList)scroll.id=listId;body.replaceChildren();table.append(cols,body);scroll.replaceChildren(table);
         const footer=node('footer','gp-footer'),detail=node('div','gp-detail'),icon=node('img','gp-detail-icon'),copy=node('div','gp-copy'),effect=node('div','gp-effect'),note=node('div','gp-note'),usage=node('div','gp-usage');
         icon.hidden=true;icon.alt='';copy.append(effect,note);note.hidden=true;usage.hidden=true;detail.append(icon,copy,usage);
-        close.id=closeId;close.type='button';close.className='gp-close';close.replaceChildren(document.createTextNode(shop?'店を出る':'閉じる'));
+        close.id=closeId;close.type='button';close.className='gp-close';close.replaceChildren(document.createTextNode(shop?'終了':'閉じる'));
         footer.append(detail,close);
         panel.append(heading,columns,scroll,footer);root.append(panel);
         let staff,hello,background;
@@ -173,7 +173,7 @@
         v.root.classList.toggle('gp-sale-assets',c.kind==='sale-assets');
         v.root.classList.toggle('gp-inventory',c.kind==='inventory');
         v.root.classList.toggle('gp-magic-list',c.kind==='magic-list');
-        v.close.textContent=c.closeLabel||(c.scene?'店を出る':'閉じる');
+        v.close.textContent=c.closeLabel||(c.scene?'終了':'閉じる');
         v.close.onclick=()=>{if(!c.canAct())return;v.anchorCleanup?.();v.root.style.display='none';c.onClose?.();};
         v.headerAction.hidden=!c.headerAction;v.headerAction.textContent=c.headerAction?.label||'';v.headerAction.onclick=()=>{if(c.canAct())c.headerAction?.onClick?.();};
         if(v.hello){const notice=v.data.find(row=>row.key===v.notice);if(notice)v.noticeText=notice.name+'\n'+(c.actionThanks||c.purchaseThanks||'お買い上げありがとう！');v.hello.textContent=v.root.classList.contains('gp-shop-no-staff')?'':v.noticeText||c.greeting||'';}

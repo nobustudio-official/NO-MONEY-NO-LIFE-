@@ -3766,7 +3766,7 @@ function showAssetPurchasePopup(player, assetIds, callback, suppressGreeting = f
     const refresh = () => showAssetPurchasePopup(player, assetIds, onClose, suppressGreeting);
     AssetShopUI.render({
         player, playerIndex, title, canPurchase: canLocalPurchaseAsset(player),
-        headerAction:{label:'売却画面へ',onClick:()=>ApprovedCommerce.showSales(player,'asset',()=>showAssetPurchasePopup(player,assetIds,onClose,true))},
+        headerAction:{label:'売却',onClick:()=>ApprovedCommerce.showSales(player,'asset',()=>showAssetPurchasePopup(player,assetIds,onClose,true))},
         suppressGreeting,
         assets: assetIds.map(id => ASSET_CONTENTS[id] ? { ...ASSET_CONTENTS[id], id, price:marketPrice(ASSET_CONTENTS[id].price) } : null),
         ownerIcon: getPlayerCharacterIcon,
