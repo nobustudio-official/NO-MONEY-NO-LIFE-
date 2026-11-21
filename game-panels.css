@@ -60,7 +60,7 @@
 .gp-status{text-align:center;color:#fcfcfc;font-size:clamp(12px,1.4vw,17px);white-space:nowrap}
 .gp-inventory .gp-status-end{text-align:right;padding-right:18px}
 .gp-action{text-align:center}
-.gp-root .gp-button{position:relative;display:inline-block;width:100px;height:34px;min-height:34px;margin:0;padding:0 8px;border:1px solid #ccae7b;border-radius:8px;background:linear-gradient(#47718a,#2c4e6d);font:700 clamp(12px,1.3vw,15px)/1.1 "Yu Gothic","Meiryo",sans-serif;color:#fff4dc;cursor:pointer;white-space:nowrap;box-shadow:none}
+.gp-root .gp-button{position:relative;display:inline-block;width:112px;height:44px;min-height:44px;margin:0;padding:0 8px;border:1px solid #ccae7b;border-radius:8px;background:linear-gradient(#47718a,#2c4e6d);font:700 clamp(12px,1.3vw,15px)/1.1 "Yu Gothic","Meiryo",sans-serif;color:#fff4dc;cursor:pointer;white-space:nowrap;box-shadow:none}
 .gp-root .gp-button:disabled{background:#304658;color:#a0b2c1;border-color:#71849360;cursor:default}
 .gp-header-action{flex:none;margin-left:auto;padding:8px 18px;border:1px solid #ccae7b;border-radius:8px;background:linear-gradient(#47718a,#2c4e6d);color:#fff4dc;font:700 15px/1.2 "Yu Gothic","Meiryo",sans-serif;cursor:pointer}
 .gp-header-action[hidden]{display:none}
