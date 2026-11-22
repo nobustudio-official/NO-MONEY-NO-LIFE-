@@ -30,10 +30,9 @@
 .gp-assets .gp-summary>span{position:absolute;top:50%;transform:translateY(-50%);display:flex;align-items:baseline}
 .gp-assets .gp-summary>span:first-child{right:calc(30% - 56px)}
 .gp-assets .gp-summary>span:last-child{right:calc(8% - 40px)}
-.gp-sale-assets .gp-heading{padding-bottom:40px}
 .gp-sale-assets .gp-summary{position:absolute;inset:0;height:auto;display:block;margin:0;pointer-events:none}
-.gp-sale-assets .gp-summary>span{position:absolute;top:50%;transform:translateY(-50%);display:grid;grid-template-rows:auto auto;align-content:center;justify-items:end;gap:1px;text-align:right;line-height:1.25}
-.gp-sale-assets .gp-summary>span strong{margin-left:0;font-size:24px}
+.gp-sale-assets .gp-summary>span{position:absolute;top:50%;transform:translateY(-50%);display:flex;align-items:baseline;text-align:right;line-height:1.25;white-space:nowrap}
+.gp-sale-assets .gp-summary>span strong{margin-left:clamp(2px,.6vw,10px);font-size:inherit}
 .gp-assets .gp-summary strong,.gp-sale-assets .gp-summary>span strong{font-size:inherit}
 .gp-sale-assets .gp-summary .gp-yield{text-align:right;padding-right:0}
 .gp-sale-assets .gp-table td:nth-child(2){text-align:left}
