@@ -91,6 +91,7 @@
 .gp-empty{text-align:center;color:#b7cddd;font-size:clamp(12px,1.4vw,18px)}
 .gp-footer{flex:none;display:flex;align-items:center;gap:clamp(8px,1.5vw,24px);min-height:clamp(62px,8.5vh,90px);margin-top:clamp(6px,1vh,10px);padding-top:clamp(6px,1.3vh,14px);border-top:1px solid #ccae7b66}
 .gp-magic-list .gp-footer{min-height:clamp(68px,9.5vh,110px)}
+:is(.gp-sale-assets,.gp-sale-items,.gp-sale-magic) .gp-footer{min-height:0;margin-top:4px;padding-top:4px}
 .gp-detail{display:flex;align-items:center;gap:clamp(6px,1vw,12px);min-width:0;flex:1}
 .gp-detail-icon{flex:none;width:clamp(30px,4vw,40px);height:clamp(30px,4vw,40px);object-fit:contain}
 .gp-copy{min-width:0;flex:1}

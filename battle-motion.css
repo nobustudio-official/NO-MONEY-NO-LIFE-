@@ -563,6 +563,7 @@
         flex: 0 0 auto;
         min-width: 0;
         margin-left: auto;
+        transform: none;
         gap: 8px;
     }
 
