@@ -99,7 +99,7 @@
 #dividendPresentationOverlay #nmnl-dividend-lab .dp-guide-banner{position:fixed;top:auto;left:var(--an02-left);right:var(--an02-right);bottom:var(--an02-bottom);width:auto;max-width:var(--an02-max-width);height:var(--an02-min-height);min-height:var(--an02-min-height);max-height:52vh;margin:0 auto;padding:clamp(8px,2.2vh,24px) clamp(14px,1.2vw,22px);display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);align-content:center;row-gap:5px;border-radius:12px;background:linear-gradient(125deg,#18384fe8,#10293cee);box-shadow:0 5px 20px #07192345;font-family:"Yu Gothic","Meiryo",sans-serif;font-size:clamp(14px,2.1vh,22px);z-index:40000}
 #dividendPresentationOverlay #nmnl-dividend-lab .dp-next{position:absolute;right:clamp(10px,1vw,20px);bottom:clamp(4px,2.5vh,26px);min-width:90px;min-height:27px;margin:0;padding:2px 10px;border:0;border-radius:5px;background:transparent;color:#fcfcfc;font:600 calc(clamp(14px,2.1vh,22px) - 2px)/1.5 "Yu Gothic","Meiryo",sans-serif}
 #dividendPresentationOverlay #nmnl-dividend-lab .dp-guide-speaker{grid-column:1;grid-row:1;align-self:end}
-#dividendPresentationOverlay #nmnl-dividend-lab .dp-guide-copy{grid-column:1;grid-row:2;align-self:center;min-width:0;min-height:0;max-height:var(--an02-copy-max-height);margin:0;padding:0 clamp(72px,6vw,115px) 0 0;overflow:auto;overflow-wrap:anywhere;font:600 clamp(14px,2.1vh,22px)/1.35 "Yu Gothic","Meiryo",sans-serif;text-align:left}
+#dividendPresentationOverlay #nmnl-dividend-lab .dp-guide-copy{position:absolute;top:calc(50% + 3px);left:clamp(14px,1.2vw,22px);right:clamp(86px,7.2vw,137px);width:auto;grid-column:1;grid-row:2;align-self:center;min-width:0;min-height:0;max-height:var(--an02-copy-max-height);margin:0;padding:0;overflow:auto;overflow-wrap:anywhere;transform:translateY(-50%);font:600 clamp(14px,2.1vh,22px)/1.35 "Yu Gothic","Meiryo",sans-serif;text-align:left}
 #dividendPresentationOverlay #nmnl-dividend-lab .dp-footer:has(.dp-next){justify-content:flex-end}
 #dividendPresentationOverlay #nmnl-dividend-lab .dp-footer:not(:has(.dp-next)){display:none}
 #dividendPresentationOverlay #nmnl-dividend-lab .dp-screen:is([data-stage="1"],[data-stage="2"],[data-stage="3"]){position:relative;padding:0;overflow:hidden}
@@ -123,7 +123,7 @@
 
 @media(max-width:700px),(pointer:coarse) and (max-height:500px){
  #dividendPresentationOverlay #nmnl-dividend-lab .dp-guide-banner{padding:clamp(8px,2.2vh,16px)}
- #dividendPresentationOverlay #nmnl-dividend-lab .dp-guide-copy{padding-right:72px}
+ #dividendPresentationOverlay #nmnl-dividend-lab .dp-guide-copy{padding-right:0}
 }
 
 
