@@ -37,7 +37,7 @@
         const id='magicPopup';
         GamePanels.show({...context(player,'magic-status'),id,listId:'magicList',closeId:'magicCloseButton',kind:'magic-list',title:'魔法一覧',
             columns:['魔法名','使用コスト'],widths:['76%','24%'],costNote:'使用コストは魔力値に応じて増加します',
-            hint:'カーソルを合わせるか選択をすると、魔法の説明文が表示されます',empty:'魔法はありません。',
+            hint:'選択すると、魔法の説明文が表示されます',empty:'魔法はありません。',
             rows:()=> (player.magic||[]).slice().sort((a,b)=>Number(a)-Number(b)).map(id=>({id,...MAGIC_CONTENTS[id]})).filter(m=>m.name)
                 .map(m=>({key:'magic:'+m.id,name:m.name,values:[f(calculateMagicCost(player,m,{magicPowerRate:1}))+'G'],description:m.effect,icon:m.icon})),
             onClose:()=>close(player,id,false)});
@@ -90,7 +90,7 @@
             columns:category==='asset'?['支店名','資産名','売却額','利回り']:['売却対象','売却額'],
             widths:category==='asset'?['21%','32%','23%','12%','12%']:['56%','28%','16%'],
             closeLabel:'戻る',actionThanks:'を売却しました。',fadeOnSuccess:true,feedback:false,canAct:canSell,
-            hint:category==='asset'?'':'カーソルを合わせるか選択をすると、売却対象の説明が表示されます。',
+            hint:category==='asset'?'':'選択すると、売却対象の説明が表示されます。',
             onView:panel=>runtime.sync(screenType,player,'open',{category,panel}),onClose:openReturn,
             rows:()=>rowList().map(row=>row.section?row:{key:row.key,name:row.name,leading:row.leading,description:category==='asset'?'':row.description,
                 values:category==='asset'?[f(row.price)+'G',row.yield+'％']:[f(row.price)+'G'],classes:category==='asset'?['gp-price','gp-yield']:['gp-price'],label:row.sellable===false?'売却不可':'売却',
@@ -149,7 +149,7 @@
         const id='inventoryPopup',list=document.getElementById('inventoryList');
         const originals=[...list.querySelectorAll('.inventory-item')].map(el=>({index:Number(el.dataset.inventoryIndex),button:el.querySelector("button")}));
         const config={...context(player,'inventory'),id,listId:'inventoryList',closeId:'inventoryCloseButton',kind:'inventory',title:'アイテム一覧',
-            empty:'アイテムはありません。',hint:'カーソルを合わせるか選択をすると、アイテムの説明文が表示されます',
+            empty:'アイテムはありません。',hint:'選択すると、アイテムの説明文が表示されます',
             summary:()=>{
                 const remaining=Math.max(0,Number(player.itemSealChecks)||0)+(player.itemSealedThisTurn?1:0);
                 return remaining>0?[{label:'',value:`あと${remaining}ターン使用不可`,seal:true}]:[];
@@ -207,7 +207,7 @@
             kind:'shop',title:scene.name,scene,greeting:scene.dialogue(player.name)[1].text,
             headerAction:{label:'売却',onClick:()=>showSales(player,magic?'magic':'item',()=>showStore(player,kind,true))},
             voice:suppressGreeting?false:scene.voice,
-            hint:'カーソルを合わせるか選択をすると、'+(magic?'魔力・魔法':'アイテム')+'の説明文が表示されます',
+            hint:'選択すると、'+(magic?'魔力・魔法':'アイテム')+'の説明文が表示されます',
             rows:()=>{
                 const result=[];
                 for(const [category,label,ids]of magic?[['power','魔力',box.powerContents],['magic','魔法',box.magicContents]]:[['item','',box.itemContents]]){
