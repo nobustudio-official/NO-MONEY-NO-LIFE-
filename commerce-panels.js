@@ -203,7 +203,7 @@
         GamePanels.show({...context(player,type),onView:publish,id,listId:magic?'magicShopList':'shopItemList',closeId:magic?'magicShopCloseButton':'shopCloseButton',
             kind:'shop',title:scene.name,scene,greeting:scene.dialogue(player.name)[1].text,
             headerAction:{label:'売却',onClick:()=>showSales(player,magic?'magic':'item',()=>showStore(player,kind,true))},
-            voice:false,
+            voice:suppressGreeting?false:scene.voice,
             hint:'カーソルを合わせるか選択をすると、'+(magic?'魔力・魔法':'アイテム')+'の説明文が表示されます',
             rows:()=>{
                 const result=[];

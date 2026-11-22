@@ -74,7 +74,8 @@
         scroll.onpointerleave=()=>{view.hovered=null;describe(view);publish(view);};
         scroll.addEventListener('scroll',()=>{if(!view.remote&&view.config?.canAct())publish(view);},{passive:true});
         root.addEventListener('click',e=>{if(!view.config?.canAct()||e.target.closest('tr[data-key]'))return;view.selected=null;view.hovered=null;describe(view);publish(view);});
-        new ResizeObserver(()=>fit(view)).observe(scroll);
+        const resizeObserver=new ResizeObserver(()=>{fit(view);fitHeading(view);});
+        resizeObserver.observe(scroll);resizeObserver.observe(heading);
         return view;
     }
     function snapshot(v) {return {key:v.selected??v.hovered,pinned:v.selected!==null,scrollTop:v.scroll.scrollTop,noticeKey:v.notice,cooldowns:[...v.waits].filter(([,until])=>until>clock()).map(([key,until])=>({key,until}))};}
@@ -91,6 +92,18 @@
         v.note.hidden=!row||!c.costNote;v.note.textContent=c.costNote||'';
         v.usage.hidden=row?.usage===undefined;if(row?.usage!==undefined)v.usage.textContent='使用コストは魔力に比例します\n現時点の使用コスト：'+format(row.usage)+'G';
         v.body.querySelectorAll('tr[data-key]').forEach(tr=>tr.toggleAttribute('data-selected',tr.dataset.key===v.selected));
+    }
+    function fitHeading(v) {
+        if(!v.titleBranch||v.root.style.display==='none')return;
+        const base=Number.parseFloat(getComputedStyle(v.title).fontSize)||18;
+        const prefixWidth=v.titlePrefix.getBoundingClientRect().width;
+        const gap=Number.parseFloat(getComputedStyle(v.title).columnGap)||0;
+        const available=Math.max(0,v.title.clientWidth-prefixWidth-gap);
+        v.titleBranch.style.maxWidth=available+'px';
+        for(let size=Math.floor(base);size>=10;size--){
+            v.titleBranch.style.fontSize=size+'px';
+            if(v.titleBranch.scrollWidth<=available+1)break;
+        }
     }
     function fit(v) {
         if(v.root.style.display==='none'||!v.config)return;
@@ -139,7 +152,14 @@
         tr.onkeydown=e=>{if(e.target.closest('button')||!v.config.canAct())return;if(e.key==='Enter'||e.key===' '){e.preventDefault();v.selected=r.key;describe(v);publish(v);}};
     }
     function draw(v) {
-        const c=v.config,previousScroll=v.scroll.scrollTop;v.data=c.rows();v.title.textContent=c.title;
+        const c=v.config,previousScroll=v.scroll.scrollTop;v.data=c.rows();
+        v.title.replaceChildren();v.titleBranch=null;v.titlePrefix=null;
+        if(c.titleParts){
+            v.title.classList.add('gp-title-split');
+            v.titlePrefix=node('span','gp-title-prefix',c.titleParts.prefix||'');
+            v.titleBranch=node('span','gp-title-branch',c.titleParts.branch||'');
+            v.title.append(v.titlePrefix,v.titleBranch);
+        }else{v.title.classList.remove('gp-title-split');v.title.textContent=c.title;}
         v.cols.innerHTML=(c.widths||['56%','28%','16%']).map(width=>'<col style="width:'+width+'">').join('');
         v.columns.style.gridTemplateColumns=c.widths?.join(' ')||'';
         v.table.setAttribute('aria-label',c.title);v.body.replaceChildren();
@@ -174,10 +194,13 @@
         v.root.classList.toggle('gp-inventory',c.kind==='inventory');
         v.root.classList.toggle('gp-magic-list',c.kind==='magic-list');
         v.close.textContent=c.closeLabel||(c.scene?'終了':'閉じる');
+        const headerClose=Boolean(c.scene&&c.headerAction);
+        v.root.classList.toggle('gp-store-purchase',headerClose);
+        if(headerClose)v.headerAction.before(v.close);else v.footer.append(v.close);
         v.close.onclick=()=>{if(!c.canAct())return;v.anchorCleanup?.();v.root.style.display='none';c.onClose?.();};
         v.headerAction.hidden=!c.headerAction;v.headerAction.textContent=c.headerAction?.label||'';v.headerAction.onclick=()=>{if(c.canAct())c.headerAction?.onClick?.();};
         if(v.hello){const notice=v.data.find(row=>row.key===v.notice);if(notice)v.noticeText=notice.name+'\n'+(c.actionThanks||c.purchaseThanks||'お買い上げありがとう！');v.hello.textContent=v.root.classList.contains('gp-shop-no-staff')?'':v.noticeText||c.greeting||'';}
-        describe(v);buttons(v);v.scroll.scrollTop=previousScroll;requestAnimationFrame(()=>fit(v));
+        describe(v);buttons(v);v.scroll.scrollTop=previousScroll;requestAnimationFrame(()=>{fit(v);fitHeading(v);});
     }
     function show(config) {
         const v=make(config.id,config.listId,config.closeId,Boolean(config.scene));

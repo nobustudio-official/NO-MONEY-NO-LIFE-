@@ -1,9 +1,9 @@
 /* Asset purchase view delegates to the shared approved shop panels. */
 (function(){
  'use strict';
- function render({player,playerIndex,assets,title,canPurchase,ownerIcon,onBuy,onClose,headerAction,suppressGreeting=false}){
+ function render({player,playerIndex,assets,title,titleParts,canPurchase,ownerIcon,onBuy,onClose,headerAction,suppressGreeting=false}){
   GamePanels.show({id:'assetPurchasePopup',listId:'assetPurchaseList',closeId:'assetPurchaseCloseButton',kind:'asset-shop',
-   player,playerIndex,screenType:'asset-purchase',title,scene:ASSET_SCENE_CONTENTS,voice:false,
+   player,playerIndex,screenType:'asset-purchase',title,titleParts,scene:ASSET_SCENE_CONTENTS,voice:suppressGreeting?false:ASSET_SCENE_CONTENTS.voice,
    greeting:'本日はどの子をご指名ですか？',purchaseThanks:'ご指名ありがとうございます。',feedback:false,onClose,headerAction,widths:['38%','23%','13%','12%','14%'],canAct:()=>canPurchase,
    onView:panel=>window.syncOnlineScreenView?.('asset-purchase',player,'open',{panel,suppressGreeting}),
    rows:()=>assets.filter(Boolean).sort(compareAssetPurchaseOrder)

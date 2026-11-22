@@ -1750,6 +1750,7 @@ const MAGIC_SHOP_SCENE_CONTENTS = {
     name: "魔法店",
     backgroundImage: "images/characters/npc/shops/魔法店.webp",
     staffImage: "images/characters/npc/shops/魔法店-店員.webp",
+    voice: "sounds/voices/マス/魔法店員.mp3",
 
     dialogue: (playerName) => [
         { text: `いらっしゃい、${playerName}さん` },
@@ -1765,6 +1766,7 @@ const SHOP_SCENE_CONTENTS = {
     name: "アイテム店",
     backgroundImage: "images/characters/npc/shops/アイテム店.webp",
     staffImage: "images/characters/npc/shops/アイテム店-店員.webp",
+    voice: "sounds/voices/マス/アイテム店員.mp3",
 
     dialogue: (playerName) => [
         { text: `いらっしゃい！${playerName}！` },
@@ -1780,6 +1782,7 @@ const ASSET_SCENE_CONTENTS = {
     name: "資産店",
     backgroundImage: "images/characters/npc/shops/資産店.webp",
     staffImage: "images/characters/npc/shops/資産店-店員.webp",
+    voice: "sounds/voices/マス/不動産店員.mp3",
 
     dialogue: (playerName) => [
         { text: `いらっしゃいませ、${playerName}様` },

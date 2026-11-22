@@ -3765,7 +3765,7 @@ function showAssetPurchasePopup(player, assetIds, callback, suppressGreeting = f
     const title = "資産店　" + branchNames.map(name=>name+"支店").join(" / ");
     const refresh = () => showAssetPurchasePopup(player, assetIds, onClose, suppressGreeting);
     AssetShopUI.render({
-        player, playerIndex, title, canPurchase: canLocalPurchaseAsset(player),
+        player, playerIndex, title,titleParts:{prefix:"資産店",branch:branchNames.map(name=>name+"支店").join(" / ")}, canPurchase: canLocalPurchaseAsset(player),
         headerAction:{label:'売却',onClick:()=>ApprovedCommerce.showSales(player,'asset',()=>showAssetPurchasePopup(player,assetIds,onClose,true))},
         suppressGreeting,
         assets: assetIds.map(id => ASSET_CONTENTS[id] ? { ...ASSET_CONTENTS[id], id, price:marketPrice(ASSET_CONTENTS[id].price) } : null),
