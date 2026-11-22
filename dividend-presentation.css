@@ -71,8 +71,8 @@
     @media(max-width:600px){#nmnl-dividend-lab .dp-receipts{--dp-row-size:12px}#nmnl-dividend-lab .dp-person{flex-direction:column;gap:4px}#nmnl-dividend-lab .dp-person img{width:36px;height:36px}#nmnl-dividend-lab .dp-income{font-size:clamp(17px,4.4vw,27px)}#nmnl-dividend-lab .dp-receipts thead th,#nmnl-dividend-lab .dp-receipt :is(td,th){padding:16px 3px}#nmnl-dividend-lab .dp-screen{aspect-ratio:auto;min-height:510px}#nmnl-dividend-lab .dp-steps button{padding:8px 10px}}
     @media(prefers-reduced-motion:reduce){#nmnl-dividend-lab .is-paying .dp-income{animation:none}}
   
-#dividendPresentationOverlay{position:fixed;inset:0;z-index:10000;background-color:#102d4e;background-image:linear-gradient(#102d4ec9,#102d4edb),url('images/backgrounds/scenes/配当.webp');background-position:center;background-size:cover;background-repeat:no-repeat;overflow:hidden;display:flex;justify-content:center;align-items:flex-start;padding:84px 12px 20px;box-sizing:border-box}
-#dividendPresentationOverlay #nmnl-dividend-lab{width:min(90vw,1450px);height:100%;min-height:0}
+#dividendPresentationOverlay{position:fixed;inset:0;z-index:10000;background-color:#102d4e;background-image:linear-gradient(#102d4ec9,#102d4edb),url('images/backgrounds/scenes/配当.webp');background-position:center;background-size:cover;background-repeat:no-repeat;overflow:hidden;display:flex;justify-content:center;align-items:flex-start;padding:0;box-sizing:border-box}
+#dividendPresentationOverlay #nmnl-dividend-lab{width:min(96vw,1450px);height:100%;min-height:0}
 #dividendPresentationOverlay #nmnl-dividend-lab .dp-screen{height:100%;min-height:0;aspect-ratio:auto;border:0}
 #dividendPresentationOverlay #nmnl-dividend-lab .dp-screen{background:transparent}
 #dividendPresentationOverlay #nmnl-dividend-lab .dp-screen:before{background-image:none}
@@ -86,10 +86,12 @@
 #nmnl-dividend-lab .dp-guide-scene.dp-guide-final .dp-guide-staff{left:50%;right:auto;transform:translateX(-50%);width:50%}
 #nmnl-dividend-lab .dp-guide-scene.dp-guide-market .dp-guide-staff{left:50%;right:auto;transform:translateX(-50%);width:50%}
 #dividendPresentationOverlay #nmnl-dividend-lab .dp-guide-scene .dp-guide-staff{transform:scale(.9);transform-origin:center}
+#dividendPresentationOverlay #nmnl-dividend-lab .dp-guide-scene .dp-guide-staff{bottom:calc(var(--an02-min-height) + var(--an02-bottom) + 8px);height:min(80%,52vh)}
 #dividendPresentationOverlay #nmnl-dividend-lab .dp-guide-scene.dp-guide-final .dp-guide-staff{transform:translateX(-50%) scale(.9)}
 #dividendPresentationOverlay #nmnl-dividend-lab .dp-guide-scene.dp-guide-market .dp-guide-staff{transform:translateX(-50%) scale(.9)}
-#nmnl-dividend-lab .dp-guide-summary{width:52%;margin-right:36%;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;font-size:clamp(20px,2.8vw,34px);transform:translateY(clamp(-32px,-6vh,-18px))}
-#nmnl-dividend-lab .dp-guide-summary .dp-turn{position:relative;transform:translateY(clamp(-48px,-12vh,-32px))}
+#nmnl-dividend-lab .dp-guide-summary{width:52%;margin-right:36%;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;font-size:clamp(20px,2.8vw,34px)}
+#nmnl-dividend-lab .dp-guide-summary .dp-turn{position:relative;transform:none}
+#dividendPresentationOverlay #nmnl-dividend-lab .dp-guide-opening .dp-guide-summary{position:absolute;top:clamp(10px,4vh,32px);left:0;width:52%;margin-right:36%;justify-content:flex-start;gap:clamp(4px,1.2vh,10px)}
 #nmnl-dividend-lab .dp-guide-summary img{width:clamp(90px,12vw,170px);height:clamp(90px,12vw,170px);object-fit:contain}
 #nmnl-dividend-lab .dp-guide-summary strong{color:#f2cf76;font-size:clamp(25px,3.5vw,48px)}
 #nmnl-dividend-lab .dp-guide-banner{position:absolute;left:2%;right:2%;bottom:0;height:clamp(148px,17vh,168px);min-height:clamp(148px,17vh,168px);box-sizing:border-box;overflow:hidden;padding:16px 24px;border:1px solid #ccae7b;border-radius:14px;background:rgba(20,49,70,.94);font-size:clamp(16px,1.7vw,24px)}
@@ -101,10 +103,15 @@
 #dividendPresentationOverlay #nmnl-dividend-lab .dp-footer:not(:has(.dp-next)){display:none}
 #dividendPresentationOverlay #nmnl-dividend-lab .dp-screen:is([data-stage="1"],[data-stage="2"],[data-stage="3"]){position:relative;padding:0;overflow:hidden}
 #dividendPresentationOverlay #nmnl-dividend-lab .dp-screen:is([data-stage="1"],[data-stage="2"],[data-stage="3"])>.dp-title{position:absolute;top:3%;left:0;width:100%;margin:0;text-align:center;z-index:2}
-#dividendPresentationOverlay #nmnl-dividend-lab .dp-screen:is([data-stage="1"],[data-stage="2"],[data-stage="3"])>.dp-body{position:absolute;top:16%;left:7.5%;right:4.5%;bottom:7%;width:auto;overflow:auto;overscroll-behavior:contain;padding:0 10px 12px}
+#dividendPresentationOverlay #nmnl-dividend-lab .dp-screen:is([data-stage="1"],[data-stage="2"],[data-stage="3"])>.dp-body{position:absolute;top:16%;left:5.3%;right:4.5%;bottom:7%;width:auto;overflow:auto;overscroll-behavior:contain;padding:0 10px 12px}
 #dividendPresentationOverlay #nmnl-dividend-lab .dp-screen:is([data-stage="1"],[data-stage="2"],[data-stage="3"])>.dp-footer{position:absolute;top:3%;right:4%;margin:0;z-index:3}
 #dividendPresentationOverlay #nmnl-dividend-lab .dp-screen:is([data-stage="1"],[data-stage="2"],[data-stage="3"])>.dp-footer .dp-next{position:static;min-width:0;min-height:0;padding:4px 8px;font-size:clamp(14px,2.1vh,22px)}
-#nmnl-dividend-lab .dp-guide-speaker{display:block;color:#e5c982;font-size:15px;margin-bottom:8px}
+#dividendPresentationOverlay #nmnl-dividend-lab .dp-screen:is([data-stage="2"],[data-stage="3"])>.dp-body.dp-chart-layout{grid-template-rows:24px minmax(112px,1fr) minmax(82px,auto);gap:6px}
+#dividendPresentationOverlay #nmnl-dividend-lab .dp-screen:is([data-stage="2"],[data-stage="3"]) .dp-axis-player{font-size:clamp(12px,1.8vh,16px)}
+#dividendPresentationOverlay #nmnl-dividend-lab .dp-screen:is([data-stage="2"],[data-stage="3"]) .dp-axis-player img{width:clamp(26px,8vh,36px);height:clamp(26px,8vh,36px)}
+#dividendPresentationOverlay #nmnl-dividend-lab .dp-screen:is([data-stage="2"],[data-stage="3"]) .dp-axis-player strong{font-size:clamp(14px,2.2vh,22px)}
+#dividendPresentationOverlay #nmnl-dividend-lab .dp-screen:is([data-stage="2"],[data-stage="3"]) .dp-axis-head{font-size:clamp(13px,1.8vh,18px)}
+#nmnl-dividend-lab .dp-guide-speaker{display:block;color:#e5c982;font-size:clamp(12px,3.6vh,15px);margin-bottom:8px}
 #nmnl-dividend-lab .dp-guide-copy{min-height:1.2em;min-height:1lh}
 #nmnl-dividend-lab .dp-guide-copy{line-height:1.35;overflow-wrap:anywhere}
 #nmnl-dividend-lab .dp-guide-market .dp-guide-copy{position:absolute;left:24px;right:84px;top:50%;transform:translateY(-50%)}
