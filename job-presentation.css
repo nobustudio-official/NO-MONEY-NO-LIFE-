@@ -11,7 +11,7 @@
 }
 #jobPopup.job-approved-layout .job-dialogue-box{top:auto}
 #jobPopup.job-approved-layout .job-name,#jobPopup.job-approved-layout .job-question{display:none}
-#jobPopup.job-approved-layout .job-dialogue-text{position:static;min-width:0;max-height:var(--an02-copy-max-height);overflow:auto;margin:0;padding:0 clamp(72px,6vw,115px) 0 0;transform:none;font:600 clamp(14px,2.1vh,22px)/1.35 "Yu Gothic","Meiryo",sans-serif;color:#fcfcfc;overflow-wrap:anywhere}
+#jobPopup.job-approved-layout .job-dialogue-text{position:static;min-width:0;min-height:0;max-height:var(--an02-copy-max-height);overflow:auto;align-self:center;margin:0;padding:0 clamp(72px,6vw,115px) 0 0;transform:none;font:600 clamp(14px,2.1vh,22px)/1.35 "Yu Gothic","Meiryo",sans-serif;color:#fcfcfc;overflow-wrap:anywhere}
 #jobPopup.job-approved-layout .job-dialogue-next{position:absolute;right:clamp(10px,1vw,20px);bottom:clamp(4px,2.5vh,26px);min-width:90px;min-height:27px;margin:0;padding:2px 10px;font:600 calc(clamp(14px,2.1vh,22px) - 2px)/1.5 "Yu Gothic","Meiryo",sans-serif;color:#fcfcfc;text-align:center}
 #jobPopup.job-approved-layout .job-choice-panel{display:flex;flex-direction:column;justify-content:center;gap:14px}
 #jobPopup.job-approved-layout .job-choice-panel[hidden]{display:none}
