@@ -123,6 +123,12 @@
                 group.style.right=(bounds.right-target)+'px';
             });
         }
+        if(String(v.config.kind||'').startsWith('sale-')){
+            const action=v.body.querySelector('.gp-action .gp-button');
+            const heading=v.title.parentElement.getBoundingClientRect();
+            const button=action?.getBoundingClientRect();
+            v.close.style.right=(button?Math.max(0,heading.right-button.right):18)+'px';
+        }
     }
     function buttons(v) {
         for(const r of v.data||[]){const button=v.body.querySelector('tr[data-key="'+r.key+'"] button');if(!button)continue;
@@ -195,8 +201,9 @@
         v.root.classList.toggle('gp-magic-list',c.kind==='magic-list');
         v.close.textContent=c.closeLabel||(c.scene?'終了':'閉じる');
         const headerClose=Boolean(c.scene&&c.headerAction);
+        const saleHeaderClose=String(c.kind||'').startsWith('sale-');
         v.root.classList.toggle('gp-store-purchase',headerClose);
-        if(headerClose)v.headerAction.before(v.close);else v.footer.append(v.close);
+        if(headerClose||saleHeaderClose)v.headerAction.before(v.close);else v.footer.append(v.close);
         v.close.onclick=()=>{if(!c.canAct())return;v.anchorCleanup?.();v.root.style.display='none';c.onClose?.();};
         v.headerAction.hidden=!c.headerAction;v.headerAction.textContent=c.headerAction?.label||'';v.headerAction.onclick=()=>{if(c.canAct())c.headerAction?.onClick?.();};
         if(v.hello){const notice=v.data.find(row=>row.key===v.notice);if(notice)v.noticeText=notice.name+'\n'+(c.actionThanks||c.purchaseThanks||'お買い上げありがとう！');v.hello.textContent=v.root.classList.contains('gp-shop-no-staff')?'':v.noticeText||c.greeting||'';}
@@ -205,6 +212,7 @@
     function show(config) {
         const v=make(config.id,config.listId,config.closeId,Boolean(config.scene));
         if(v.root.style.display==='none'||v.player!==config.player){v.selected=null;v.hovered=null;v.notice=null;v.noticeText=null;v.waits.clear();v.busy.clear();v.scroll.scrollTop=0;}
+        if(['asset-purchase','item-list','magic-menu','sale-list'].includes(config.screenType))v.scroll.scrollTop=0;
         v.config=config;v.player=config.player;
         v.root.classList.toggle('gp-shop-no-staff',Boolean(config.scene&&['item-list','magic-menu','asset-purchase','sale-list'].includes(config.screenType)));
         if(config.scene){v.background.src=config.scene.backgroundImage;if(v.root.classList.contains('gp-shop-no-staff')){v.staff.removeAttribute('src');v.staff.alt='';if(v.hello)v.hello.textContent='';}else{v.staff.src=config.scene.staffImage;v.staff.alt=config.scene.name+'の店員';}

@@ -98,6 +98,7 @@
 .gp-note{font-size:clamp(12px,1.35vw,17px);font-weight:600;line-height:1.4;color:#fcfcfcb8;margin-top:3px}
 .gp-usage{display:flex;flex:none;width:min(300px,30%);flex-direction:column;align-items:flex-end;text-align:right;white-space:pre-line;color:#fff;font-size:clamp(12px,1.3vw,16px);font-weight:700;line-height:1.4}
 .gp-root .gp-close{position:static;flex:none;display:inline-flex;align-items:center;justify-content:center;gap:0;width:68px;height:34px;min-height:34px;margin:0 0 0 auto;padding:0 2px;border:1px solid #ccae7b;border-radius:9px;background:#2c4e6de0;font:700 clamp(12px,1.2vw,14px)/1.2 "Yu Gothic","Meiryo",sans-serif;color:#fcfcfc;cursor:pointer;white-space:nowrap;transform:none;box-shadow:none}
+:is(.gp-sale-assets,.gp-sale-items,.gp-sale-magic) .gp-heading .gp-close{position:absolute;top:50%;height:30px;min-height:30px;margin:0;transform:translateY(-50%)}
 .gp-close:disabled{opacity:.65;cursor:default}
 .gp-root button:focus-visible,.gp-root [tabindex]:focus-visible{outline:2px solid #a9ddff;outline-offset:2px}
 .gp-root [hidden]{display:none}
