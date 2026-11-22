@@ -639,6 +639,11 @@
         font-size: clamp(11px, 1.4vw, 12px);
     }
 
+    /* Cancel the legacy +6px action-button offset so it aligns with magic buttons. */
+    #battleMainPopup.battle-motion-mode .battle-new-action-button {
+        transform: none !important;
+    }
+
     #battleMainPopup.battle-motion-mode .battle-new-magic-icon-wrap {
         flex-basis: 28px;
         width: 28px;
