@@ -13004,3 +13004,35 @@ body.bridge-collapse-shake > :not(script):not(style) {
         max-height:65dvh;
     }
 }
+
+.square-detail-panel > .square-detail-title {
+    padding-right:30px;
+    padding-left:30px;
+}
+
+.square-detail-panel > .square-detail-close-button {
+    position:absolute;
+    top:2px;
+    right:0;
+    z-index:2;
+    display:grid;
+    place-items:center;
+    width:30px;
+    height:30px;
+    min-width:30px;
+    min-height:30px;
+    margin:0;
+    padding:0 0 2px;
+    border:1px solid rgba(255,255,255,.48);
+    border-radius:50%;
+    background:rgba(26,67,112,.96);
+    color:#fff8dc;
+    font:600 22px/1 "Yu Gothic","Meiryo",sans-serif;
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+}
+
+.square-detail-panel > .square-detail-close-button:hover,
+.square-detail-panel > .square-detail-close-button:focus-visible {
+    background:#3872ad;
+}

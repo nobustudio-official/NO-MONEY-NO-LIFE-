@@ -1597,11 +1597,6 @@ function showSquareDetail(
             ".square-detail-content"
         );
 
-    const goButton =
-        panel.querySelector(
-            ".square-detail-go-button"
-        );
-
     const closeButton =
         panel.querySelector(
             ".square-detail-close-button"
@@ -1610,7 +1605,6 @@ function showSquareDetail(
     if (
         !title ||
         !content ||
-        !goButton ||
         !closeButton
     ) {
         return;
@@ -1629,14 +1623,6 @@ function showSquareDetail(
         detailData.title;
 
     window.setSafeRichContent(content, detailData.content);
-
-    // =========================
-    // 「ここに行く」は
-    // 今回は表示しない
-    // =========================
-
-    goButton.style.display =
-        "none";
 
     closeButton.onclick =
         function () {
