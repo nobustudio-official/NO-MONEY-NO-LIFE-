@@ -36,8 +36,8 @@
 .gp-assets .gp-summary>span:first-child{right:calc(30% - 56px)}
 .gp-assets .gp-summary>span:last-child{right:calc(8% - 40px)}
 .gp-sale-assets .gp-summary{position:absolute;inset:0;height:auto;display:block;margin:0;pointer-events:none}
-.gp-sale-assets .gp-summary>span{position:absolute;top:50%;transform:translateY(-50%);display:flex;align-items:baseline;text-align:right;line-height:1.25;white-space:nowrap}
-.gp-sale-assets .gp-summary>span strong{margin-left:clamp(2px,.6vw,10px);font-size:inherit}
+.gp-sale-assets .gp-summary>span{position:absolute;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:flex-end;text-align:right;line-height:1.15;white-space:nowrap}
+.gp-sale-assets .gp-summary>span strong{margin-left:0;font-size:inherit}
 .gp-assets .gp-summary strong,.gp-sale-assets .gp-summary>span strong{font-size:inherit}
 .gp-sale-assets .gp-summary .gp-yield{text-align:right;padding-right:0}
 .gp-sale-assets .gp-table td:nth-child(2){text-align:left}
@@ -81,6 +81,7 @@
 .gp-header-action[hidden]{display:none}
 .gp-branch{font-size:15px;font-weight:700;color:#fcfcfc;line-height:1.4;overflow-wrap:anywhere}
 .gp-sale-assets .gp-yield{text-align:right;padding-right:22px}
+.gp-sale-assets .gp-summary .gp-yield{padding-right:0}
 .gp-sale-items .gp-price,.gp-sale-magic .gp-price{text-align:right}
 .gp-row-fading td{opacity:0;transition:opacity 1s ease}
 .gp-root .gp-button.gp-wait{color:#e6c783;border-color:#ccae7b;background:#304e63;cursor:wait;overflow:hidden}
