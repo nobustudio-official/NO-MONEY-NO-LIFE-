@@ -9,6 +9,7 @@
     };
 
     function hide() {
+        window.Plane02Layout?.release(root?.querySelector('.hatataki-panel'));
         root?.remove();
         root = null;
     }
@@ -96,6 +97,8 @@
         scene.append(telop);
         root.append(scene);
         document.body.append(root);
+        const activePanel = root.querySelector('.hatataki-panel');
+        if (activePanel) window.Plane02Layout?.apply(activePanel);
     }
 
     window.HatatakiHakenUI = Object.freeze({ render, hide });

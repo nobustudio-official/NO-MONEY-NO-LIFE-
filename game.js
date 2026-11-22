@@ -11634,6 +11634,8 @@ function showTransferPlayerPopup(
         "transferPlayerPopup",
         "transferPlayerPopupTemplate"
     );
+    const plane02 = options.title === "闇スーモ";
+    const hidePopup = () => { if (plane02) window.Plane02Layout?.release(popup); popup.style.display = "none"; };
 
     const title =
         popup.querySelector(
@@ -11708,8 +11710,7 @@ function showTransferPlayerPopup(
                     selectButton.disabled =
                         true;
 
-                    popup.style.display =
-                        "none";
+                    hidePopup();
 
                     options.onSelect(
                         targetPlayer
@@ -11732,8 +11733,7 @@ function showTransferPlayerPopup(
     backButton.onclick =
         function () {
 
-            popup.style.display =
-                "none";
+            hidePopup();
 
             options.onBack();
 
@@ -11741,6 +11741,7 @@ function showTransferPlayerPopup(
 
     popup.style.display =
         "block";
+    if (plane02) window.Plane02Layout?.apply(popup);
 
     const itemIdByTitle = { "闇みずほ": 19, "闇ヤマト": 21, "闇スーモ": 22 };
     const itemId = itemIdByTitle[options.title];
@@ -11854,6 +11855,8 @@ function showTransferTypePopup(
         "transferTypePopup",
         "transferTypePopupTemplate"
     );
+    const plane02 = options.title === "闇スーモ";
+    const hidePopup = () => { if (plane02) window.Plane02Layout?.release(popup); popup.style.display = "none"; };
 
     const title =
         popup.querySelector(
@@ -11903,8 +11906,7 @@ function showTransferTypePopup(
     sendButton.onclick =
         function () {
 
-            popup.style.display =
-                "none";
+            hidePopup();
 
             options.onSelect(
                 "send"
@@ -11915,8 +11917,7 @@ function showTransferTypePopup(
     stealButton.onclick =
         function () {
 
-            popup.style.display =
-                "none";
+            hidePopup();
 
             options.onSelect(
                 "steal"
@@ -11927,8 +11928,7 @@ function showTransferTypePopup(
     backButton.onclick =
         function () {
 
-            popup.style.display =
-                "none";
+            hidePopup();
 
             options.onBack();
 
@@ -11936,6 +11936,7 @@ function showTransferTypePopup(
 
     popup.style.display =
         "block";
+    if (plane02) window.Plane02Layout?.apply(popup);
     const itemId = options.title === "闇みずほ" ? 19 : options.title === "闇ヤマト" ? 21 : options.title === "闇スーモ" ? 22 : null;
     if (itemId) syncOnlineScreenView("item-action", usingPlayer, "open", { itemId, stage: "type", targetIndex: players.indexOf(targetPlayer) });
 
@@ -13445,6 +13446,7 @@ function showDarkSuumoAssetPopup(
         "darkSuumoAssetPopup",
         "darkSuumoAssetPopupTemplate"
     );
+    const hidePopup = () => { window.Plane02Layout?.release(popup); popup.style.display = "none"; };
 
     const assetList =
         popup.querySelector(".dark-suumo-asset-list");
@@ -13508,7 +13510,7 @@ function showDarkSuumoAssetPopup(
                 const completeAssetTransfer = function (result) {
                 if (!result) return;
 
-                popup.style.display = "none";
+                hidePopup();
 
                 if (result.immunityBlocked) {
                     syncOnlineScreenView('', usingPlayer, 'close');
@@ -13565,7 +13567,7 @@ function showDarkSuumoAssetPopup(
 
     backButton.onclick = function () {
 
-        popup.style.display = "none";
+        hidePopup();
 
         showTransferTypePopup(
             usingPlayer,
@@ -13596,6 +13598,7 @@ function showDarkSuumoAssetPopup(
     };
 
     popup.style.display = "block";
+    window.Plane02Layout?.apply(popup);
     syncOnlineScreenView("item-action", usingPlayer, "open", { itemId: 22, stage: "assets", targetIndex: players.indexOf(targetPlayer), type });
 
 }

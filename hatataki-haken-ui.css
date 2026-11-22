@@ -6,6 +6,7 @@
     font-family: "Yu Gothic", "Meiryo", sans-serif;
     color: #fcfcfc;
 }
+
 .hatataki-overlay * { box-sizing: border-box; }
 .hatataki-scene {
     position: absolute;
@@ -201,3 +202,6 @@
         white-space: nowrap;
     }
 }
+
+.hatataki-panel[data-plane02] { padding-bottom:calc(var(--an02-bottom) + var(--an02-min-height) + 62px); }
+.hatataki-panel[data-plane02] .hatataki-progress { bottom:calc(var(--an02-bottom) + var(--an02-min-height) + 16px); }

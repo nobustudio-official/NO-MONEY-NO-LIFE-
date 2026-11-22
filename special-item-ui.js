@@ -1,10 +1,11 @@
 (function () {
     'use strict';
     let popup;
-    function hide() { if (popup) popup.hidden = true; }
+    function hide() { if (popup) { window.Plane02Layout?.release(popup.querySelector('.special-item-panel')); popup.hidden = true; } }
     function show(options) {
         const {itemId, stage, destination, players, actorIndex, observer, onBack, onSelect, onExecute} = options;
         if (!popup) { popup = document.createElement('section'); popup.id='specialItemPopup'; popup.className='special-item-popup'; document.body.append(popup); }
+        window.Plane02Layout?.release(popup.querySelector('.special-item-panel'));
         popup.replaceChildren(); popup.hidden=false;
         const panel=document.createElement('section'); panel.className='special-item-panel';
         const header=document.createElement('header'), title=document.createElement('h2'), back=document.createElement('button');
@@ -34,6 +35,7 @@
             players.forEach((player,index)=>{if(index===actorIndex || player.underground)return;const el=card(player,index);el.append(makeButton('選ぶ',button=>onSelect?.(index,button)));choices.append(el);});
         }
         panel.append(choices);popup.append(panel);
+        if ([24,26].includes(Number(itemId))) window.Plane02Layout?.apply(panel);
         const announcement=document.createElement('div');announcement.className='special-item-announcement';
         const portrait=document.createElement('img');portrait.src=options.icon(actorIndex);portrait.alt='';
         const itemName=ITEM_CONTENTS[itemId].name;
