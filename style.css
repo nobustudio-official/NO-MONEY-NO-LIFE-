@@ -11001,45 +11001,6 @@ max-height:
 
 }
 
-@media (orientation: landscape) and (max-height: 500px) {
-
-    #monsterChoicePopup {
-        height: 310px;
-        padding: 15px 20px;
-        box-sizing: border-box;
-    }
-
-    #monsterChoiceMessage {
-        font-size: 16px;
-    }
-
-    #monsterChoiceMessage > div:first-child {
-        font-size: 2.5em !important;
-        margin-bottom: 8px !important;
-    }
-
-    #monsterChoiceMessage > div:nth-child(2) {
-        font-size: 1.2em !important;
-    }
-
-    #monsterChoiceMessage > div:nth-child(3) {
-        font-size: 0.95em !important;
-        margin-top: 8px !important;
-        line-height: 1.4 !important;
-    }
-
-    #monsterFightButton,
-    #monsterEscapeButton {
-        background: transparent !important;
-        color: #fff !important;
-        height: 42px !important;
-        font-size: 15px !important;
-        border: 2px solid #fff !important;
-        border-radius: 10px !important;
-        opacity: 1 !important;
-    }
-}
-
 /* =========================
    ボスまでの最短ルート
 ========================= */
