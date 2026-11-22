@@ -34,6 +34,7 @@
 .gp-sale-assets .gp-summary{position:absolute;inset:0;height:auto;display:block;margin:0;pointer-events:none}
 .gp-sale-assets .gp-summary>span{position:absolute;top:50%;transform:translateY(-50%);display:grid;grid-template-rows:auto auto;align-content:center;justify-items:end;gap:1px;text-align:right;line-height:1.25}
 .gp-sale-assets .gp-summary>span strong{margin-left:0;font-size:24px}
+.gp-assets .gp-summary strong,.gp-sale-assets .gp-summary>span strong{font-size:inherit}
 .gp-sale-assets .gp-summary .gp-yield{text-align:right;padding-right:0}
 .gp-sale-assets .gp-table td:nth-child(2){text-align:left}
 .gp-scroll{flex:1;min-height:0;min-width:0;margin-top:14px;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-gutter:stable;scrollbar-color:#ccae7b99 #18384f44;display:block;max-height:none;padding:0;gap:0}
