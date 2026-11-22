@@ -209,10 +209,14 @@
         }
     }
     function setSimpleMode(board, enabled) {
+        const simpleMode = Boolean(enabled);
+        // The vector overlay also owns lightweight shortest-route and bridge
+        // rendering. Keep it synchronized even when raster preparation fell
+        // back and there is no raster-cache state for this board.
+        window.MapRoadRenderer?.setSimpleMode(board.querySelector('.map-stone-roads'), simpleMode);
         const state = boards.get(board);
-        if (!state || state.simpleMode === Boolean(enabled)) return;
-        state.simpleMode = Boolean(enabled);
-        window.MapRoadRenderer?.setSimpleMode(board.querySelector('.map-stone-roads'), state.simpleMode);
+        if (!state || state.simpleMode === simpleMode) return;
+        state.simpleMode = simpleMode;
         if (state.simpleMode) {
             if (state.streaming) {
                 MapDetailLevel.setTileSources(state.tiles, null, null);

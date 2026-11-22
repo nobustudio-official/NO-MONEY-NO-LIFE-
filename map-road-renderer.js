@@ -41,7 +41,7 @@
      for(const y of [-18,13])add(part,'rect',{x:0,y:0,width:length,height:5,transform:`translate(0 ${y})`,fill:`url(#${ids.curb})`});
      segments.push({transform,length});
     }
-    edges.set(key,{group,segments,transform:'matrix(1 0 0 1 0 0)',highlight:null});continue;
+    edges.set(key,{group,segments,points:path,transform:'matrix(1 0 0 1 0 0)',highlight:null});continue;
    }
    const dx=to.x-from.x,dy=to.y-from.y,length=Math.hypot(dx,dy);if(!Number.isFinite(length)||length<=0)continue;
    // Keep the centerline joined to both squares. Only the road's cross-section
@@ -53,7 +53,7 @@
    add(group,'rect',{x:0,y:-18,width:length,height:36,rx:5,fill:palette.base,stroke:palette.border,'stroke-width':1});
    add(group,'rect',{x:0,y:-12,width:length,height:25,fill:`url(#${ids.paving})`});
    for(const y of [-18,13])add(group,'rect',{x:0,y:0,width:length,height:5,transform:`translate(0 ${y})`,fill:`url(#${ids.curb})`});
-   edges.set(key,{group,length,transform,highlight:null});
+   edges.set(key,{group,length,points:[from,to],transform,highlight:null});
   }
   // Bridge artwork is rendered separately so it can be removed cleanly when
   // the temporary collapse effect is active.
@@ -64,7 +64,10 @@
    const shadow=svg.querySelector(`[data-shadow-edge="${key}"]`);if(shadow)shadow.style.display='none';
   }
   const overlay=add(svg,'g',{class:'map-road-overlay'});
-  scenes.set(svg,{edges,overlay,active:new Set(),simpleMode:false,collapseState:window.bridgeCollapseVisualState});
+  const simpleRoute=add(overlay,'g',{class:'map-road-simple-shortest',display:'none','pointer-events':'none'});
+  add(simpleRoute,'path',{class:'map-road-simple-shortest-halo',fill:'none',stroke:'#f873bc','stroke-width':14,'stroke-linecap':'round','stroke-linejoin':'round',opacity:.88});
+  add(simpleRoute,'path',{class:'map-road-simple-shortest-core',fill:'none',stroke:'#fff5fa','stroke-width':3.5,'stroke-linecap':'round','stroke-linejoin':'round'});
+  scenes.set(svg,{edges,overlay,simpleRoute,active:new Set(),simpleMode:false,collapseState:window.bridgeCollapseVisualState});
   queueMicrotask(()=>window.MapRoadCache?.prepare(svg,squares));
  }
  function setShortestPath(svg,path){
@@ -88,6 +91,16 @@
     edge.highlight=highlight;
    }else{edge.highlight?.remove();edge.highlight=null;}
   }
+  const route=[];
+  for(let i=0;i<path.length-1;i++){
+   const key=edgeKey(path[i],path[i+1]),edge=scene.edges.get(key);
+   if(!edge)continue;
+   const points=window.MapWorkshopScene?.roadPoints(path[i],path[i+1])||edge.points;
+   if(!points?.length)continue;
+   route.push('M '+points.map(point=>`${point.x} ${point.y}`).join(' L '));
+  }
+  const routeData=route.join(' ');
+  for(const line of scene.simpleRoute.querySelectorAll('path'))line.setAttribute('d',routeData);
   scene.active=next;
  }
  function syncBridgeVisibility(svg,scene){
@@ -101,7 +114,7 @@
  }
  function setSimpleMode(svg,enabled){
   const scene=scenes.get(svg);if(!scene)return;
-  scene.simpleMode=Boolean(enabled);syncBridgeVisibility(svg,scene);
+  scene.simpleMode=Boolean(enabled);scene.simpleRoute.style.display=scene.simpleMode?'':'none';syncBridgeVisibility(svg,scene);
  }
  function setBridgeCollapse(svg,squares,state){
   if(!svg)return;
