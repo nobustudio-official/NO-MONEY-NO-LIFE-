@@ -1,5 +1,6 @@
 .boss-opening { position:fixed; inset:3.5% 4%; z-index:15000; overflow:hidden; border:1px solid #ccae7b; border-radius:22px; background:#17394e url('images/backgrounds/scenes/王都ロビー.webp') center/cover; color:#fcfcfc; font-family:'Yu Gothic',Meiryo,sans-serif; }
 .boss-opening.boss-opening-start { inset:0; border:0; border-radius:0; }
+.boss-opening.boss-opening-start[data-plane02="true"] { border:1px solid #ccae7b; border-radius:22px; }
 .boss-opening::before { content:''; position:absolute; inset:0; background:linear-gradient(90deg,#071a2a55,#071a2a20); pointer-events:none; }
 .boss-opening-staff { position:absolute; right:2%; bottom:25%; height:67%; width:34%; object-fit:contain; object-position:center bottom; filter:drop-shadow(0 8px 8px #071a2a66); }
 .boss-opening.boss-opening-intro-scene .boss-opening-staff { right:auto; left:50%; bottom:22%; width:50%; height:67%; transform:translateX(-50%); }
