@@ -506,6 +506,21 @@
     background: linear-gradient(145deg, #536078, #303b50);
 }
 
+.local-resume-overlay .local-resume-button {
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 8px;
+    font-weight: 700;
+    text-shadow: none;
+}
+
+.local-resume-overlay .local-resume-continue {
+    border: 1px solid #fff0bd;
+    color: #25182c;
+    background: linear-gradient(110deg, #fff0bd, #edbd6c 47%, #ffe8a9);
+    font-weight: 800;
+}
+
 .title-screen__setup-card h2 {
     margin: 0 0 10px;
     color: var(--title-setup-heading);

@@ -29,6 +29,7 @@
         return new Promise(resolve => {
             for (const [label, value] of [...(canResume ? [['続きから再開', true]] : []), ['新しいゲーム', false]]) {
                 const button = document.createElement('button'); button.textContent = label; button.style.cssText = 'padding:12px;margin:6px;font-size:16px';
+                button.className = 'local-resume-button ' + (value ? 'local-resume-continue' : 'title-screen__setup-back');
                 button.onclick = () => { overlay.remove(); resolve(value); }; box.append(button);
             }
             box.querySelector('button')?.focus();
