@@ -1368,7 +1368,7 @@ list.appendChild(item);
     const hasNext = /(?:＞＞|>>)/.test(String(message || ""));
     const cleanMessage = String(message || "").replace(/(?:＞＞|>>)/g, "").trim();
     const text = cleanMessage || (inlineLog && activeBattle.phase === "playerAction"
-        ? "魔法をクリックして攻撃" : "");
+        ? "魔法を2回クリックして攻撃" : "");
     const body = document.createElement("span");
     body.className = "battle-log-text";
 
