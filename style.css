@@ -7629,7 +7629,7 @@ GAME OVER
 
     .battle-new-magic-item.is-selected {
         border-color: rgba(255, 225, 120, 0.95);
-        background: rgba(255, 214, 90, 0.16);
+        background: rgba(255, 255, 255, 0.13);
         box-shadow: 0 0 12px rgba(255, 210, 90, 0.18);
     }
 
@@ -8917,36 +8917,36 @@ GAME OVER
 
         .battle-selected-magic {
             min-height:
-                70px !important;
+                0;
 
             padding:
-                5px 8px !important;
+                0;
 
             gap:
                 10px;
 
-        transform: translateY(78px) !important;
+        transform: none;
         }
 
 
         .battle-selected-magic-icon {
             flex:
-                0 0 44px !important;
+                0 0 24px;
 
             width:
-                44px !important;
+                24px;
 
             height:
-                44px !important;
+                26px;
         }
 
 
         .battle-selected-magic-icon img {
             width:
-                38px !important;
+                24px;
 
             height:
-                38px !important;
+                26px;
         }
 
 

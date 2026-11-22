@@ -298,7 +298,7 @@
 
     function updateBattleGoldValue(current, start) {
         const value = document.getElementById("battlePlayerHpMax");
-        if (value) value.textContent = usesWholeBodyMotion()
+        if (value) value.textContent = usesBattleMotionLayout()
             ? `${formatBattleNumber(current)} / ${formatBattleNumber(start)}G`
             : `/ ${formatBattleNumber(start)}G`;
     }
@@ -932,12 +932,10 @@ renderBattleActiveBuffIcons();
                 item.disabled = activeBattle.isOnlineObserver || activeBattle.phase !== "playerAction"
                     || activeBattle.busy || activeBattle.presentationBusy || activeBattle.presentationReady === false;
 
-                if (
-                    activeBattle.selectedMagic &&
-                    activeBattle.selectedMagic === magic
-                ) {
+                if (Number(activeBattle.armedMagicId) === Number(magicId)) {
                     item.classList.add("is-selected");
                 }
+                item.setAttribute("aria-pressed", String(item.classList.contains("is-selected")));
 
                 const itemTemplate =
                     document.getElementById("battleNewMagicItemTemplate");
@@ -1023,10 +1021,11 @@ item.addEventListener(
 item.addEventListener(
     "mouseleave",
     function () {
-        syncOnlineBattleMagicPreview(null);
-        renderSelectedMagic(
-            activeBattle && !usesWholeBodyMotion() ? activeBattle.selectedMagic : null
-        );
+        const selected = activeBattle && activeBattle.phase === "playerAction"
+            && !activeBattle.busy && !activeBattle.presentationBusy
+            ? activeBattle.selectedMagic : null;
+        syncOnlineBattleMagicPreview(selected);
+        renderSelectedMagic(selected);
     }
 );
 
@@ -1048,10 +1047,11 @@ item.addEventListener(
 item.addEventListener(
     "blur",
     function () {
-        syncOnlineBattleMagicPreview(null);
-        renderSelectedMagic(
-            activeBattle && !usesWholeBodyMotion() ? activeBattle.selectedMagic : null
-        );
+        const selected = activeBattle && activeBattle.phase === "playerAction"
+            && !activeBattle.busy && !activeBattle.presentationBusy
+            ? activeBattle.selectedMagic : null;
+        syncOnlineBattleMagicPreview(selected);
+        renderSelectedMagic(selected);
     }
 );
 
@@ -1071,7 +1071,23 @@ item.addEventListener(
             return;
         }
 
+        const clickedMagicId = Number(item.dataset.magicId);
+        if (activeBattle.armedMagicId !== clickedMagicId) {
+            activeBattle.selectedMagic = magic;
+            activeBattle.armedMagicId = clickedMagicId;
+            if (usesWholeBodyMotion(activeBattle)) activeBattle.previewMagic = magic;
+            list.querySelectorAll(".battle-new-magic-item").forEach(function (button) {
+                const selected = button === item;
+                button.classList.toggle("is-selected", selected);
+                button.setAttribute("aria-pressed", String(selected));
+            });
+            renderSelectedMagic(magic);
+            syncOnlineBattleMagicPreview(magic);
+            return;
+        }
+
         activeBattle.selectedMagic = magic;
+        activeBattle.armedMagicId = null;
         performSelectedMagic();
     }
 );
@@ -1241,7 +1257,7 @@ list.appendChild(item);
             ? Number(Object.keys(MAGIC_CONTENTS).find(function (id) { return MAGIC_CONTENTS[id] === magic; }))
             : null;
         sync.syncBattleView({ battleId: activeBattle.onlineBattleId, magicId }).then(function (response) {
-            // Hover changes are transient; a stale update during a phase change
+            // Preview changes are transient; a stale update during a phase change
             // may be rejected without affecting the authoritative battle.
         });
     }
@@ -1633,6 +1649,8 @@ list.appendChild(item);
 
             activeBattle.round += 1;
             activeBattle.selectedMagic = null;
+            activeBattle.previewMagic = null;
+            activeBattle.armedMagicId = null;
             activeBattle.busy = false;
             activeBattle.phase = "playerAction";
 
@@ -2440,6 +2458,10 @@ activeBattle.phase =
     "waitNextRound";
 
 activeBattle.selectedMagic =
+    null;
+activeBattle.previewMagic =
+    null;
+activeBattle.armedMagicId =
     null;
 
 console.log(
@@ -3274,6 +3296,8 @@ async function showOfflineBossAftermath(player, boss) {
 
     round: 1,
     selectedMagic: null,
+    armedMagicId: null,
+    previewMagic: null,
     activeBuffMagicIds: [],
     busy: false,
     phase: "playerAction",
@@ -3348,12 +3372,17 @@ showBattleMessage(
         if (!activeBattle) return;
 
         const previousPlayerGold = Number(activeBattle.player && activeBattle.player.money);
+        const previousBattlePhase = activeBattle.phase;
         activeBattle.player = player;
         activeBattle.monster = snapshot.monster;
         activeBattle.monsterHP = Number(snapshot.monsterHP);
         activeBattle.battleStartGold = Number(snapshot.battleStartGold);
         activeBattle.round = Number(snapshot.round) || 1;
         activeBattle.phase = snapshot.phase;
+        if (snapshot.phase === "playerAction" && previousBattlePhase !== "playerAction") {
+            activeBattle.previewMagic = null;
+            activeBattle.armedMagicId = null;
+        }
         activeBattle.selectedMagic = MAGIC_CONTENTS[Number(snapshot.selectedMagicId)] || null;
         activeBattle.lastDamage = Number(snapshot.lastDamage) || 0;
         activeBattle.endWithReward = snapshot.endWithReward === true;

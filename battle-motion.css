@@ -201,7 +201,7 @@
 #battleMainPopup.battle-motion-mode .battle-context[data-mode="message"] .battle-selected-magic,
 #battleMainPopup.battle-motion-mode .battle-context[data-mode="preview"] .battle-new-message { display: none; }
 
-/* Shared blue palette. Hover/focus is transient; selection alone adds no fill. */
+/* Shared blue palette. Hover and the first-tap selection use the same fill. */
 #battleMainPopup.battle-motion-mode .battle-magic-panel {
     position: relative; top: auto; display: flex; align-items: center; gap: 14px;
     height: 100%; width: auto; margin: 0 var(--battle-content-right) 0 var(--battle-content-left); padding: 12px 18px; box-sizing: border-box;
@@ -358,7 +358,7 @@
 #battleMainPopup.battle-motion-mode .battle-magic-scroll-arrow:hover,
 #battleMainPopup.battle-motion-mode .battle-magic-scroll-arrow:focus-visible { background: linear-gradient(180deg, var(--battle-button-hover-top), var(--battle-button-hover-bottom)); }
 #battleMainPopup.battle-motion-mode .battle-magic-scroll-arrow:active { background: #0c2942; }
-#battleMainPopup.battle-motion-mode .battle-new-magic-item.is-selected { border-color: var(--battle-border); background: transparent; box-shadow: inset 0 1px 0 #ffffffcc; }
+#battleMainPopup.battle-motion-mode .battle-new-magic-item.is-selected { border-color: var(--battle-border); background: linear-gradient(180deg, var(--battle-button-hover-top), var(--battle-button-hover-bottom)); box-shadow: inset 0 1px 0 #ffffffcc; }
 #battleMainPopup.battle-motion-mode .battle-new-magic-item:disabled { opacity: .58; }
 #battleMainPopup.battle-motion-mode .battle-action-row { flex: 0 0 120px; width: 120px; height: 100%; }
 #battleMainPopup.battle-motion-mode .battle-new-escape-button { min-height: 44px; }
@@ -400,16 +400,16 @@
    The shared selectors include regular boss battles; only the scenery changes. */
 @media (orientation: landscape) and (max-width: 1000px) and (max-height: 610px) {
     #battleMainPopup.battle-motion-mode .battle-main-screen {
-        --battle-panel-height: clamp(42px, 11vh, 52px);
+        --battle-panel-height: clamp(38px, 9.5vh, 40px);
         --battle-panel-radius: 12px;
         --battle-status-width: 32%;
         --battle-content-left: 4%;
         --battle-content-right: 4%;
         --battle-panel-gap: 8px;
-        --battle-enemy-status-top: 4%;
+        --battle-enemy-status-top: 0%;
         --battle-player-left: 5%;
         --battle-player-width: 31%;
-        --battle-player-bottom: 0%;
+        --battle-player-bottom: -10px;
         --battle-player-height: 68%;
         --battle-enemy-height: 55%;
         --battle-log-font-size: clamp(12px, 1.65vw, 15px);
@@ -431,8 +431,8 @@
     }
 
     #battleMainPopup.battle-motion-mode .battle-monster-area {
-        right: 5%;
-        top: 24%;
+        right: -1%;
+        top: 6%;
         width: 30%;
     }
 
@@ -447,8 +447,8 @@
     #battleMainPopup.battle-motion-mode .battle-player-hp {
         grid-template-columns: max-content minmax(0, 1fr) max-content;
         grid-template-areas: "name name value" "label bar bar";
-        padding: 6px 9px;
-        gap: 3px 6px;
+        padding: 2px 8px;
+        gap: 1px 6px;
     }
 
     #battleMainPopup.battle-motion-mode .battle-player-hp-bar {
@@ -487,15 +487,50 @@
     }
 
     #battleMainPopup.battle-motion-mode .battle-lower-hud {
-        bottom: 4%;
+        bottom: -2px;
         grid-template-columns: var(--battle-content-left) var(--battle-status-width) minmax(0, 1fr) var(--battle-content-right);
     }
 
     #battleMainPopup.battle-motion-mode .battle-context {
         min-height: var(--battle-panel-height);
         margin-left: var(--battle-panel-gap);
-        padding: 6px 10px;
+        padding: 4px 10px;
+        box-sizing: border-box;
         border-radius: 12px;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-enemy-status {
+        min-height: var(--battle-panel-height);
+        padding: 4px 8px;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-player-hp {
+        min-height: var(--battle-panel-height);
+        box-sizing: border-box;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-status-name {
+        font-size: 12px;
+        line-height: 1.1;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-player-hp-max {
+        font-size: 11px;
+        line-height: 1.1;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-player-hp .battle-status-label {
+        font-size: 10px;
+        line-height: 1;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-player-hp-bar {
+        height: 6px;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-selected-magic-icon img {
+        width: 24px;
+        height: 26px;
     }
 
     #battleMainPopup.battle-motion-mode .battle-selected-magic.battle-selected-magic-layout {
@@ -503,9 +538,9 @@
     }
 
     #battleMainPopup.battle-motion-mode .battle-selected-magic-icon.battle-selected-magic-icon-layout {
-        flex-basis: 28px;
-        width: 28px;
-        height: 32px;
+        flex-basis: 24px;
+        width: 24px;
+        height: 26px;
     }
 
     #battleMainPopup.battle-motion-mode .battle-selected-magic-name.battle-selected-magic-name-layout {
