@@ -10498,8 +10498,8 @@ max-height:
     }
 
     .game-screen > .action-menu .dice-movement-return-button {
-        width: calc(4.4em + var(--mobile-action-icon-size) + 14px);
-        height: clamp(24px, 10dvh, 54px);
+        width: 100%;
+        height: var(--mobile-action-height);
     }
 
     .game-screen > .action-menu > .guidebook-inventory-row {
