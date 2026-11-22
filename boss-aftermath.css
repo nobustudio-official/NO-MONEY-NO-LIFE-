@@ -160,6 +160,17 @@ body.boss-flow-active .demo-controls>label,body.boss-flow-active .demo-controls>
     }
 }
 
+/* Keep all boss-ceremony headings 4pt below their current size. */
+#boss-aftermath .bf-main h1 {
+    font-size: calc(29px - 4pt);
+}
+
+@media (max-width: 1550px) {
+    #boss-aftermath .bf-main h1 {
+        font-size: calc(24px - 4pt);
+    }
+}
+
 /* The reward-list stage reserves the right side for the guild staff. */
 #boss-aftermath.bf-reward-announcement .bf-main {
     left: 11%;
@@ -174,7 +185,7 @@ body.boss-flow-active .demo-controls>label,body.boss-flow-active .demo-controls>
 #boss-aftermath.bf-reward-announcement .bf-main h1 {
     flex: 0 0 auto;
     padding-bottom: 7px;
-    font-size: clamp(18px, 2.6vh, 23px);
+    font-size: calc(clamp(18px, 2.6vh, 23px) - 4pt);
     line-height: 1.2;
 }
 
