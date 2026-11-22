@@ -8202,6 +8202,7 @@ bossCounterEnabled = true;
 
     popup.style.display =
         "block";
+    window.BossGateUI?.place();
 
     localSave?.checkpoint('boss-choice', { rechallenge: isRechallenge });
 
@@ -8213,10 +8214,14 @@ bossCounterEnabled = true;
         function () {
 
             if (onlineControls) {
-                if (!onlineControls.observer) onlineControls.fight();
+                if (!onlineControls.observer) {
+                    window.BossGateUI?.release();
+                    onlineControls.fight();
+                }
                 return;
             }
 
+            window.BossGateUI?.release();
             popup.style.display =
                 "none";
 
@@ -8235,10 +8240,14 @@ bossCounterEnabled = true;
     function () {
 
         if (onlineControls) {
-            if (!onlineControls.observer) onlineControls.decline();
+            if (!onlineControls.observer) {
+                window.BossGateUI?.release();
+                onlineControls.decline();
+            }
             return;
         }
 
+        window.BossGateUI?.release();
         popup.style.display =
             "none";
 

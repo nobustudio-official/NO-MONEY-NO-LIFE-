@@ -1,0 +1,65 @@
+/* Boss-choice cards share the bait-card positioning rule and AN02 edge. */
+(function () {
+    'use strict';
+
+    let cleanup = null;
+
+    function release() {
+        cleanup?.();
+        cleanup = null;
+    }
+
+    function place() {
+        release();
+
+        const popup = document.getElementById('monsterChoicePopup');
+        const frame = popup?.querySelector('.boss-gate-frame');
+        const cards = popup?.querySelector('.boss-gate-choices');
+        const art = popup?.querySelector('.boss-gate-art');
+        const banner = popup?.querySelector('.boss-gate-banner');
+        if (!popup || !frame || !cards || !art || !banner) return;
+
+        let frameId = 0;
+        const update = () => {
+            if (!frame.isConnected || popup.style.display === 'none') return;
+            const frameRect = frame.getBoundingClientRect();
+            const artRect = art.getBoundingClientRect();
+            const bannerRect = banner.getBoundingClientRect();
+            if (!frameRect.height || !artRect.height || !bannerRect.height) return;
+
+            const center = (artRect.top + artRect.bottom) / 2;
+            const bottom = bannerRect.top - 8;
+            const height = Math.max(48, 2 * (bottom - center));
+            cards.style.left = (bannerRect.left - frameRect.left) + 'px';
+            cards.style.right = (frameRect.right - bannerRect.right) + 'px';
+            cards.style.top = (bottom - height - frameRect.top) + 'px';
+            cards.style.bottom = 'auto';
+            cards.style.height = height + 'px';
+        };
+
+        const schedule = () => {
+            if (!frameId) frameId = requestAnimationFrame(() => {
+                frameId = 0;
+                update();
+            });
+        };
+
+        const observer = new ResizeObserver(schedule);
+        [frame, art, banner].forEach(element => observer.observe(element));
+        window.addEventListener('resize', schedule, { passive: true });
+        window.visualViewport?.addEventListener('resize', schedule, { passive: true });
+        window.visualViewport?.addEventListener('scroll', schedule, { passive: true });
+        schedule();
+
+        cleanup = () => {
+            observer.disconnect();
+            window.removeEventListener('resize', schedule);
+            window.visualViewport?.removeEventListener('resize', schedule);
+            window.visualViewport?.removeEventListener('scroll', schedule);
+            if (frameId) cancelAnimationFrame(frameId);
+            ['left', 'right', 'top', 'bottom', 'height'].forEach(property => cards.style.removeProperty(property));
+        };
+    }
+
+    window.BossGateUI = Object.freeze({ place, release });
+})();

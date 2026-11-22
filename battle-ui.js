@@ -3417,7 +3417,10 @@ showBattleMessage(
             });
             return;
         }
-        if (challengePopup) challengePopup.style.display = "none";
+        if (challengePopup) {
+            window.BossGateUI?.release();
+            challengePopup.style.display = "none";
+        }
         if (snapshot.phase === "resumeTurn") {
             const observer = activeBattle.isOnlineObserver;
             hideLayer("battleMainPopup");
@@ -3821,7 +3824,10 @@ showBattleMessage(
             : null;
         if (onlineSync && typeof onlineSync.startNormalBattle === "function") {
             const oldPopup = document.getElementById("monsterChoicePopup");
-            if (oldPopup) oldPopup.style.display = "none";
+            if (oldPopup) {
+                window.BossGateUI?.release();
+                oldPopup.style.display = "none";
+            }
             const requestId = createOnlineSyncEventId("normal-battle");
             onlineSync.startNormalBattle(requestId).then(function (response) {
                 if (!response || !response.ok || !response.battle) {
@@ -3886,6 +3892,7 @@ showBattleMessage(
             );
 
         if (oldPopup) {
+            window.BossGateUI?.release();
             oldPopup.style.display = "none";
         }
 
