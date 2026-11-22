@@ -1,12 +1,7 @@
 /* Shared frame geometry for the post-boss reward and next-boss sequence only. */
 #boss-aftermath,
 .boss-opening:not(.boss-opening-start) {
-    position: fixed;
-    inset: 3.5% 4%;
     box-sizing: border-box;
-    width: auto;
-    height: auto;
-    max-width: none;
     overflow: hidden;
     border: 1px solid #ccae7b;
     border-radius: 22px;
@@ -14,6 +9,20 @@
     --boss-sequence-panel-top: 2%;
     --boss-sequence-panel-width: 55%;
     --boss-sequence-panel-bottom: calc(var(--an02-min-height, 18vh) + var(--an02-bottom, 3vh));
+}
+
+/* Keep the guild staff in the reward-announcement position throughout this sequence. */
+#boss-aftermath .bf-staff,
+#boss-aftermath.bf-reward-announcement .bf-staff,
+.boss-opening:not(.boss-opening-start) .boss-opening-staff {
+    left: auto;
+    right: -1%;
+    bottom: var(--boss-sequence-panel-bottom);
+    width: 40%;
+    height: 70%;
+    object-fit: contain;
+    object-position: center bottom;
+    transform: none;
 }
 
 #boss-aftermath .bf-main,
@@ -41,8 +50,13 @@
     min-width: 0;
     margin: 0;
     padding-bottom: clamp(4px, .9vh, 7px);
-    font-size: clamp(15px, 2.2vh, 19px);
+    font-size: calc(clamp(18px, 2.6vh, 23px) - 4pt);
     line-height: 1.2;
+}
+
+#boss-aftermath.bf-reward-announcement .bf-main h1 {
+    padding-bottom: 7px;
+    font-size: calc(clamp(18px, 2.6vh, 23px) - 4pt);
 }
 
 .boss-opening:not(.boss-opening-start) .boss-opening-banner {
@@ -62,7 +76,46 @@
     border-radius: 12px;
     background: linear-gradient(125deg, #18384fe8, #10293cee);
     box-shadow: 0 5px 20px #07192345;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 2px;
+    padding: clamp(8px, 2.2vh, 16px) clamp(14px, 1.2vw, 22px);
     overflow: hidden;
+}
+
+.boss-opening:not(.boss-opening-start) .boss-opening-speaker {
+    position: static;
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+    font-size: clamp(11px, 1.6vh, 15px);
+    line-height: 1.2;
+}
+
+.boss-opening:not(.boss-opening-start) .boss-opening-copy {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: center;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0 84px 0 0;
+    font: 600 clamp(14px, 2.1vh, 22px)/1.3 "Yu Gothic", "Meiryo", sans-serif;
+    overflow-wrap: anywhere;
+}
+
+.boss-opening:not(.boss-opening-start) .boss-opening-next {
+    position: absolute;
+    right: clamp(10px, 1vw, 20px);
+    bottom: clamp(4px, 2.5vh, 20px);
+    grid-column: auto;
+    grid-row: auto;
+    min-width: 90px;
+    min-height: 27px;
+    margin: 0;
+    padding: 2px 10px;
+    font: 600 calc(clamp(14px, 2.1vh, 22px) - 2px)/1.5 "Yu Gothic", "Meiryo", sans-serif;
 }
 
 /* Keep reward rows, receipts, and penalty content inside the unchanged panel. */
@@ -105,7 +158,10 @@
 
 #boss-aftermath .bf-main.bf-stage-receipt .bf-receipt-list {
     flex: 1 1 auto;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 145px), 1fr));
+    box-sizing: border-box;
+    max-width: calc(var(--recipient-count, 1) * 135px + (var(--recipient-count, 1) - 1) * 12px + 16px);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 135px), 135px));
+    justify-content: center;
     grid-auto-rows: minmax(0, 1fr);
     align-content: start;
     overflow: auto;
@@ -129,7 +185,10 @@
 }
 
 #boss-aftermath .bf-penalty-layout .bf-dice-slot {
-    height: auto;
+    position: relative;
+    flex: 0 0 auto;
+    height: clamp(72px, 16vh, 175px);
+    min-height: clamp(72px, 16vh, 175px);
     min-width: 0;
 }
 
@@ -193,10 +252,18 @@
 }
 
 @media (max-width: 700px), (pointer: coarse) and (max-height: 500px) {
-    #boss-aftermath,
-    .boss-opening:not(.boss-opening-start) {
-        inset: 3.5% 4%;
-        border-radius: 16px;
+    .boss-opening:not(.boss-opening-start) .boss-opening-copy {
+        padding-right: 76px;
+        font-size: clamp(12px, 3vh, 16px);
+        line-height: 1.2;
+        max-height: 100%;
+        overflow: auto;
+    }
+
+    .boss-opening:not(.boss-opening-start) .boss-opening-next {
+        min-width: 76px;
+        min-height: 24px;
+        font-size: 12px;
     }
 
     #boss-aftermath .bf-reward-row {
