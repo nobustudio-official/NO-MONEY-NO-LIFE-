@@ -116,7 +116,7 @@
     const width = plot.getBoundingClientRect().width;
     if (width < 1) return;
     const axisFont = Math.min(20, Math.max(14, window.innerWidth * .013));
-    const height = Math.round(plot.getBoundingClientRect().height), right = 14, top = 16, bottom = 28;
+    const height = Math.round(plot.getBoundingClientRect().height), right = 14, top = stage === 2 || stage === 3 ? 4 : 16, bottom = 28;
     const values = data.flatMap(p => stage === 2 ? [p.property, p.cash < 0 ? p.cash : total(p)] : p.history);
     const min = Math.min(0, ...values), max = Math.max(0, ...values);
     const range = Math.max(1, max - min);
