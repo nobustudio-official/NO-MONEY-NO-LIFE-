@@ -409,8 +409,8 @@
         --battle-enemy-status-top: 0%;
         --battle-player-left: 5%;
         --battle-player-width: 31%;
-        --battle-player-bottom: -10px;
-        --battle-player-height: 68%;
+        --battle-player-bottom: 0px;
+        --battle-player-height: 82%;
         --battle-enemy-height: 55%;
         --battle-log-font-size: clamp(12px, 1.65vw, 15px);
         grid-template-rows: minmax(0, 1fr) 58px;
@@ -510,8 +510,12 @@
     }
 
     #battleMainPopup.battle-motion-mode .battle-player-image {
-        transform: scale(1.2);
+        transform: none;
         transform-origin: center bottom;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-player-area {
+        clip-path: none;
     }
 
     #battleMainPopup.battle-motion-mode .battle-status-name {
