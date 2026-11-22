@@ -163,5 +163,13 @@
 }
 
 @media (orientation: landscape) and (max-width: 1000px) and (max-height: 610px) {
-    #monsterChoicePopup .boss-gate-frame { height: calc(100vh - 74px); }
+    #monsterChoicePopup .boss-gate-frame {
+        top: max(62px, 15vh);
+        bottom: max(8px, 2vh);
+        left: 50%;
+        width: min(98vw, 1450px);
+        height: auto;
+        transform: translateX(-50%);
+        border-radius: 12px;
+    }
 }

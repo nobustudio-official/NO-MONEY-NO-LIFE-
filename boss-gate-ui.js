@@ -29,7 +29,9 @@
 
             const center = (artRect.top + artRect.bottom) / 2;
             const bottom = bannerRect.top - 8;
-            const height = Math.max(48, 2 * (bottom - center));
+            const mobileLandscape = window.matchMedia('(orientation: landscape) and (max-width: 1000px) and (max-height: 610px)').matches;
+            const baitCardHeight = mobileLandscape ? window.innerHeight * 0.43 : Infinity;
+            const height = Math.max(48, Math.min(2 * (bottom - center), baitCardHeight));
             cards.style.left = (bannerRect.left - frameRect.left) + 'px';
             cards.style.right = (frameRect.right - bannerRect.right) + 'px';
             cards.style.top = (bottom - height - frameRect.top) + 'px';

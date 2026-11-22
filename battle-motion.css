@@ -411,7 +411,7 @@
         --battle-player-width: 31%;
         --battle-player-bottom: 0px;
         --battle-player-height: calc(82% - 40px);
-        --battle-enemy-height: 55%;
+        --battle-enemy-height: 50%;
         --battle-log-font-size: clamp(12px, 1.65vw, 15px);
         grid-template-rows: minmax(0, 1fr) 58px;
         gap: 6px;
@@ -431,8 +431,8 @@
     }
 
     #battleMainPopup.battle-motion-mode .battle-monster-area {
-        right: -1%;
-        top: 6%;
+        right: 9%;
+        top: 14%;
         width: 30%;
     }
 
