@@ -17,7 +17,7 @@
    if(!frame.height||!person.height||!telop.height)return;
    const center=(person.top+person.bottom)/2,bottom=telop.top-8;
    const height=Math.max(48,2*(bottom-center)),top=bottom-height;
-   cards.style.left='0';cards.style.right='0';cards.style.top=(top-frame.top)+'px';cards.style.bottom='auto';cards.style.height=height+'px';
+   cards.style.left=(telop.left-frame.left)+'px';cards.style.right=(frame.right-telop.right)+'px';cards.style.top=(top-frame.top)+'px';cards.style.bottom='auto';cards.style.height=height+'px';
   };
   let frameId=0;
   const schedule=()=>{if(!frameId)frameId=requestAnimationFrame(()=>{frameId=0;update();});};
