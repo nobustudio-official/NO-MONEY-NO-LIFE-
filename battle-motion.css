@@ -509,6 +509,11 @@
         box-sizing: border-box;
     }
 
+    #battleMainPopup.battle-motion-mode .battle-player-image {
+        transform: scale(1.2);
+        transform-origin: center bottom;
+    }
+
     #battleMainPopup.battle-motion-mode .battle-status-name {
         font-size: 12px;
         line-height: 1.1;
