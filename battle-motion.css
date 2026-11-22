@@ -547,12 +547,44 @@
         font-size: 14px;
     }
 
-    #battleMainPopup.battle-motion-mode .battle-selected-magic-right.battle-selected-magic-right-layout {
+    #battleMainPopup.battle-motion-mode .battle-selected-magic-info {
+        flex: 1 1 auto;
+        min-width: 0;
+        justify-content: flex-start;
         gap: 8px;
     }
 
+    #battleMainPopup.battle-motion-mode .battle-selected-magic-left {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-selected-magic-right.battle-selected-magic-right-layout {
+        flex: 0 0 auto;
+        min-width: 0;
+        margin-left: auto;
+        gap: 8px;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-selected-magic-value-layout {
+        flex: 0 0 auto;
+        flex-direction: row;
+        align-items: baseline;
+        gap: 4px;
+        white-space: nowrap;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-selected-magic-value-layout > span:first-child {
+        flex: 0 0 auto;
+        overflow: visible;
+        text-overflow: clip;
+        font-size: 10px;
+        white-space: nowrap;
+    }
+
     #battleMainPopup.battle-motion-mode .battle-selected-magic-value-layout > strong {
-        font-size: 15px;
+        flex: 0 0 auto;
+        font-size: 13px;
     }
 
     #battleMainPopup.battle-motion-mode .battle-new-message {
