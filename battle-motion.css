@@ -407,10 +407,10 @@
         --battle-content-right: 4%;
         --battle-panel-gap: 8px;
         --battle-enemy-status-top: 0%;
-        --battle-player-left: 5%;
+        --battle-player-left: calc(5% + 15px);
         --battle-player-width: 31%;
         --battle-player-bottom: 0px;
-        --battle-player-height: 82%;
+        --battle-player-height: calc(82% - 40px);
         --battle-enemy-height: 55%;
         --battle-log-font-size: clamp(12px, 1.65vw, 15px);
         grid-template-rows: minmax(0, 1fr) 58px;
@@ -511,6 +511,11 @@
 
     #battleMainPopup.battle-motion-mode .battle-player-image {
         transform: none;
+        transform-origin: center bottom;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-monster-image {
+        transform: scale(1.1);
         transform-origin: center bottom;
     }
 
