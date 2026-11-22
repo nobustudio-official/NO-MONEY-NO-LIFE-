@@ -3494,7 +3494,7 @@ if (!existingRoads) mapBoard.appendChild(
 
 // =========================
 // マス詳細表示
-// PCでは右クリック、タッチ端末では1秒長押しで表示
+// PCでは右クリック、タッチ端末では0.6秒長押しで表示
 // =========================
 
 const showSquareDetailForNode = function () {
@@ -3513,7 +3513,7 @@ const showSquareDetailForNode = function () {
 
 node.addEventListener("contextmenu", function (event) {
     event.preventDefault();
-    // タッチ長押し時にOS標準メニューが先に出ても、独自の1秒判定を優先する。
+    // タッチ長押し時にOS標準メニューが先に出ても、独自の判定を優先する。
     if (event.pointerType === "touch" || event.sourceCapabilities?.firesTouchEvents || touchPointerActive) return;
     showSquareDetailForNode();
 });
@@ -3546,7 +3546,7 @@ node.addEventListener("pointerdown", function (event) {
         longPressTriggered = true;
         suppressNextMapClick = true;
         showSquareDetailForNode();
-    }, 1000);
+    }, 600);
 });
 node.addEventListener("pointermove", function (event) {
     if (!touchPointerActive || event.pointerId !== touchPointerId || longPressTriggered) return;
