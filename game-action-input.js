@@ -89,7 +89,7 @@
 
     function guard(event) {
         const target = event.target;
-        if (!target.closest || target.closest('.online-recovery-panel, [data-map-camera]')) return;
+        if (!target.closest || target.closest('.online-recovery-panel, [data-map-camera], #otherTitleConfirm')) return;
         const panel = openPanel();
         const backgroundButton = menuBehindOverlay(event);
         if (!active && !panel && !backgroundButton) return;
