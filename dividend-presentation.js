@@ -73,7 +73,7 @@
       const content = stage===0 ? `<h2>配当金が振り込まれます</h2><div class="dp-turn">${options.completedTurn}ターン終了</div><div class="dp-envelope" role="img" aria-label="配当の封筒と金貨"><img src="${assets.gold}" alt=""></div>` : player ? `${icon(player)}<span>${player.name}</span><strong>${format(total(player))}G</strong>` : '';
       // Keep the staff art and AN02 frame fixed between the market notice
       // and closing line. Only the copy wraps as needed.
-      body.innerHTML = `<div class="dp-guide-scene${stage===0?' dp-guide-opening':stage===6?' dp-guide-market':stage===7?' dp-guide-final':''}">${content?`<div class="dp-guide-summary">${content}</div>`:''}<img class="dp-guide-staff" src="images/characters/npc/jobs/ギルド-店員.webp" alt="ギルドのお姉さん"><div class="dp-guide-banner"><span class="dp-guide-speaker">ギルドのお姉さん</span><div class="dp-guide-copy">${stage===6?'':copy}</div></div></div>`;
+      body.innerHTML = `<div class="dp-guide-scene${stage===0?' dp-guide-opening':[4,5].includes(stage)?' dp-guide-ranking':stage===6?' dp-guide-market':stage===7?' dp-guide-final':''}">${content?`<div class="dp-guide-summary">${content}</div>`:''}<img class="dp-guide-staff" src="images/characters/npc/jobs/ギルド-店員.webp" alt="ギルドのお姉さん"><div class="dp-guide-banner"><span class="dp-guide-speaker">ギルドのお姉さん</span><div class="dp-guide-copy">${stage===6?'':copy}</div></div></div>`;
       const banner = body.querySelector('.dp-guide-banner');
       banner.append(next);
       if (stage===6) {
