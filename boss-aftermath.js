@@ -63,7 +63,8 @@
             function header(title) { root.classList.remove('bf-reward-announcement'); main.className = 'bf-main'; main.replaceChildren(); const h = document.createElement('h1'); h.textContent = title; main.append(h); }
             function message(text) { copy.innerHTML = text; }
             window.Plane02Layout?.apply(root);
-            function hide() { clearTimeout(timer); cancelAnimationFrame(frame); stopGuide(); if (loop) { loop.pause(); loop = null; } window.Plane02Layout?.release(root); root.remove(); battleScreen?.classList.remove('battle-aftermath-active'); battleScreen?.closest('#battleMainPopup')?.classList.remove('boss-aftermath-battle-hidden'); }
+            window.BossSequencePanelAlignment?.apply(root);
+            function hide() { clearTimeout(timer); cancelAnimationFrame(frame); stopGuide(); if (loop) { loop.pause(); loop = null; } window.BossSequencePanelAlignment?.release(root); window.Plane02Layout?.release(root); root.remove(); battleScreen?.classList.remove('battle-aftermath-active'); battleScreen?.closest('#battleMainPopup')?.classList.remove('boss-aftermath-battle-hidden'); }
             function showReward() {
                 stage = 'reward'; header('討伐報酬'); next.hidden = false;
                 root.classList.add('bf-reward-announcement');

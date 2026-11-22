@@ -41,7 +41,10 @@
             const copy = element('p', 'boss-opening-copy', 'こんにちは！NO MONEY, NO LIFE の世界へようこそ！');
             const next = element('button', 'boss-opening-next', '次へ▶'); next.type = 'button';
             banner.append(speaker, copy, next); root.append(staff, main, banner); document.body.append(root);
-            if (isNext) window.Plane02Layout?.apply(root);
+            if (isNext) {
+                window.Plane02Layout?.apply(root);
+                window.BossSequencePanelAlignment?.apply(root);
+            }
             if (!isNext) root.classList.add('boss-opening-start', 'boss-opening-intro-scene');
             let stage = 'intro', timer = null, frame = null, interval = null, audioSource = null, audioContext = null, soundGeneration = 0;
             let introStep = 0, guideAudio = null, guideAudioResolve = null, releaseLotteryGain = null;
@@ -107,7 +110,7 @@
                 } catch (error) { console.warn('[開始演出] SE:', error); }
             }
             function playStop() { const audio = new Audio('sounds/ボスルーレット停止2.mp3'); (window.GameSE ? window.GameSE.playLocal(audio) : audio.play()).catch(() => {}); }
-            const cleanup = () => { clearTimeout(timer); clearInterval(interval); cancelAnimationFrame(frame); stopGuideAudio(); stopSound(); stopRemoteAdvance?.(); if (audioContext) audioContext.close().catch(() => {}); overviewPreload.removeAttribute('src'); bossPreload.removeAttribute('src'); if (isNext) window.Plane02Layout?.release(root); root.remove(); };
+            const cleanup = () => { clearTimeout(timer); clearInterval(interval); cancelAnimationFrame(frame); stopGuideAudio(); stopSound(); stopRemoteAdvance?.(); if (audioContext) audioContext.close().catch(() => {}); overviewPreload.removeAttribute('src'); bossPreload.removeAttribute('src'); if (isNext) { window.BossSequencePanelAlignment?.release(root); window.Plane02Layout?.release(root); } root.remove(); };
             function showBoss() {
                 stage = 'boss'; next.hidden = false; next.textContent = '次へ▶';
                 main.replaceChildren(element('h1', '', '次の討伐依頼'));
