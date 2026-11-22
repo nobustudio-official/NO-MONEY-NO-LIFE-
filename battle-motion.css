@@ -238,8 +238,8 @@
 }
 #battleMainPopup.battle-motion-mode.battle-intro-mode :is(.battle-player-area, .battle-enemy-status, .battle-player-hp, .battle-round-badge, .battle-magic-panel, .battle-selected-magic) { display: none; }
 #battleMainPopup.battle-motion-mode.battle-intro-mode .battle-monster-area {
-    left: 50%; right: auto; top: 44%; width: 51%; height: 49.3%;
-    transform: translate(-50%, -50%);
+    left: 58%; right: auto; top: 6%; bottom: calc(8% + var(--battle-panel-height) + clamp(10px, 2.2vh, 18px));
+    width: 51%; height: auto; transform: translateX(-50%);
 }
 #battleMainPopup.battle-motion-mode.battle-intro-mode .battle-monster-image { object-position: center; }
 #battleMainPopup.battle-motion-mode.battle-intro-mode .battle-lower-hud {
