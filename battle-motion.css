@@ -516,7 +516,7 @@
 
     #battleMainPopup.battle-motion-mode .battle-monster-image {
         transform: scale(1.1);
-        transform-origin: center bottom;
+        transform-origin: center center;
     }
 
     #battleMainPopup.battle-motion-mode .battle-player-area {
