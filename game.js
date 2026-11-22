@@ -3261,6 +3261,11 @@ playSharedSE(buttonSound)
             "otherSoundButton"
         );
 
+    const otherTitleButton = document.getElementById("otherTitleButton");
+    const otherTitleConfirm = document.getElementById("otherTitleConfirm");
+    const otherTitleConfirmYes = document.getElementById("otherTitleConfirmYes");
+    const otherTitleConfirmNo = document.getElementById("otherTitleConfirmNo");
+
     if (otherButton) {
 
         otherButton.addEventListener(
@@ -3289,6 +3294,7 @@ playSharedSE(buttonSound)
                 if (otherMenuPopup) {
                     otherMenuPopup.style.display = "none";
                 }
+                if (otherTitleConfirm) otherTitleConfirm.hidden = true;
                 syncOnlineScreenView("", players[currentPlayer], "close");
 
             }
@@ -3305,6 +3311,7 @@ playSharedSE(buttonSound)
                 if (otherMenuPopup) {
                     otherMenuPopup.style.display = "none";
                 }
+                if (otherTitleConfirm) otherTitleConfirm.hidden = true;
                 syncOnlineScreenView("", players[currentPlayer], "close");
 
                 showAssetPopup(
@@ -3325,6 +3332,7 @@ playSharedSE(buttonSound)
                 if (otherMenuPopup) {
                     otherMenuPopup.style.display = "none";
                 }
+                if (otherTitleConfirm) otherTitleConfirm.hidden = true;
                 syncOnlineScreenView("", players[currentPlayer], "close");
 
                 const soundPopup =
@@ -3342,6 +3350,21 @@ playSharedSE(buttonSound)
         );
 
     }
+
+    otherTitleButton?.addEventListener("click", function () {
+        if (!otherTitleConfirm) return;
+        otherTitleConfirm.hidden = false;
+        otherTitleConfirmNo?.focus();
+    });
+
+    otherTitleConfirmNo?.addEventListener("click", function () {
+        if (otherTitleConfirm) otherTitleConfirm.hidden = true;
+        otherTitleButton?.focus();
+    });
+
+    otherTitleConfirmYes?.addEventListener("click", function () {
+        window.location.reload();
+    });
 
     // =========================
     // マップ表示

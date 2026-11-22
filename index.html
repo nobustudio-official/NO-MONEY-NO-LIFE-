@@ -16,7 +16,7 @@
 
     <link
         rel="stylesheet"
-        href="style.css?v=plane02-inset8-20261122"
+        href="style.css?v=other-menu-title-confirm-20261122"
     >
     <link rel="stylesheet" href="title-screen.css?v=portrait-setup-centered-1">
     <link rel="stylesheet" href="shop-presentation.css">
@@ -975,8 +975,17 @@
                 <div class="other-menu-title">その他</div>
                 <button id="otherAssetButton" type="button" class="other-menu-item">資産を見る</button>
                 <button id="otherSoundButton" type="button" class="other-menu-item">サウンド設定</button>
+                <button id="otherTitleButton" type="button" class="other-menu-item">タイトルに戻る</button>
                 <button id="otherMenuCloseButton" type="button" class="other-menu-close">閉じる</button>
             </div>
+
+            <section id="otherTitleConfirm" class="other-title-confirm" role="alertdialog" aria-labelledby="otherTitleConfirmText" hidden>
+                <p id="otherTitleConfirmText">タイトルにもどりますか？</p>
+                <div class="other-title-confirm-actions">
+                    <button id="otherTitleConfirmYes" type="button">はい</button>
+                    <button id="otherTitleConfirmNo" type="button">いいえ</button>
+                </div>
+            </section>
 
             <!-- =========================
                  資産一覧
@@ -1905,7 +1914,7 @@
 <script src="turn-handoff.js?v=2"></script>
 <script src="treasure-rules.js?v=multi-get-boss-thresholds-1"></script>
 <script src="game-action-input.js?v=square-detail-move-1"></script>
-<script src="game.js?v=shop-branch-title-fit-20261122"></script>
+<script src="game.js?v=other-menu-title-confirm-20261122"></script>
 <script src="battle-effects.js?v=mobile-global-image-budget-1"></script>
 <script src="battle-effects/common.js"></script>
 <script src="battle-effects/casting-circle.js"></script>

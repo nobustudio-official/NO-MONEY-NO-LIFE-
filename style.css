@@ -5054,10 +5054,13 @@ GAME OVER
     .other-menu-popup {
         display: none;
         position: absolute;
-        top: 122px;
-        left: 210px;
-        width: 260px;
-        padding: 18px;
+        top: 55%;
+        left: 18%;
+        width: min(260px, max(180px, 25vw));
+        max-height: 86%;
+        overflow-y: auto;
+        padding: 12px;
+        transform: translateY(-50%);
 
         z-index: 1200;
 
@@ -5074,24 +5077,25 @@ GAME OVER
     }
 
     .other-menu-title {
-        margin-bottom: 12px;
+        margin-bottom: 6px;
         text-align: center;
-        font-size: 22px;
+        font-size: clamp(16px, 2.2vw, 22px);
         font-weight: 900;
     }
 
     .other-menu-item,
     .other-menu-close {
         width: 100%;
-        min-height: 48px;
-        margin-top: 8px;
-        padding: 8px 12px;
+        min-height: 42px;
+        margin-top: 6px;
+        padding: 6px 10px;
         border: 1px solid rgba(255,255,255,0.25);
         border-radius: 10px;
         background: rgba(255,255,255,0.1);
         color: white;
-        font-size: 16px;
+        font-size: clamp(14px, 1.5vw, 16px);
         font-weight: bold;
+        cursor: pointer;
     }
 
     .other-menu-item:hover,
@@ -5100,7 +5104,76 @@ GAME OVER
     }
 
     .other-menu-close {
-        margin-top: 14px;
+        margin-top: 6px;
+    }
+
+    .other-title-confirm {
+        position: absolute;
+        top: 55%;
+        left: 48%;
+        z-index: 1201;
+        width: min(300px, max(220px, 35vw));
+        min-height: 180px;
+        padding: clamp(16px, 2.4vw, 24px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        transform: translateY(-50%);
+        border: 3px solid #f3b51b;
+        border-radius: 16px;
+        background: linear-gradient(155deg, rgba(26, 56, 79, .98), rgba(9, 30, 52, .99));
+        box-shadow: 0 10px 28px rgba(0, 0, 0, .5), inset 0 0 18px rgba(255, 211, 97, .12);
+        color: #fff;
+        text-align: center;
+    }
+
+    .other-title-confirm[hidden] {
+        display: none;
+    }
+
+    .other-title-confirm p {
+        margin: 0;
+        font-size: clamp(16px, 2vw, 21px);
+        font-weight: 800;
+    }
+
+    .other-title-confirm-actions {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        width: 100%;
+    }
+
+    .other-title-confirm-actions button {
+        min-width: 76px;
+        min-height: 38px;
+        padding: 6px 14px;
+        border: 1px solid #ccae7b;
+        border-radius: 9px;
+        background: linear-gradient(#47718a, #2c4e6d);
+        color: #fff4dc;
+        font: 700 15px/1.2 "Yu Gothic", "Meiryo", sans-serif;
+        cursor: pointer;
+    }
+
+    .other-title-confirm-actions button:hover {
+        filter: brightness(1.12);
+    }
+
+    @media (max-width: 700px) and (orientation: portrait) {
+        .other-menu-popup {
+            left: 50%;
+            width: min(260px, calc(100vw - 32px));
+            transform: translate(-50%, -50%);
+        }
+
+        .other-title-confirm {
+            left: 50%;
+            width: min(340px, calc(100vw - 32px));
+            transform: translate(-50%, -50%);
+        }
     }
 
     /* =========================
