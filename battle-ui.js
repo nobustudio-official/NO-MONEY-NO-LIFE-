@@ -1310,6 +1310,7 @@ list.appendChild(item);
             if (background && background !== "none") panel.querySelector(".bf-background").style.backgroundImage = background;
             document.body.append(panel);
         }
+        panel.classList.add("bf-reward-announcement");
         screen.classList.add("battle-aftermath-active");
         screen.closest("#battleMainPopup")?.classList.add("boss-aftermath-battle-hidden");
         const message = panel.querySelector(".bf-online-rewards");

@@ -159,3 +159,87 @@ body.boss-flow-active .demo-controls>label,body.boss-flow-active .demo-controls>
         padding-left: 64px;
     }
 }
+
+/* The reward-list stage reserves the right side for the guild staff. */
+#boss-aftermath.bf-reward-announcement .bf-main {
+    left: 11%;
+    top: 2%;
+    width: 55%;
+    bottom: calc(var(--an02-min-height) + var(--an02-bottom));
+    padding: 12px 14px;
+    gap: 8px;
+    border-radius: 14px;
+}
+
+#boss-aftermath.bf-reward-announcement .bf-main h1 {
+    flex: 0 0 auto;
+    padding-bottom: 7px;
+    font-size: clamp(18px, 2.6vh, 23px);
+    line-height: 1.2;
+}
+
+#boss-aftermath.bf-reward-announcement .bf-main .bf-reward-list {
+    flex: 1 1 auto;
+    gap: 4px;
+    overflow-y: auto;
+}
+
+#boss-aftermath.bf-reward-announcement .bf-main .bf-reward-row {
+    flex: 0 0 auto;
+    grid-template-columns: minmax(74px, .9fr) 30px minmax(80px, 1fr) minmax(88px, .9fr);
+    gap: 6px;
+    min-height: 34px;
+    padding: 3px 6px;
+}
+
+#boss-aftermath.bf-reward-announcement .bf-main .bf-reward-type,
+#boss-aftermath.bf-reward-announcement .bf-main .bf-reward-name {
+    min-width: 0;
+    font-size: clamp(11px, 1.5vw, 14px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#boss-aftermath.bf-reward-announcement .bf-main .bf-reward-row img {
+    width: 28px;
+    height: 28px;
+}
+
+#boss-aftermath.bf-reward-announcement .bf-main .bf-reward-row strong {
+    font-size: clamp(12px, 1.65vw, 16px);
+}
+
+#boss-aftermath.bf-reward-announcement .bf-main .bf-online-rewards {
+    flex: 1 1 auto;
+    font-size: clamp(14px, 1.55vw, 18px);
+    line-height: 1.5;
+}
+
+#boss-aftermath.bf-reward-announcement .bf-staff {
+    right: -1%;
+    bottom: calc(var(--an02-min-height) + var(--an02-bottom));
+    width: 40%;
+    height: 70%;
+    object-fit: contain;
+    object-position: center bottom;
+}
+
+@media (max-width: 700px), (pointer: coarse) and (max-height: 500px) {
+    #boss-aftermath.bf-reward-announcement .bf-main {
+        padding: 10px 11px;
+        gap: 6px;
+    }
+
+    #boss-aftermath.bf-reward-announcement .bf-main .bf-reward-row {
+        grid-template-columns: minmax(66px, .9fr) 26px minmax(66px, 1fr) minmax(76px, .9fr);
+        gap: 4px;
+        min-height: 32px;
+        padding: 2px 4px;
+    }
+
+    #boss-aftermath.bf-reward-announcement .bf-main .bf-reward-row img {
+        width: 24px;
+        height: 24px;
+    }
+}

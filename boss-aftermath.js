@@ -60,12 +60,13 @@
             const sound = (id, options) => { if (window.GameSE) Promise.resolve(window.GameSE.play(id, options)).catch(() => {}); };
             function stopGuide() { if (!guide) return; if (window.GameSE) window.GameSE.stop(guide); else { guide.pause(); guide.currentTime = 0; } guide = null; }
             function playGuide(name) { stopGuide(); guide = new Audio(`sounds/ガイド/${name}.mp3`); const slider = document.getElementById('seVolumeSlider'); guide.volume = slider ? Number(slider.value) / 100 : .7; const playback = window.GameSE ? window.GameSE.playLocal(guide) : guide.play(); Promise.resolve(playback).catch(error => console.warn(`[ボス討伐] 音声を再生できません: ${name}`, error)); }
-            function header(title) { main.className = 'bf-main'; main.replaceChildren(); const h = document.createElement('h1'); h.textContent = title; main.append(h); }
+            function header(title) { root.classList.remove('bf-reward-announcement'); main.className = 'bf-main'; main.replaceChildren(); const h = document.createElement('h1'); h.textContent = title; main.append(h); }
             function message(text) { copy.innerHTML = text; }
             window.Plane02Layout?.apply(root);
             function hide() { clearTimeout(timer); cancelAnimationFrame(frame); stopGuide(); if (loop) { loop.pause(); loop = null; } window.Plane02Layout?.release(root); root.remove(); battleScreen?.classList.remove('battle-aftermath-active'); battleScreen?.closest('#battleMainPopup')?.classList.remove('boss-aftermath-battle-hidden'); }
             function showReward() {
                 stage = 'reward'; header('討伐報酬'); next.hidden = false;
+                root.classList.add('bf-reward-announcement');
                 const rows = [awards.first && ['先着報酬', awards.first], ...(awards.damageAwards || []).filter(row => Number(row.value) > 0).map(row => ['ダメージ報酬', row]), ['討伐報酬', awards.defeat]].filter(Boolean);
                 const list = document.createElement('div'); list.className = 'bf-reward-list';
                 for (const [label, row] of rows) { const player = players[row.playerIndex]; if (!player) continue; const line = document.createElement('div'); line.className = 'bf-reward-row'; line.innerHTML = `<span class="bf-reward-type">${esc(label)}</span><img src="${esc(icon(player))}" alt=""><span class="bf-reward-name">${esc(player.name)}</span><strong>＋${fmt(row.value)}G</strong>`; list.append(line); }
@@ -198,6 +199,7 @@
         if (changedStage && onlineSound) { if (window.GameSE) window.GameSE.stop(onlineSound); else onlineSound.pause(); onlineSound = null; }
         let root = document.getElementById('boss-aftermath');
         if (!root) { root = document.createElement('section'); root.id = 'boss-aftermath'; document.body.append(root); }
+        root.classList.toggle('bf-reward-announcement', stage === 'reward');
         window.Plane02Layout?.apply(root);
         const scene = document.querySelector('#battleMainPopup .battle-main-screen');
         scene?.classList.add('battle-aftermath-active');
