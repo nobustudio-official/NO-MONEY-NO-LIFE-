@@ -109,6 +109,7 @@
             const cleanup = () => { clearTimeout(timer); clearInterval(interval); cancelAnimationFrame(frame); stopGuideAudio(); stopSound(); stopRemoteAdvance?.(); if (audioContext) audioContext.close().catch(() => {}); overviewPreload.removeAttribute('src'); bossPreload.removeAttribute('src'); root.remove(); };
             function showBoss() {
                 stage = 'boss'; next.hidden = false; next.textContent = '次へ▶';
+                root.classList.add('boss-opening-ceremony-layout');
                 main.replaceChildren(element('h1', '', '次の討伐依頼'));
                 overviewPreload.removeAttribute('src');
                 const info = element('div', 'boss-opening-info');
@@ -126,6 +127,7 @@
                 stage = 'mapLoading'; next.hidden = true;
                 next.textContent = '次へ▶';
                 root.classList.remove('boss-opening-intro-scene');
+                root.classList.add('boss-opening-ceremony-layout');
                 copy.textContent = isNext ? `それでは、次のボスの場所を示します。討伐した${options.winnerName}さん、ルーレットを止めてください。` : guideLines[5];
                 main.append(element('h1', '', 'ボスの出現エリア'));
                 const map = element('div', 'boss-opening-map');

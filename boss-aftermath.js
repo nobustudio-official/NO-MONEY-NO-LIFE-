@@ -44,7 +44,7 @@
         const { players, awards, killerIndex, target, boss, background, bossDefeatedCount = 0 } = options;
         const claims = BossCeremonyRules.aggregateRewards(awards, players.length).map(row => ({ ...row, claimed:false }));
         return new Promise(resolve => {
-            const root = document.createElement('section'); root.id = 'boss-aftermath';
+            const root = document.createElement('section'); root.id = 'boss-aftermath'; root.classList.add('bf-ceremony-layout');
             root.innerHTML = '<div class="bf-background"></div><div class="bf-shade"></div><img class="bf-staff" alt="ギルドのお姉さん"><section class="bf-main"></section><div class="bf-banner"><img class="bf-banner-portrait" alt="" hidden><span class="bf-speaker">ギルドのお姉さん</span><p class="bf-copy" aria-live="polite"></p><button class="bf-next" type="button">次へ▶</button></div>';
             if (background && background !== 'none') root.querySelector('.bf-background').style.backgroundImage = background;
             const staff = root.querySelector('.bf-staff'), main = root.querySelector('.bf-main'), banner = root.querySelector('.bf-banner'), copy = root.querySelector('.bf-copy'), next = root.querySelector('.bf-next'), portrait = root.querySelector('.bf-banner-portrait');
@@ -199,6 +199,7 @@
         if (changedStage && onlineSound) { if (window.GameSE) window.GameSE.stop(onlineSound); else onlineSound.pause(); onlineSound = null; }
         let root = document.getElementById('boss-aftermath');
         if (!root) { root = document.createElement('section'); root.id = 'boss-aftermath'; document.body.append(root); }
+        root.classList.add('bf-ceremony-layout');
         root.classList.toggle('bf-reward-announcement', stage === 'reward');
         window.Plane02Layout?.apply(root);
         const scene = document.querySelector('#battleMainPopup .battle-main-screen');
