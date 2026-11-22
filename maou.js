@@ -1649,6 +1649,17 @@ window.startMaouBattle =
     updateEncounterCondition;
 
 window.MAOU_CONFIG = MAOU_CONFIG;
+// Browser-local recovery stores progression flags, never dialogue timers or sprites.
+window.MaouLocalState = {
+    snapshot: () => ({ assetConditionReached, encounterPending, maouActive, maouDefeated,
+        maouPreviousBossId, maouFirstEncountered, maouCurrentForm }),
+    restore(saved) {
+        if (!saved) return;
+        ({ assetConditionReached, encounterPending, maouActive, maouDefeated,
+            maouPreviousBossId, maouFirstEncountered, maouCurrentForm } = saved);
+        if (maouActive || maouFirstEncountered) BOSS_CONTENTS[MAOU_CONFIG.id] = createMaouBoss(maouCurrentForm);
+    }
+};
 // Definition-only handoff from a defeated ordinary boss. Maou's own battle
 // progression remains in this module until its separate server migration.
 window.ensureOnlineMaouBossData = function () {

@@ -36,6 +36,7 @@
 
     function begin(kind, turnKey, phase = 'waiting', menuOnly = false) {
         if (active) return null;
+        window.localMatchSession?.pending(kind);
         const action = {
             kind,
             turnKey,
@@ -47,6 +48,7 @@
                 if (active !== action) return;
                 active = null;
                 update();
+                window.dispatchEvent(new Event('local-action-finished'));
             }
         };
         active = action;

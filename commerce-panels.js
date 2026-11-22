@@ -122,6 +122,9 @@
                         }
                         if(!sync)player.money=Number(player.money)+row.price;
                         sold=true;
+                        runtime.checkpoint?.(category === 'asset' ? 'asset-store' : 'store', category === 'asset'
+                            ? { assetIds: (mapData.find(s => Number(s.id) === Number(player.position))?.typeIds || []).flatMap(id => ASSET_BOXES[id]?.contents || []) }
+                            : { kind: category === 'magic' ? 'magic' : 'item' });
                         window.GameSE?.play('moneyDisplay',{shared:true}).catch(()=>{});runtime.update(player);runtime.render();GamePanels.refresh();return true;
                     }catch(error){runtime.event('売却できません',error.message,()=>{});return false;}
                     finally{if(!sold){pendingSales.delete(pending);saleActionBusy=false;}}
@@ -192,7 +195,7 @@
             }
             if(category==='item')window.GameSE?.play?.('itemObtain',{shared:true})?.catch(()=>{});
             else if(category==='power'||category==='magic')window.GameSE?.play?.('magicPowerUp',{shared:true}).catch(()=>{});
-            runtime.update(player);runtime.render();return true;
+            runtime.update(player);runtime.render();runtime.checkpoint?.('store', {kind:category==='item'?'item':'magic'});return true;
         }catch(error){console.error('[shop] 購入に失敗:',error);runtime.event('通信エラー','購入結果を確認できませんでした。',()=>{});return false;}
     }
     function showStore(player,kind,suppressGreeting=false) {
@@ -224,6 +227,7 @@
                 return result;
             },onClose:()=>close(player,id,true)});
         publish(GamePanels.snapshot(id));
+        runtime.checkpoint?.('store', {kind});
     }
     window.ApprovedCommerce=Object.freeze({configure:options=>{runtime=options;},canAct:player=>runtime.canAct(player),showStore,showAssets,showMagic,showSales,prepareRemoteSale,upgradeInventory});
 })();

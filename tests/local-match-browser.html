@@ -1,0 +1,149 @@
+<!doctype html><meta charset="utf-8"><title>Local match recovery regression</title>
+<!-- Run only through run-local-recovery-browser.cjs: its origin and profile are disposable. -->
+<pre id="report">RUNNING</pre><iframe id="game" style="width:1000px;height:700px"></iframe>
+<script>
+(async () => {
+    const frame = document.getElementById('game'), results = [], failures = [];
+    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+    const check = (condition, message) => { if (!condition) throw Error(message); };
+    const wait = async (test, message) => { for (let i = 0; i < 400; i++) { if (test()) return; await delay(25); } throw Error(message); };
+    const output = () => { document.getElementById('report').textContent = JSON.stringify({ stage, results, failures }); };
+    let w;
+    let stage = 'setup';
+    async function load() {
+        await new Promise((resolve, reject) => { const timer = setTimeout(() => reject(Error('iframe load timeout')), 10000); frame.onload = () => { clearTimeout(timer); resolve(); }; frame.src = '../index.html?recovery-test=' + Math.random(); });
+        w = frame.contentWindow;
+        w.waitForGameAssets = () => Promise.resolve();
+        w.HTMLMediaElement.prototype.play = function () { return Promise.resolve(); };
+        w.addEventListener('error', event => { failures.push('page: ' + event.message); output(); });
+        await wait(() => w.localMatchRecoveryReady, 'startup recovery did not initialize');
+        await delay(30);
+    }
+    const choose = label => [...w.document.querySelectorAll('.local-resume-overlay button')].find(button => button.textContent === label)?.click();
+    async function resume() {
+        await load();
+        await wait(() => w.document.querySelector('.local-resume-overlay'), 'resume choice missing');
+        choose('続きから再開');
+        await wait(() => w.localMatchRuntime, 'game did not reconstruct');
+        await Promise.race([w.localMatchRecoveryReady, delay(10000).then(() => { throw Error('resume timed out: ' + w.document.querySelector('.local-resume-overlay')?.textContent); })]);
+        await delay(50);
+    }
+    async function start(name = 'A') {
+        await w.localMatchRecoveryReady;
+        await w.loadMapData(); await w.selectBossSquare();
+        w.players = [name, 'B'].map((name, index) => ({ name, money: 500000, magicPower: 1000,
+            bossDamage: 0, position: 139, characterId: index + 1, inventory: [1], assets: [], magic: [1], jobTurnsRemaining: 0, jobReward: 0 }));
+        w.OfflineDividends.reset(w.players); w.gameOpeningComplete = true; w.GameViewport?.activate();
+        w.showGameScreen(w.players, 30);
+        await w.localMatchSession.flush(); await delay(50);
+    }
+    try {
+        await load(); await start();
+        w.setOnlineTurnState(1, 7);
+        w.players[1].money = 987654; w.players[1].magic = [1, 2]; w.players[1].inventory = [1, { id: 3, remainingUses: 2 }];
+        const base = w.localMatchRuntime.capture(), assetId = Number(Object.keys(base.assetOwners)[0]);
+        // Modify only the real catalog's owner through a valid saved snapshot.
+        base.players[1].assets = [assetId]; base.assetOwners[assetId] = 1;
+        let saved = w.localMatchSession.snapshot(); saved.state = base;
+        async function put(record) {
+            await w.localMatchSession?.flush(); w.localMatchSession?.dispose();
+            await new Promise((resolve, reject) => { const request = w.indexedDB.open('no-money-no-life-local', 1);
+                request.onsuccess = () => { const db = request.result, tx = db.transaction('matches', 'readwrite'); tx.objectStore('matches').put(record, 'active'); tx.oncomplete = () => { db.close(); resolve(); }; tx.onerror = reject; }; request.onerror = reject; });
+        }
+        await put(saved); await resume();
+        let restored = w.localMatchRuntime.capture();
+        check(restored.currentTurn === 7 && restored.currentPlayer === 1, 'turn/player not restored');
+        check(restored.players[1].money === 987654 && restored.players[1].position === 139, 'position/money not restored');
+        check(JSON.stringify(restored.players[1].inventory) === JSON.stringify(base.players[1].inventory), 'inventory not restored');
+        check(restored.players[1].magic.join() === '1,2' && restored.players[1].assets[0] === assetId && restored.assetOwners[assetId] === 1, 'magic/assets not restored');
+        results.push('reload restores turn, player, position, money, inventory, magic and asset ownership'); output();
+
+        stage = 'setting overview'; output();
+        w.setMapZoomUI(w.MapScene.getMinZoom());
+        const area = w.document.querySelector('.game-screen .map-area'); area.scrollLeft = 180; area.scrollTop = 120; area.dispatchEvent(new w.Event('scroll'));
+        stage = 'waiting for camera'; output();
+        await delay(450); stage = 'flushing camera'; output(); await w.localMatchSession.flush();
+        const zoom = w.getMapZoomUI();
+        // A live uncommitted mutation must not leak through a camera checkpoint.
+        w.players[1].money = 1; area.dispatchEvent(new w.Event('scroll')); await delay(450); await w.localMatchSession.flush();
+        stage = 'reloading overview'; output();
+        await resume();
+        check(Math.abs(w.getMapZoomUI() - zoom) < .001 && w.players[1].money === 987654, 'overview/camera restored unsafe state');
+        results.push('overview and idle camera saves restore without capturing partial game mutations'); output();
+
+        const movingArea = w.document.querySelector('.game-screen .map-area');
+        movingArea.scrollLeft += 60; movingArea.dispatchEvent(new w.Event('scroll'));
+        w.setMapZoomUI(w.getMapZoomUI() * 1.1);
+        await resume();
+        check(!w.document.getElementById('rouletteButton').disabled, 'camera interruption left play controls locked');
+        results.push('reload during camera movement returns through resume choice to playable controls'); output();
+
+        w.players[1].money += 12345;
+        w.showEventPopup('報酬', '支払い済み', () => w.finishTurn(w.players[1]), { localResume: 'finish-turn' });
+        await w.localMatchSession.flush(); await resume();
+        check(w.players[1].money === 999999 && w.document.getElementById('eventPopup').style.display === 'block', 'paid result screen mismatch');
+        w.document.getElementById('eventPopupButton').click(); await delay(1400); await w.localMatchSession.flush();
+        check(w.players[1].money === 999999, 'reward was paid twice');
+        results.push('paid event result reconstructs its screen and advances without duplicate reward'); output();
+
+        const shopper = w.getCurrentPlayerIndex();
+        w.players[shopper].position = w.mapData.find(square => square.type === 'shop').id;
+        w.ApprovedCommerce.showStore(w.players[shopper], 'item', true);
+        const product = w.GamePanels.get('shopPopup').config.rows().find(row => row.action && !row.disabled);
+        check(product && await product.action(), 'real item purchase did not complete');
+        await w.localMatchSession.flush();
+        const purchasedMoney = w.players[shopper].money, purchasedItems = JSON.stringify(w.players[shopper].inventory);
+        await resume();
+        check(w.players[shopper].money === purchasedMoney && JSON.stringify(w.players[shopper].inventory) === purchasedItems, 'purchase charged twice or lost item');
+        check(w.localMatchSession.snapshot().step.phase === 'store', 'store not reconstructed');
+        results.push('real store purchase restores paid balance and purchased item without recharging'); output();
+
+        const actor = w.getCurrentPlayerIndex(); w.players[actor].inventory.push(29);
+        await w.localMatchSession.checkpoint('ready');
+        await w.useFukubukuroItem(w.players[actor], w.players[actor].inventory.length - 1);
+        const roll = w.document.querySelector('.fukubukuro-roll'); roll.click(); await delay(40); roll.click();
+        await wait(() => w.localMatchRuntime.capture().flows.fukubukuro?.status === 'result', 'fukubukuro did not commit result');
+        await w.localMatchSession.flush();
+        const awarded = JSON.stringify(w.players[actor].inventory);
+        await resume();
+        check(JSON.stringify(w.players[actor].inventory) === awarded, 'fukubukuro duplicated grant');
+        check(w.localMatchRuntime.capture().flows.fukubukuro.status === 'result', 'fukubukuro result stage not restored');
+        results.push('multi-stage item restores consumed item and granted results without duplication'); output();
+
+        let moving = w.localMatchSession.snapshot();
+        moving.step = { phase: 'movement', details: {} }; moving.state.remainingSteps = 3;
+        const movingPlayer = moving.state.players[moving.state.currentPlayer];
+        moving.state.flows.fukubukuro = null;
+        moving.state.movement = { active: true, isItemMovement: false, startPosition: movingPlayer.position, history: [movingPlayer.position], totalSteps: 3 };
+        await put(moving); await resume();
+        check(w.diceMovementState.active && w.diceMovementState.player === w.players[w.getCurrentPlayerIndex()], 'movement player reference not rebound');
+        check(w.localMatchRuntime.capture().remainingSteps === 3 && w.document.querySelector('.dice-movement-arrow, .reachable-stop-highlight'), 'movement selection did not reconstruct');
+        results.push('movement checkpoint reconstructs remaining steps, player references and route selection'); output();
+
+        await load(); await wait(() => w.document.querySelector('.local-resume-overlay'), 'new-game choice missing');
+        choose('新しいゲーム'); await w.localMatchRecoveryReady; await start('Fresh');
+        check(w.players[0].name === 'Fresh' && w.players[0].money === 500000 && !w.players[0].assets.length, 'new game retained old data');
+        check(w.localMatchSession.snapshot().gameId !== saved.gameId, 'new game retained old game ID');
+        results.push('new game replaces the old match without mixing players or assets'); output();
+
+        w.showGameResult(); await w.localMatchSession.flush();
+        check(w.localMatchSession.snapshot().status === 'finished', 'completion not persisted');
+        await load(); await w.localMatchRecoveryReady;
+        check(!w.document.querySelector('.local-resume-overlay'), 'finished match offered for resume');
+        results.push('completed match is not offered after reload'); output();
+
+        saved.version = 999; await put(saved); await load();
+        await wait(() => w.document.querySelector('.local-resume-overlay'), 'unsupported save explanation missing');
+        check(w.document.body.textContent.includes('対応していません'), 'unsupported version not explained');
+        choose('新しいゲーム'); await w.localMatchRecoveryReady;
+        check(!w.document.querySelector('.local-resume-overlay'), 'invalid save prevented new game');
+        results.push('unsupported save explains the problem and allows a new game');
+        saved.version = 1; saved.state.currentPlayer = 99; await put(saved); await load();
+        await wait(() => w.document.querySelector('.local-resume-overlay'), 'corrupt save explanation missing');
+        check(w.document.body.textContent.includes('壊れています'), 'corrupt state was not explained');
+        choose('新しいゲーム'); await w.localMatchRecoveryReady;
+        results.push('corrupt state can be discarded without blocking a new game');
+    } catch (error) { failures.push(error.stack || String(error)); }
+    stage = 'complete'; output(); document.body.dataset.complete = 'true';
+})();
+</script>

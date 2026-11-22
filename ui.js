@@ -685,6 +685,7 @@ function updateMapZoomUI(zoom, options = {}) {
         return;
     }
     applyMapZoomUI();
+    window.localMatchSession?.cameraChanged();
 
 }
 

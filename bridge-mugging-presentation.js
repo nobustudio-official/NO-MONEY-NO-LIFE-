@@ -53,6 +53,7 @@
         view.fee = Math.max(0,Number(options.fee)||window.BridgeMuggingRules.FEE);
         active=view;
         render(view,lineIndex,view.triggered);
+        if (!online) options.onCheckpoint?.({ lineIndex:view.lineIndex, triggered:view.triggered, prevented:view.prevented, fee:view.fee });
         if(online){
             options.sync.syncUI({eventId:view.eventId,title:'カツアゲ',message:'チビリンのカツアゲイベント',variant:'bridge-mugging',playerIndex:Number(options.playerIndex),lineIndex})
                 .then(response=>{if(!response?.ok&&active===view){console.warn('[カツアゲ] 表示同期に失敗:',response?.error);}});
@@ -74,6 +75,7 @@
                 }else{
                     if(view.lineIndex===1){view.prevented=Boolean(window.DisadvantageImmunityRules?.isActive(player));if(!view.prevented){player.money=(Number(player.money)||0)-view.fee;options.onMoneyChanged?.(player);}}
                     view.lineIndex+=1;render(view,view.lineIndex,true);
+                    options.onCheckpoint?.({ lineIndex:view.lineIndex, triggered:view.triggered, prevented:view.prevented, fee:view.fee });
                 }
             }catch(error){
                 console.error('[カツアゲ] 進行に失敗:',error);

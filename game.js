@@ -1900,8 +1900,8 @@ showGameLoadingScreen();
 // マップデータを読み込む
 // =========================
 
-loadMapData()
-
+Promise.resolve(!window.onlineGame?.isOnline ? window.LocalMatchRecovery?.discard() : null)
+    .then(() => loadMapData())
     .then(function () {
 
         // =========================
@@ -2009,12 +2009,17 @@ loadMapData()
 
 function showGameScreen(
     players,
-    maxTurns
+    maxTurns,
+    localResume = null
 ) {
+    let localSave = null;
+    let localMugging = null;
+    let resumeResolve, resumeReject;
+    const localResumeReady = localResume ? new Promise((resolve, reject) => { resumeResolve = resolve; resumeReject = reject; }) : null;
 
     // A fresh game starts with the canonical magic ID order. Drag changes are
     // kept only for the current game and must not leak into the next one.
-    window.resetBattleMagicOrders?.(players);
+    if (!localResume) window.resetBattleMagicOrders?.(players);
 
     const gameContainer =
         document.querySelector(
@@ -2081,6 +2086,7 @@ function showGameScreen(
     function renderHatatakiFlow(flow = activeHatatakiFlow) {
         const view = hatatakiView(flow, false);
         if (!view) return;
+        if (!flow.online && !flow.busy) localSave?.checkpoint('hatataki');
         window.HatatakiHakenUI?.render(view, {
             onAttack:() => actHatatakiFlow('attack'),
             onNext:() => actHatatakiFlow('next'),
@@ -2249,6 +2255,7 @@ function showGameScreen(
         const book = state.guidebook;
         const online = Boolean(window.onlineGame?.isOnline);
         if (!online) GuidebookRules.withdrawUnfunded(state);
+        if (!online && (state.guidebook?.view || window.SpecialRewardRules.pending(state.specialReward) || offlineImmunityExpiry)) localSave?.checkpoint('guidebook');
         const active = Number(state.activePlayerIndex);
         const control = !online || (isLocalOnlineTurn() && active === currentPlayer);
         const turnKey = guidebookTurnKey(state);
@@ -2714,6 +2721,7 @@ function showGameScreen(
                 }
                 if(!offlineFukubukuroEvent||offlineFukubukuroEvent.eventId!==event.eventId||offlineFukubukuroEvent.status!=='ready')throw new Error('福袋のサイコロを開始できません。');
                 offlineFukubukuroEvent={...offlineFukubukuroEvent,status:'rolling'};
+                localSave?.checkpoint('fukubukuro');
                 return offlineFukubukuroEvent;
             },
             async onStop(){
@@ -2728,6 +2736,7 @@ function showGameScreen(
                 const receivedItemIds=rolls.map(face=>event.cards[face-1].id);
                 grantFukubukuroItems(player,receivedItemIds);
                 offlineFukubukuroEvent={...event,status:'result',rolls,receivedItemIds};
+                localSave?.checkpoint('fukubukuro');
                 return offlineFukubukuroEvent;
             },
             async onFinish(){
@@ -2757,13 +2766,15 @@ function showGameScreen(
         if(index<0||Number(getInventoryItemId(player.inventory[index]))!==29){showInventoryPopup(player);return;}
         player.inventory.splice(index,1);
         offlineFukubukuroEvent={eventId,cards:randomFukubukuroCards(),status:'ready',playerIndex:players.indexOf(player)};
+        localSave?.checkpoint('fukubukuro');
         updatePlayerStatusUI(player);renderPlayers();
         showFukubukuroEvent(player,offlineFukubukuroEvent);
     }
     window.useFukubukuroItem=useFukubukuroItem;
     ApprovedCommerce.configure({players:()=>players,canAct:canLocalPurchaseAsset,sync:syncOnlineScreenView,
         finish:finishTurn,inventory:showInventoryPopup,event:(...args)=>window.showEventPopup(...args),apply:applyOnlineCanonicalState,
-        turn:()=>currentTurn,saleId:()=>createOnlineSyncEventId('sale'),update:updatePlayerStatusUI,render:renderPlayers});
+        turn:()=>currentTurn,saleId:()=>createOnlineSyncEventId('sale'),update:updatePlayerStatusUI,render:renderPlayers,
+        checkpoint:(phase, details)=>localSave?.checkpoint(phase, details)});
 
     let offlineUndergroundFlow = null;
     let offlineUndergroundTurnKey = null;
@@ -2791,6 +2802,7 @@ function showGameScreen(
         offlineUndergroundFlow = state.undergroundFlow;
         GuidebookRules.clearIfConfiscated(offlineGuidebookState());
         Object.entries(state.assetOwners).forEach(([id, owner]) => { ASSET_CONTENTS[id].owner = owner; });
+        if (offlineUndergroundFlow) localSave?.checkpoint('underground');
         renderTurn();
         renderPlayers();
         if (offlineUndergroundFlow?.stage === "reminder") {
@@ -3848,6 +3860,7 @@ function showAssetPurchasePopup(player, assetIds, callback, suppressGreeting = f
         }
     });
     syncOnlineScreenView("asset-purchase", player, "open", { panel: GamePanels.snapshot("assetPurchasePopup"), suppressGreeting });
+    localSave?.checkpoint('asset-store', { assetIds: assetIds.slice() });
 
 }
 
@@ -6062,6 +6075,7 @@ function finishDiceMovement(
 
     const resolveSquareEvent = function () {
         if (!itemMovement) window.GameActionInput?.get('dice')?.setPhase('arrival');
+        localSave?.checkpoint('arrival');
         handleSquareEvent(player);
     };
 
@@ -6166,6 +6180,7 @@ async function commitNormalDiceMove(action, player, path, done) {
         ) {
             return;
         }
+        localSave?.checkpoint('movement');
 
         // =========================
         // 今回の残り歩数で
@@ -7404,6 +7419,10 @@ window.showEventPopup = function (
     displayOptions = {}
 ) {
 
+    if (displayOptions.localResume) localSave?.checkpoint('notice', {
+        title: String(title || ''), message: String(message || ''), next: displayOptions.localResume,
+        displayOptions: { ...displayOptions, localResume: undefined }
+    });
     const popup =
         document.getElementById(
             "eventPopup"
@@ -8184,6 +8203,7 @@ bossCounterEnabled = true;
     popup.style.display =
         "block";
 
+    localSave?.checkpoint('boss-choice', { rechallenge: isRechallenge });
 
     // =========================
     // 挑戦する
@@ -8467,7 +8487,7 @@ case "asset": {
                                 player
                             );
 
-                        }, {sound:'moneyDisplay',subjectIndex:players.indexOf(player),advanceAnywhere:true}
+                        }, {sound:'moneyDisplay',subjectIndex:players.indexOf(player),advanceAnywhere:true,localResume:'finish-turn'}
                     );
 
                 }
@@ -8566,7 +8586,7 @@ case "worst":
             ? `${player.name}は無敵の加護で最悪マスの効果を防いだ！`
             : `${player.name}は最悪のマスに止まってしまった……。<br><strong>所持ゴールドが0Gになった…</strong>`,
     function () { finishTurn(player); }
-    , {subjectIndex:players.indexOf(player),sound:'ponziScam'}
+    , {subjectIndex:players.indexOf(player),sound:'ponziScam',localResume:'finish-turn'}
     ); };
     const sync = window.onlineGame && window.onlineGame.isOnline ? window.onlineGame.sync : null;
     if (sync) {
@@ -8674,7 +8694,7 @@ case "treasure":
                     : `<strong>${reward.name}</strong>を手に入れた！`;
                 showEventPopup("🎁 宝箱", message, function () {
                     finishTurn(player);
-                }, {advanceAnywhere:true});
+                }, {advanceAnywhere:true,localResume:'finish-turn'});
                 return;
             }
 
@@ -8691,7 +8711,7 @@ case "treasure":
                 }
                 showEventPopup("🎁 宝箱", `<strong>${reward.name}</strong>を手に入れた！`, function () {
                     finishTurn(player);
-                }, {sound:"itemObtain", advanceAnywhere:true});
+                }, {sound:"itemObtain", advanceAnywhere:true,localResume:'finish-turn'});
             }, resolvedTreasureEventId);
         }).catch(function (error) {
             console.error("[online] 宝箱の抽選に失敗しました:", error);
@@ -8766,7 +8786,7 @@ if (randomTreasure.category === "item") {
                     finishTurn(player);
 
                 },
-                {sound:"itemObtain", advanceAnywhere:true}
+                {sound:"itemObtain", advanceAnywhere:true,localResume:'finish-turn'}
             );
 
         }
@@ -8808,7 +8828,7 @@ if (randomTreasure.category === "power") {
 
             finishTurn(player);
 
-        }, {advanceAnywhere:true}
+        }, {advanceAnywhere:true,localResume:'finish-turn'}
     );
 
     break;
@@ -8842,7 +8862,7 @@ if (randomTreasure.category === "magic") {
 
             finishTurn(player);
 
-        }, {advanceAnywhere:true}
+        }, {advanceAnywhere:true,localResume:'finish-turn'}
     );
 
     break;
@@ -9056,6 +9076,7 @@ function showItemShopPopup(player) { ApprovedCommerce.showStore(player,'item'); 
 function showGameResult(serverRanking = null) {
 
     const online = Boolean(window.onlineGame?.isOnline);
+    if (!online) localSave?.finish();
     if (online && !Array.isArray(serverRanking)) {
         const state = window.onlineGame.sync && window.onlineGame.sync.state;
         if (!state || state.matchPhase !== "finished" || !Array.isArray(state.finalRanking)) return;
@@ -9354,6 +9375,7 @@ window.updateNextPlayerView = updateNextPlayerView;
 let bridgeMuggingLaunchInFlight = false;
 function presentBridgeMugging(player,event,online,handoffReady=false){
     const index=Array.isArray(players)?players.indexOf(player):-1;
+    if (!online) localMugging = { ...event, player: undefined, playerIndex: index };
     window.BridgeMuggingPresentation?.show(player,{
         eventId:event.eventId,
         triggered:Boolean(event.triggered),
@@ -9367,7 +9389,8 @@ function presentBridgeMugging(player,event,online,handoffReady=false){
         sync:online?window.onlineGame?.sync:null,
         applyState:applyOnlineCanonicalState,
         onMoneyChanged:function(changedPlayer){updatePlayerStatusUI(changedPlayer);renderPlayers();},
-        onComplete:function(){finishTurn(player,handoffReady);}
+        onCheckpoint:function(progress){ if (!online) { Object.assign(localMugging, progress); localSave?.checkpoint('mugging'); } },
+        onComplete:function(){localMugging = null; finishTurn(player,handoffReady);}
     });
 }
 
@@ -9813,6 +9836,7 @@ window.startPonziTurn = function (player, done) {
         offlinePonzi = state.ponzi;
     }
     if (!rules.pending(state)) return false;
+    if (!sync) localSave?.checkpoint('ponzi');
     const playerIndex = players.indexOf(player);
     if (playerIndex < 0) return false;
     const cameraKey = `${state.currentTurn}:${playerIndex}`;
@@ -9837,6 +9861,7 @@ window.startPonziTurn = function (player, done) {
             }
             const error = rules.act(state, action, amount);
             if (error) throw new Error(error);
+            localSave?.checkpoint('ponzi');
             renderTurn();
             renderPlayers();
             return state;
@@ -9857,6 +9882,7 @@ function beginPlayerTurn(player) {
     const online = window.onlineGame?.isOnline;
     const canonical = online ? window.onlineGame.sync?.state : null;
     if (online && (!isLocalOnlineTurn() || (canonical?.matchPhase && canonical.matchPhase !== 'playing'))) return;
+    localSave?.checkpoint('turn-start');
     preloadPlayerDirectionSprites(player);
     const turnKey = `${currentTurn}:${currentPlayer}`;
     const expiringOffline = !online && player.disadvantageImmunityTurnKey && player.disadvantageImmunityTurnKey !== turnKey;
@@ -10078,7 +10104,7 @@ showTurnStartAnnouncements(
                     rouletteButton.disabled =
                         false;
 
-                }
+                }, { localResume: 'ready' }
             );
 
             return;
@@ -10141,6 +10167,7 @@ showTurnStartAnnouncements(
     rouletteButton.disabled =
         false;
 
+    localSave?.checkpoint('ready');
 }
 
  );
@@ -10154,6 +10181,7 @@ function finishTurn(
     player, handoffReady = false
 ) {
 
+    localSave?.checkpoint('finish-turn');
     const localOwnsTurn = !(window.onlineGame && window.onlineGame.isOnline)
         || (isLocalOnlineTurn() && player && window.onlineGame.socket
             && String(player.id) === String((window.onlineGame.playerId || window.onlineGame.socket.id)));
@@ -10299,23 +10327,7 @@ function finishTurn(
             window.OfflineDividends.show(players, completedTurn, function () {
                 players.forEach(updatePlayerStatusUI);
                 renderPlayers();
-            }, function (closeDividend) {
-                if (currentTurn > maxTurns) {
-                    const finish = function () { closeDividend(); showGameResult(); };
-                    if (window.TurnHandoff) window.TurnHandoff.run(finish); else finish();
-                    return;
-                }
-                const advance = function () {
-                    closeDividend();
-                    currentPlayer = 0;
-                    refreshOnlineTurnControls();
-                    updateNextPlayerView();
-                    if (handleBossCounter(function () { startNextPlayerTurn(players[currentPlayer]); })) return;
-                    playPlayerSwitchingSound();
-                    startNextPlayerTurn(players[currentPlayer]);
-                };
-                if (window.TurnHandoff) window.TurnHandoff.run(advance); else advance();
-            }, maxTurns);
+            }, completeLocalDividend, maxTurns);
             return;
         }
 
@@ -10743,6 +10755,138 @@ if (destinationButton) {
 // 初期表示
 // =========================
 
+// Only data owned by the match is persisted. Functions, DOM and animation frames
+// remain transient. Player references in flows are encoded as player indices.
+function captureLocalMatch() {
+    const encodePlayer = event => event ? { ...event, player: undefined, playerIndex: players.indexOf(event.player) } : null;
+    return {
+        players, maxTurns, currentTurn, currentPlayer, remainingSteps,
+        boss: { squareId: currentBossSquareId, previousSquareId: previousBossSquareId, id: currentBossId,
+            hp: currentBossHP, firstPlayerIndex: players.indexOf(bossFirstPlayer), rewardGiven: bossRewardGiven,
+            counterEnabled: bossCounterEnabled, defeatedCount: bossDefeatedCount },
+        assetOwners: Object.fromEntries(Object.entries(ASSET_CONTENTS).map(([id, asset]) => [id, asset.owner ?? null])),
+        dividends: window.OfflineDividends.snapshot(),
+        maou: window.MaouLocalState?.snapshot() || null,
+        world: { bridgeCollapse: window.bridgeCollapseState, bridgeVisual: window.bridgeCollapseVisualState,
+            bridgeRecovery: window.bridgeCollapseRecoveryPending, bridgeRecoverySeen: [...window.bridgeCollapseRecoveryShownEventIds],
+            nextDiceAllSix: [...window.nextDiceAllSixPlayerIds], muggingPending: encodePlayer(window.offlineBridgeMuggingPending) },
+        movement: { active: diceMovementState.active, isItemMovement: diceMovementState.isItemMovement,
+            startPosition: diceMovementState.startPosition, history: diceMovementState.history.slice(), totalSteps: diceMovementState.totalSteps },
+        flows: { guidebook: offlineGuidebook, guidebookHistory: offlineGuidebookHistory,
+            specialReward: offlineSpecialReward, immunityExpiry: offlineImmunityExpiry, immunityReady: offlineImmunityReady,
+            guidebookWithdrawalsSeen, guidebookDraft, underground: offlineUndergroundFlow,
+            undergroundTurnKey: offlineUndergroundTurnKey, itemSealCheckKey: offlineItemSealCheckKey,
+            completedUndergroundKey, walletAnnouncementsTurnKey, ponzi: offlinePonzi,
+            fukubukuro: offlineFukubukuroEvent, mugging: localMugging,
+            assetStore: activeAssetPurchaseView ? { assetIds: activeAssetPurchaseView.assetIds,
+                pendingMonopolyEvents: activeAssetPurchaseView.pendingMonopolyEvents } : null,
+            hatataki: activeHatatakiFlow && !activeHatatakiFlow.online ? { ...activeHatatakiFlow,
+                playedSoundIds: undefined, busy: false,
+                offlineTargets: activeHatatakiFlow.offlineTargets.map(encodePlayer) } : null }
+    };
+}
+function restoreLocalMatch(saved) {
+    const state = saved.state, flow = state.flows;
+    const squareIds = new Set(mapData.map(square => square.id));
+    if (!squareIds.has(state.boss.squareId) || state.players.some(player => !squareIds.has(player.position)
+        || player.magic.some(id => !MAGIC_CONTENTS[id]) || player.assets.some(id => !ASSET_CONTENTS[id])
+        || player.inventory.some(item => !ITEM_CONTENTS[getInventoryItemId(item)]))
+        || state.movement?.history.some(id => !squareIds.has(id))) throw new Error('保存されたマップや所持品が現在のゲームに対応していません。');
+    currentPlayer = state.currentPlayer; currentTurn = state.currentTurn; remainingSteps = state.remainingSteps;
+    currentBossSquareId = state.boss.squareId; previousBossSquareId = state.boss.previousSquareId;
+    currentBossId = state.boss.id; currentBossHP = state.boss.hp; bossDefeatedCount = state.boss.defeatedCount;
+    bossFirstPlayer = players[state.boss.firstPlayerIndex] || null;
+    bossRewardGiven = state.boss.rewardGiven; bossCounterEnabled = state.boss.counterEnabled;
+    Object.entries(ASSET_CONTENTS).forEach(([id, asset]) => { asset.owner = state.assetOwners[id] ?? null; });
+    window.OfflineDividends.restore(state.dividends, players);
+    window.MaouLocalState?.restore(state.maou);
+    if (!BOSS_CONTENTS[currentBossId]) throw new Error('保存されたボスの状態に対応していません。');
+    window.bridgeCollapseState = state.world.bridgeCollapse || null;
+    window.bridgeCollapseVisualState = state.world.bridgeVisual || null;
+    window.bridgeCollapseRecoveryPending = state.world.bridgeRecovery || null;
+    window.bridgeCollapseRecoveryShownEventIds = new Set(state.world.bridgeRecoverySeen || []);
+    window.nextDiceAllSixPlayerIds = new Set(state.world.nextDiceAllSix || []);
+    const decodePlayer = event => event ? { ...event, player: players[event.playerIndex] } : null;
+    window.offlineBridgeMuggingPending = decodePlayer(state.world.muggingPending);
+    Object.assign(diceMovementState, state.movement, { player: state.movement.active ? players[currentPlayer] : null, autoMoving: false });
+    offlineGuidebook = flow.guidebook; offlineGuidebookHistory = flow.guidebookHistory || [];
+    offlineSpecialReward = flow.specialReward; offlineImmunityExpiry = flow.immunityExpiry; offlineImmunityReady = flow.immunityReady;
+    guidebookWithdrawalsSeen = flow.guidebookWithdrawalsSeen || 0; guidebookDraft = flow.guidebookDraft;
+    offlineUndergroundFlow = flow.underground; offlineUndergroundTurnKey = flow.undergroundTurnKey;
+    offlineItemSealCheckKey = flow.itemSealCheckKey; completedUndergroundKey = flow.completedUndergroundKey;
+    walletAnnouncementsTurnKey = flow.walletAnnouncementsTurnKey; offlinePonzi = flow.ponzi;
+    offlineFukubukuroEvent = flow.fukubukuro; localMugging = flow.mugging;
+    activeHatatakiFlow = flow.hatataki ? { ...flow.hatataki, playedSoundIds: new Set(), busy: false,
+        offlineTargets: flow.hatataki.offlineTargets.map(decodePlayer) } : null;
+    if (flow.assetStore) activeAssetPurchaseView = { ...flow.assetStore, playerIndex: currentPlayer, callback: () => finishTurn(players[currentPlayer]) };
+}
+function localReady() {
+    rouletteButton.disabled = false; inventoryButton.disabled = false;
+    localSave?.checkpoint('ready');
+}
+function completeLocalDividend(closeDividend) {
+    if (currentTurn > maxTurns) { closeDividend(); showGameResult(); return; }
+    const advance = () => {
+        closeDividend(); currentPlayer = 0;
+        refreshOnlineTurnControls(); updateNextPlayerView();
+        if (handleBossCounter(() => startNextPlayerTurn(players[currentPlayer]))) return;
+        playPlayerSwitchingSound(); startNextPlayerTurn(players[currentPlayer]);
+    };
+    if (window.TurnHandoff) window.TurnHandoff.run(advance); else advance();
+}
+function resumeLocalStep(saved) {
+    const { phase, details = {} } = saved.step, player = players[currentPlayer];
+    switch (phase) {
+        case 'turn-start': beginPlayerTurn(player); break;
+        case 'arrival': window.GameActionInput.begin('dice', `${currentTurn}:${currentPlayer}`, 'arrival'); handleSquareEvent(player); break;
+        case 'finish-turn': finishTurn(player); break;
+        case 'movement':
+            window.GameActionInput.begin(diceMovementState.isItemMovement ? 'item-use' : 'dice', `${currentTurn}:${currentPlayer}`, 'move');
+            rouletteButton.disabled = true; inventoryButton.disabled = true;
+            setupDiceMovementReturnButton(); showDiceMovementReturnButton(); showDiceMovementCounter();
+            if (remainingSteps <= 0) finishDiceMovement(player); else showDiceMovementArrows();
+            break;
+        case 'notice': showEventPopup(details.title, details.message,
+            () => details.next === 'ready' ? localReady() : finishTurn(player),
+            { ...details.displayOptions, localResume: details.next }); break;
+        case 'store': window.GameActionInput.beginMenuAction('square-event', `${currentTurn}:${currentPlayer}`); ApprovedCommerce.showStore(player, details.kind, true); break;
+        case 'asset-store': window.GameActionInput.beginMenuAction('square-event', `${currentTurn}:${currentPlayer}`); showAssetPurchasePopup(player, details.assetIds, () => finishTurn(player), true); break;
+        case 'dividend': window.OfflineDividends.resume(players, () => { players.forEach(updatePlayerStatusUI); renderPlayers(); }, completeLocalDividend, maxTurns); break;
+        case 'underground':
+            if (offlineUndergroundFlow?.stage === 'done') finishTurn(player);
+            else applyOfflineUnderground(getOfflineUndergroundState());
+            break;
+        case 'guidebook':
+            if (offlineSpecialReward?.claiming != null) window.SpecialRewardRules.completeClaim(offlineGuidebookState());
+            if (offlineImmunityExpiry) { offlineImmunityReady = `${currentTurn}:${currentPlayer}`; walletAnnouncementsTurnKey = offlineImmunityReady; }
+            if (offlineSpecialReward?.status === 'complete' && !offlineGuidebook?.view && !offlineImmunityExpiry) beginPlayerTurn(player);
+            else renderGuidebook(guidebookState());
+            break;
+        case 'ponzi': if (!window.startPonziTurn(player, () => beginPlayerTurn(player))) beginPlayerTurn(player); break;
+        case 'fukubukuro': showFukubukuroEvent(player, offlineFukubukuroEvent); break;
+        case 'hatataki': renderHatatakiFlow(); break;
+        case 'mugging': presentBridgeMugging(player, localMugging, false); break;
+        case 'boss-choice': showBossChallengePopup(player, Boolean(details.rechallenge)); break;
+        default: localReady();
+    }
+}
+if (!window.onlineGame?.isOnline && window.LocalMatchRecovery) {
+    if (localResume) restoreLocalMatch(localResume);
+    const adapter = { capture: captureLocalMatch, resume: resumeLocalStep };
+    localSave = window.LocalMatchRecovery.attach(adapter, localResume);
+    window.localMatchRuntime = adapter;
+    window.addEventListener('local-action-finished', () => queueMicrotask(() => {
+        if (diceMovementState.active || window.isSquareMovementInProgress || rouletteButton.disabled || inventoryButton.disabled
+            || window.TurnHandoff?.isActive() || activeHatatakiFlow || localMugging || offlineFukubukuroEvent
+            || window.PonziPresentation?.isOpen() || window.PonziRules?.pending({ players, currentTurn, activePlayerIndex: currentPlayer, ponzi: offlinePonzi })
+            || (offlineUndergroundFlow && offlineUndergroundFlow.stage !== 'done') || offlineImmunityExpiry
+            || offlineGuidebook?.view || window.SpecialRewardRules.pending(offlineSpecialReward)) return;
+        const blocked = ['eventPopup', 'jobPopup', 'battlePopup', 'monsterChoicePopup', 'goldRoulette', 'itemRoulette', 'multiDiceRoulette', 'shopPopup', 'magicShopPopup', 'assetPurchasePopup', 'salePopup'];
+        if (blocked.some(id => document.getElementById(id)?.style.display === 'block')) return;
+        localSave?.checkpoint('ready');
+    }));
+}
+
 // A new match starts slightly zoomed out, regardless of the previous map view.
 window.resetMapZoomUI?.();
 
@@ -10761,11 +10905,25 @@ else window.UndergroundUI.render(getOfflineUndergroundState(), true, null);
 // プレイヤー1をマップ中央へ
 // =========================
 
-requestAnimationFrame(function () {
-
-    centerCurrentPlayerOnMap("auto");
-
-});
+const finishInitialLocalView = function () {
+    try {
+    if (localResume) {
+        window.gameOpeningComplete = true;
+        resumeLocalStep(localResume);
+        if (localResume.camera) {
+            window.setMapZoomUI?.(localResume.camera.zoom);
+            const area = document.querySelector('.game-screen .map-area');
+            area?.scrollTo({ left: localResume.camera.left, top: localResume.camera.top, behavior: 'instant' });
+        } else centerCurrentPlayerOnMap('auto');
+        window.MapAreaAudio?.updateForPlayer(players[currentPlayer], { immediate: true });
+        resumeResolve();
+    } else centerCurrentPlayerOnMap("auto");
+    } catch (error) { if (resumeReject) resumeReject(error); else throw error; }
+};
+// A backgrounded standalone app can suspend animation frames. Restoring logical
+// state must finish independently of the rendering clock.
+if (localResume) queueMicrotask(finishInitialLocalView);
+else requestAnimationFrame(finishInitialLocalView);
 
 
 
@@ -11289,6 +11447,7 @@ function startJob(
 
 }
 
+    return localResumeReady;
 }
 
 // =========================
@@ -13625,3 +13784,21 @@ function showDarkSuumoAssetPopup(
     syncOnlineScreenView("item-action", usingPlayer, "open", { itemId: 22, stage: "assets", targetIndex: players.indexOf(targetPlayer), type });
 
 }
+
+
+// Saved local matches reconstruct their screen from data after all browser modules load.
+async function resumeSavedLocalMatch(saved) {
+    window.LocalMatchSave.validate(saved);
+    if (window.onlineGame?.isOnline) throw new Error('オンライン対戦は端末の保存データから再開できません。');
+    showGameLoadingScreen();
+    await loadMapData();
+    await waitForGameAssets();
+    window.players = window.LocalMatchSave.copy(saved.state.players);
+    gameStarted = true;
+    window.gameOpeningComplete = true;
+    window.GameViewport?.activate();
+    await showGameScreen(window.players, saved.state.maxTurns, saved);
+}
+window.addEventListener('DOMContentLoaded', () => {
+    window.localMatchRecoveryReady = window.LocalMatchRecovery?.boot(resumeSavedLocalMatch);
+}, { once: true });
