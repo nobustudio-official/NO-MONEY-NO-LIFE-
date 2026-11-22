@@ -9020,13 +9020,13 @@ GAME OVER
 
     .battle-new-message {
         grid-area:
-            detail !important;
+            detail;
 
         width:
-            100% !important;
+            100%;
 
         height:
-            70px !important;
+            70px;
 
         padding:
             6px 10px;
@@ -9035,10 +9035,10 @@ GAME OVER
             14px;
 
         transform:
-            translateY(78px) !important;
+            translateY(78px);
 
         z-index:
-            5001 !important;
+            5001;
     }
 
 
@@ -9076,23 +9076,23 @@ GAME OVER
 
     .battle-player-hp-bar {
         width:
-            150px !important;
+            150px;
 
         height:
-            10px !important;
+            10px;
     }
 
     .battle-player-hp-status {
         width:
-            180px !important;
+            180px;
 
         margin-top:
-            4px !important;
+            4px;
     }
 
     .battle-player-hp-max {
         font-size:
-            12px !important;
+            12px;
     }
 
     }

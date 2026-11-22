@@ -181,14 +181,21 @@
         }
     }
 
+    function usesBattleMotionLayout(battle = activeBattle) {
+        if (!window.BattleMotion || !battle || !battle.monster) return false;
+        const compactLandscape = typeof window.matchMedia === "function"
+            && window.matchMedia("(orientation: landscape) and (max-width: 1000px) and (max-height: 610px)").matches;
+        return !battle.monster.specialBoss || compactLandscape;
+    }
+
     function usesWholeBodyMotion(battle = activeBattle) {
-        return Boolean(window.BattleMotion && battle && battle.monster && !battle.monster.specialBoss);
+        return Boolean(usesBattleMotionLayout(battle) && !battle.monster.specialBoss);
     }
 
     function updateBattleMotionLayout() {
         const popup = document.getElementById("battleMainPopup");
         if (!popup) return;
-        const enabled = usesWholeBodyMotion();
+        const enabled = usesBattleMotionLayout();
         popup.classList.toggle("battle-motion-mode", enabled);
         const playerHp = popup.querySelector(".battle-player-hp");
         const controls = popup.querySelector(".battle-control-panel");
@@ -198,8 +205,8 @@
         const message = document.getElementById("battleNewMessage");
         const actions = popup.querySelector(".battle-action-row");
         const commands = popup.querySelector(".battle-magic-panel");
-        // Reuse the live nodes and handlers on both clients. The special-boss
-        // screen receives the original structure, including its overlay log.
+        // Reuse live nodes and handlers. Special-boss combat stays legacy on
+        // desktop; compact landscape uses this shared visual arrangement too.
         function move(node, parent, before = null) {
             if (node && parent && node.parentElement !== parent) parent.insertBefore(node, before && before.parentElement === parent ? before : null);
         }
@@ -230,7 +237,7 @@
         const playerName = document.getElementById("battlePlayerStatusName");
         if (playerName && activeBattle) playerName.textContent = activeBattle.player.name || "プレイヤー";
         if (!enabled) return;
-        if (motionPopup !== popup) {
+        if (usesWholeBodyMotion() && motionPopup !== popup) {
             if (motionController) motionController.destroy();
             motionPopup = popup;
             motionController = window.BattleMotion.create(popup);

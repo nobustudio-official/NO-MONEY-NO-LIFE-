@@ -1,4 +1,4 @@
-/* Shared normal/boss presentation. The special-boss UI keeps its legacy layout. */
+/* Shared normal/boss presentation. Special-boss combat logic remains separate. */
 #battleMainPopup .battle-player-area,
 #battleMainPopup .battle-enemy-status,
 #battleMainPopup .battle-lower-hud,
@@ -140,20 +140,20 @@
 #battleMainPopup.battle-motion-mode .battle-player-hp-icon { display: none; }
 #battleMainPopup.battle-motion-mode .battle-monster-name,
 #battleMainPopup.battle-motion-mode .battle-status-name {
-    grid-area: name; display: block; min-width: 0; margin: 0; padding: 0;
+    grid-area: name; position: static; display: block; min-width: 0; margin: 0; padding: 0;
     font: 600 clamp(18px, 1.25vw, 24px)/1.2 "Yu Mincho", serif;
     text-align: left; text-shadow: none; overflow-wrap: anywhere;
 }
 #battleMainPopup.battle-motion-mode .battle-monster-hp,
 #battleMainPopup.battle-motion-mode .battle-player-hp-max {
-    grid-area: value; margin: 0; color: inherit; text-shadow: none;
+    grid-area: value; position: static; min-width: 0; margin: 0; color: inherit; text-shadow: none;
     font: 500 clamp(18px, 1.35vw, 26px)/1.25 Georgia, "Yu Mincho", serif;
     letter-spacing: 0; white-space: nowrap; text-align: right;
 }
 #battleMainPopup.battle-motion-mode .battle-status-label { grid-area: label; display: block; color: var(--battle-ink); font-size: clamp(16px, 1.1vw, 21px); line-height: 1.2; text-align: left; }
 #battleMainPopup.battle-motion-mode .battle-hp-bar,
 #battleMainPopup.battle-motion-mode .battle-player-hp-bar {
-    grid-area: bar; width: 100%; max-width: none; height: 12px; margin: 0;
+    grid-area: bar; position: static; transform: none; width: 100%; max-width: none; height: 12px; margin: 0;
     border: 1px solid var(--battle-border); box-sizing: border-box; border-radius: 9px; box-shadow: none; background: #17334124; overflow: hidden;
 }
 #battleMainPopup.battle-motion-mode .battle-hp-fill { background: linear-gradient(180deg, #8ce174, #44af58); }
@@ -373,25 +373,211 @@
         align-items: stretch !important;
     }
     #battleMainPopup.battle-motion-mode .battle-player-hp-max {
-        font-size: clamp(18px, 1.35vw, 26px) !important;
+        font-size: clamp(18px, 1.35vw, 26px);
     }
     #battleMainPopup.battle-motion-mode .battle-selected-magic.battle-selected-magic-layout {
-        transform: none !important;
-        min-height: 0 !important;
-        padding: 0 !important;
+        transform: none;
+        min-height: 0;
+        padding: 0;
     }
     #battleMainPopup.battle-motion-mode .battle-selected-magic-name.battle-selected-magic-name-layout {
-        font-size: clamp(18px, 1.2vw, 23px) !important;
+        font-size: clamp(18px, 1.2vw, 23px);
     }
     #battleMainPopup.battle-motion-mode .battle-selected-magic-value-layout > strong {
-        font-size: clamp(19px, 1.5vw, 29px) !important;
+        font-size: clamp(19px, 1.5vw, 29px);
     }
     #battleMainPopup.battle-motion-mode .battle-new-message {
-        grid-area: auto !important;
-        width: 100% !important;
-        height: auto !important;
-        min-height: 0 !important;
-        padding: 0 !important;
-        transform: none !important;
+        grid-area: auto;
+        width: 100%;
+        height: auto;
+        min-height: 0;
+        padding: 0;
+        transform: none;
+    }
+}
+
+/* Phone landscape: preserve the battle frame and fit the PC-style HUD into it.
+   The shared selectors include regular boss battles; only the scenery changes. */
+@media (orientation: landscape) and (max-width: 1000px) and (max-height: 610px) {
+    #battleMainPopup.battle-motion-mode .battle-main-screen {
+        --battle-panel-height: clamp(42px, 11vh, 52px);
+        --battle-panel-radius: 12px;
+        --battle-status-width: 32%;
+        --battle-content-left: 4%;
+        --battle-content-right: 4%;
+        --battle-panel-gap: 8px;
+        --battle-enemy-status-top: 4%;
+        --battle-player-left: 5%;
+        --battle-player-width: 31%;
+        --battle-player-bottom: 0%;
+        --battle-player-height: 68%;
+        --battle-enemy-height: 55%;
+        --battle-log-font-size: clamp(12px, 1.65vw, 15px);
+        grid-template-rows: minmax(0, 1fr) 58px;
+        gap: 6px;
+        padding: 8px;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-round-badge {
+        top: 6px;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: clamp(12px, 1.65vw, 15px);
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-round-badge::before,
+    #battleMainPopup.battle-motion-mode .battle-round-badge::after {
+        margin: 0 5px;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-monster-area {
+        right: 5%;
+        top: 24%;
+        width: 30%;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-enemy-status {
+        width: var(--battle-status-width);
+        padding: 6px 9px;
+        grid-template-columns: max-content minmax(0, 1fr) max-content;
+        grid-template-areas: "name name value" "label bar bar";
+        gap: 3px 6px;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-player-hp {
+        grid-template-columns: max-content minmax(0, 1fr) max-content;
+        grid-template-areas: "name name value" "label bar bar";
+        padding: 6px 9px;
+        gap: 3px 6px;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-player-hp-bar {
+        grid-area: bar;
+        align-self: center;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-player-hp-max {
+        grid-area: value;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-refined-only {
+        display: block;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-monster-name,
+    #battleMainPopup.battle-motion-mode .battle-status-name {
+        font-size: clamp(12px, 1.65vw, 15px);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-monster-hp,
+    #battleMainPopup.battle-motion-mode .battle-player-hp-max {
+        font-size: clamp(11px, 1.45vw, 13px);
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-status-label {
+        font-size: clamp(11px, 1.4vw, 13px);
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-hp-bar,
+    #battleMainPopup.battle-motion-mode .battle-player-hp-bar {
+        height: 8px;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-lower-hud {
+        bottom: 4%;
+        grid-template-columns: var(--battle-content-left) var(--battle-status-width) minmax(0, 1fr) var(--battle-content-right);
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-context {
+        min-height: var(--battle-panel-height);
+        margin-left: var(--battle-panel-gap);
+        padding: 6px 10px;
+        border-radius: 12px;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-selected-magic.battle-selected-magic-layout {
+        gap: 6px;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-selected-magic-icon.battle-selected-magic-icon-layout {
+        flex-basis: 28px;
+        width: 28px;
+        height: 32px;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-selected-magic-name.battle-selected-magic-name-layout {
+        font-size: 14px;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-selected-magic-right.battle-selected-magic-right-layout {
+        gap: 8px;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-selected-magic-value-layout > strong {
+        font-size: 15px;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-new-message {
+        column-gap: 6px;
+        font-size: var(--battle-log-font-size);
+        line-height: 1.25;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-new-message .battle-log-next {
+        font-size: 10px;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-magic-panel {
+        gap: 6px;
+        padding: 5px 8px;
+        border-radius: 12px;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-new-magic-list {
+        gap: 6px;
+        padding: 1px;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-new-magic-item,
+    #battleMainPopup.battle-motion-mode .battle-new-escape-button {
+        flex-basis: clamp(100px, 13vw, 122px);
+        min-height: 42px;
+        gap: 5px;
+        padding: 4px 7px;
+        border-radius: 22px;
+        font-size: clamp(11px, 1.4vw, 12px);
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-new-magic-icon-wrap {
+        flex-basis: 28px;
+        width: 28px;
+        height: 30px;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-new-magic-icon-wrap img {
+        transform: scale(.58);
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-new-magic-name {
+        flex: 0 1 auto;
+        width: auto;
+        max-width: none;
+        overflow: visible;
+        text-overflow: clip;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-action-row {
+        flex-basis: 78px;
+        width: 78px;
+    }
+
+    #battleMainPopup.battle-motion-mode .battle-magic-scroll-arrow {
+        flex-basis: 30px;
+        width: 30px;
+        min-height: 38px;
+        font-size: 12px;
     }
 }
