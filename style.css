@@ -12991,3 +12991,16 @@ body.bridge-collapse-shake > :not(script):not(style) {
     #soundSettingsPopup .sound-setting-title{width:64px;min-width:64px;font-size:15px}
     #soundSettingsPopup .sound-volume-value{min-width:42px;font-size:14px}
 }
+
+/* Compact landscape tile details, aligned with the right edge of the HUD. */
+@media (pointer:coarse) and (orientation:landscape) and (max-height:600px) {
+    .square-detail-panel {
+        top:calc(max(8px,env(safe-area-inset-top,0px)) + clamp(30px,13.25dvh,56px) + clamp(36px,12vh,48px));
+        right:max(8px,env(safe-area-inset-right,0px));
+        bottom:auto;
+        transform:none;
+        width:clamp(220px,34vw,360px);
+        height:65dvh;
+        max-height:65dvh;
+    }
+}
