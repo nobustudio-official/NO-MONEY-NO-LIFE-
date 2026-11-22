@@ -73,7 +73,7 @@
 .gp-shop-no-staff :is(.gp-button,.gp-header-action,.gp-close){width:68px;height:30px;min-height:30px;padding:0 2px;flex:none;font:700 clamp(12px,1.2vw,14px)/1.2 "Yu Gothic","Meiryo",sans-serif}
 .gp-shop-no-staff .gp-action{text-align:right;padding-right:18px}
 .gp-shop-no-staff .gp-heading .gp-header-action{margin-left:0;margin-right:18px}
-.gp-shop-no-staff .gp-heading .gp-close{margin-right:0}
+.gp-shop-no-staff .gp-heading .gp-close{width:68px;height:30px;min-height:30px;margin-right:0;padding:0 2px;font:700 clamp(12px,1.2vw,14px)/1.2 "Yu Gothic","Meiryo",sans-serif}
 .gp-root.gp-inventory .gp-table td.gp-action{padding-right:0;text-align:right}
 .gp-root.gp-inventory .gp-action .gp-button{width:68px;height:30px;min-height:30px;padding:0 2px}
 .gp-root .gp-button:disabled{background:#304658;color:#a0b2c1;border-color:#71849360;cursor:default}
