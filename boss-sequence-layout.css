@@ -25,6 +25,14 @@
     transform: none;
 }
 
+/* Center the guild staff only for the closing line after the next-boss reveal. */
+.boss-opening.boss-opening-intro-scene:not(.boss-opening-start) .boss-opening-staff {
+    left: 50%;
+    right: auto;
+    width: 50%;
+    transform: translateX(-50%);
+}
+
 #boss-aftermath .bf-main,
 .boss-opening:not(.boss-opening-start) .boss-opening-main {
     left: var(--boss-sequence-panel-left);
