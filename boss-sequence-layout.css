@@ -5,6 +5,11 @@
     overflow: hidden;
     border: 1px solid #ccae7b;
     border-radius: 22px;
+    /* Align the sequence frame to the AN02 left edge while keeping the
+       centered, max-1400px game screen's existing right edge. */
+    left: var(--an02-left) !important;
+    right: max(0px, calc(50vw - 700px)) !important;
+    width: auto !important;
     --boss-sequence-panel-left: 11%;
     --boss-sequence-panel-top: 2%;
     --boss-sequence-panel-width: 55%;
