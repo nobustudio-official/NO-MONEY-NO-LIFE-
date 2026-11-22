@@ -116,7 +116,7 @@
     const width = plot.getBoundingClientRect().width;
     if (width < 1) return;
     const axisFont = Math.min(20, Math.max(14, window.innerWidth * .013));
-    const height = Math.round(plot.getBoundingClientRect().height), right = 14, top = stage === 2 || stage === 3 ? 4 : 16, bottom = 28;
+    const height = Math.round(plot.getBoundingClientRect().height), right = 14, top = stage === 2 || stage === 3 ? 4 : 16, bottom = stage === 2 || stage === 3 ? 4 : 28;
     const values = data.flatMap(p => stage === 2 ? [p.property, p.cash < 0 ? p.cash : total(p)] : p.history);
     const min = Math.min(0, ...values), max = Math.max(0, ...values);
     const range = Math.max(1, max - min);
@@ -136,7 +136,8 @@
       <linearGradient id="dp-bar-gold" x1="0%" y1="0%" x2="100%" y2="0%"><stop stop-color="#dfb640"/><stop offset=".5" stop-color="#f5d575"/><stop offset="1" stop-color="#dfb640"/></linearGradient>
       </defs>`;
     for (let value = lower; value <= upper; value += step) markup += `<line class="dp-gridline" x1="${left}" x2="${width - right}" y1="${y(value)}" y2="${y(value)}"/><text class="dp-y-tick" x="${left - 8}" y="${y(value) + axisFont * .35}" text-anchor="end">${tickText(value)}</text>`;
-    markup += `<line class="dp-axis-line" data-axis="y" x1="${left}" x2="${left}" y1="${top}" y2="${y(lower)}"/><line class="dp-axis-line" data-axis="x" x1="${left}" x2="${width - right}" y1="${y(0)}" y2="${y(0)}"/>`;
+    markup += `<line class="dp-axis-line" data-axis="y" x1="${left}" x2="${left}" y1="${top}" y2="${y(lower)}"/>`;
+    if (stage === 2) markup += `<line class="dp-axis-line" data-axis="x" x1="${left}" x2="${width - right}" y1="${y(0)}" y2="${y(0)}"/>`;
     if (stage === 2) data.forEach((p, i) => {
       const column = chartWidth / data.length, bar = Math.min(column * (width < 420 ? .72 : .48), 70), x = left + column * (i + .5) - bar / 2;
       const brief = n => bar < 59 ? `${n / 10000}万G` : `${format(n)}G`;
