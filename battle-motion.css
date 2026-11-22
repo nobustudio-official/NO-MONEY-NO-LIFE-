@@ -399,6 +399,12 @@
 /* Phone landscape: preserve the battle frame and fit the PC-style HUD into it.
    The shared selectors include regular boss battles; only the scenery changes. */
 @media (orientation: landscape) and (max-width: 1000px) and (max-height: 610px) {
+    /* Keep the battle field clipped, while allowing the lower HUD's 2px bleed. */
+    #battleMainPopup.battle-motion-mode .battle-field {
+        overflow: visible;
+        clip-path: inset(0 0 -2px 0);
+    }
+
     #battleMainPopup.battle-motion-mode .battle-main-screen {
         --battle-panel-height: clamp(38px, 9.5vh, 40px);
         --battle-panel-radius: 12px;
