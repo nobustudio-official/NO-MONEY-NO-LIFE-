@@ -3781,7 +3781,7 @@ function canLocalPurchaseAsset(player) {
         && Number.isInteger(activePlayerIndex) && playerIndex === activePlayerIndex;
 }
 
-function showAssetPurchasePopup(player, assetIds, callback, suppressGreeting = false) {
+function showAssetPurchasePopup(player, assetIds, callback, suppressGreeting = false, preserveOpenState = false) {
     const playerIndex = players.indexOf(player);
     const previous = activeAssetPurchaseView;
     // State refreshes must retain the active player's turn-finish callback.
@@ -3798,11 +3798,12 @@ function showAssetPurchasePopup(player, assetIds, callback, suppressGreeting = f
     const square = mapData.find(entry => Number(entry.id) === Number(player.position));
     const branchNames = (square?.typeIds || []).map(id => ASSET_BOXES[id]?.name).filter(Boolean);
     const title = "資産店　" + branchNames.map(name=>name+"支店").join(" / ");
-    const refresh = () => showAssetPurchasePopup(player, assetIds, onClose, suppressGreeting);
+    const refresh = () => showAssetPurchasePopup(player, assetIds, onClose, true, true);
     AssetShopUI.render({
         player, playerIndex, title,titleParts:{prefix:"資産店",branch:branchNames.map(name=>name+"支店").join(" / ")}, canPurchase: canLocalPurchaseAsset(player),
         headerAction:{label:'売却',onClick:()=>ApprovedCommerce.showSales(player,'asset',()=>showAssetPurchasePopup(player,assetIds,onClose,true))},
         suppressGreeting,
+        preserveOpenState,
         assets: assetIds.map(id => ASSET_CONTENTS[id] ? { ...ASSET_CONTENTS[id], id, price:marketPrice(ASSET_CONTENTS[id].price) } : null),
         ownerIcon: getPlayerCharacterIcon,
         onClose() {
@@ -6613,7 +6614,7 @@ inventoryButton.disabled =
                 if (assetPlayer) {
                     applyingRemoteScreenView = true;
                     try {
-                        showAssetPurchasePopup(assetPlayer, activeAssetPurchaseView.assetIds, undefined, activeAssetPurchaseView.suppressGreeting);
+                        showAssetPurchasePopup(assetPlayer, activeAssetPurchaseView.assetIds, undefined, true, true);
                     } finally {
                         applyingRemoteScreenView = false;
                     }
@@ -6879,7 +6880,7 @@ inventoryButton.disabled =
                         const box = ASSET_BOXES[typeId];
                         return box && Array.isArray(box.contents) ? box.contents : [];
                     }) : [];
-                    showAssetPurchasePopup(shopPlayer, assetIds, undefined, silentShop);
+                    showAssetPurchasePopup(shopPlayer, assetIds, undefined, silentShop, true);
                 }
                 else if (data.screenType === "special-item") {
                     showSpecialItemScreen(shopPlayer, data.screenData.itemId, data.screenData.stage, data.screenData.destination, true);

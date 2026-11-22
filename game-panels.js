@@ -215,7 +215,7 @@
             ? Number(v.config.playerIndex)===Number(config.playerIndex):v.player===config.player;
         const sameOpenScreen=v.root.style.display!=='none'&&samePlayer&&
             v.config?.screenType===config.screenType&&v.config?.saleCategory===config.saleCategory;
-        if(!sameOpenScreen){v.selected=null;v.hovered=null;v.notice=null;v.noticeText=null;v.waits.clear();v.busy.clear();v.scroll.scrollTop=0;}
+        if(!sameOpenScreen||config.resetOnOpen===true){v.selected=null;v.hovered=null;v.notice=null;v.noticeText=null;v.waits.clear();v.busy.clear();v.scroll.scrollTop=0;}
         v.config=config;v.player=config.player;
         v.root.classList.toggle('gp-shop-no-staff',Boolean(config.scene&&['item-list','magic-menu','asset-purchase','sale-list'].includes(config.screenType)));
         if(config.scene){v.background.src=config.scene.backgroundImage;if(v.root.classList.contains('gp-shop-no-staff')){v.staff.removeAttribute('src');v.staff.alt='';if(v.hello)v.hello.textContent='';}else{v.staff.src=config.scene.staffImage;v.staff.alt=config.scene.name+'の店員';}
