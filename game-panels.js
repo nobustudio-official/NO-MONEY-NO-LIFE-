@@ -234,5 +234,6 @@
         return true;
     }
     function refresh(){for(const v of views.values())if(v.root.style.display==='block'){if(v.config.rebuild)v.config.rebuild();else draw(v);}}
-    window.GamePanels=Object.freeze({show,remote,refresh,anchorFrame:id=>{const root=document.getElementById(id);return root?anchorFrame(root):null;},releaseFrame:id=>{const root=document.getElementById(id);if(root)anchorCleanups.get(root)?.();},fade:(id,key,row)=>{const v=views.get(id);if(v)fade(v,key,row);},setNotice:(id,name)=>{const v=views.get(id);if(v)setNotice(v,name);},isOpen:id=>views.get(id)?.root.style.display==='block',get:id=>views.get(id),snapshot:id=>snapshot(views.get(id))});
+    function resetScroll(id){const v=views.get(id);if(!v)return false;v.scroll.scrollTop=0;return true;}
+    window.GamePanels=Object.freeze({show,remote,refresh,resetScroll,anchorFrame:id=>{const root=document.getElementById(id);return root?anchorFrame(root):null;},releaseFrame:id=>{const root=document.getElementById(id);if(root)anchorCleanups.get(root)?.();},fade:(id,key,row)=>{const v=views.get(id);if(v)fade(v,key,row);},setNotice:(id,name)=>{const v=views.get(id);if(v)setNotice(v,name);},isOpen:id=>views.get(id)?.root.style.display==='block',get:id=>views.get(id),snapshot:id=>snapshot(views.get(id))});
 })();

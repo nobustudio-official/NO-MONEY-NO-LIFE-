@@ -7217,6 +7217,7 @@ inventoryButton.disabled =
             refreshShortestPathToBoss();
             applyingRemoteScreenView = true;
             try { window.GamePanels?.refresh(); } finally { applyingRemoteScreenView = false; }
+            if (changed) window.GamePanels?.resetScroll('assetPurchasePopup');
             refreshOnlineTurnControls();
             if (isLocalOnlineTurn() && (!data.undergroundStage || data.turnStartEffects?.bridgeCollapseRestored)) {
                 // Dice/inventory are disabled directly during another player's
@@ -9343,6 +9344,9 @@ function showAssetRankingPopup(callback, serverRanking = null, displayOptions = 
 let nextPlayerCameraRequest = 0;
 function updateNextPlayerView() {
 
+    // 資産店一覧は手番が切り替わるたびに先頭へ戻す。
+    // 同じ手番中の購入処理ではこの関数を通らないため、スクロール位置は維持される。
+    window.GamePanels?.resetScroll('assetPurchasePopup');
     const activePlayer = players[currentPlayer];
     if (activePlayer) preloadPlayerDirectionSprites(activePlayer);
 
