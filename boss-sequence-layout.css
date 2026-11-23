@@ -217,7 +217,7 @@
     line-height: 1.2;
     font-size: clamp(13px, 2.8vh, 20px);
     text-align: center;
-    transform: translateY(calc(clamp(16px, 10vh, 36px) + 5px));
+    transform: translateY(calc(clamp(16px, 10vh, 36px) + 15px));
 }
 
 /* Lower the punishment character, multiplier, and die together without changing their spacing. */
