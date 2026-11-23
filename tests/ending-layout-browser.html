@@ -1,0 +1,115 @@
+<!doctype html><meta charset="utf-8"><title>Ending layout regression</title>
+<pre id="report">RUNNING</pre><iframe id="game" style="width:1920px;height:1080px"></iframe>
+<script>
+(async()=>{
+ const frame=document.getElementById('game'),results=[],failures=[];
+ let stage='setup';
+ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+ const check=(value,message)=>{if(!value)throw Error(message)};
+ const output=()=>document.getElementById('report').textContent=JSON.stringify({stage,results,failures});
+ try{
+  await new Promise(resolve=>{frame.onload=resolve;frame.src='../index.html?ending-layout-test='+Math.random()});
+  const w=frame.contentWindow,d=w.document;
+  w.requestAnimationFrame=fn=>w.setTimeout(()=>fn(w.performance.now()),16);w.cancelAnimationFrame=id=>w.clearTimeout(id);
+  w.HTMLMediaElement.prototype.play=()=>Promise.resolve();
+  w.addEventListener('error',event=>{failures.push(event.message);output()});
+  await w.localMatchRecoveryReady;
+  w.renderGameTemplate('mainGameTemplate',d.querySelector('.game-container'));
+  await delay(100); // Let the map's own initialization finish before tracking ending observers.
+  const NativeObserver=w.ResizeObserver,activeObservers=new Set();
+  w.ResizeObserver=class extends NativeObserver{
+   observe(...args){
+    this.targets??=[];this.targets.push(args[0]);
+    this.presentation ||= args[0].id==='endingPresentationOverlay'||Boolean(args[0].closest('#endingPresentationOverlay,#dividendPresentationOverlay'));
+    activeObservers.add(this);super.observe(...args)
+   }
+   disconnect(){activeObservers.delete(this);super.disconnect()}
+  };
+  const presentationObservers=()=>[...activeObservers].filter(observer=>observer.presentation);
+  const box=el=>{const r=el.getBoundingClientRect();return [r.left,r.top,r.width,r.height]};
+  const same=(a,b)=>a.every((n,i)=>Math.abs(n-b[i])<.8);
+  const signature=root=>['.dp-screen','.dp-title','.dp-body','.dp-chart-top','.dp-plot','.dp-axis-players','.dp-axis-player img','.dp-footer .dp-next']
+   .map(selector=>({selector,box:box(root.querySelector(selector))}));
+  const reference=(players,history,chartStage)=>{
+   const overlay=d.createElement('section');overlay.id='dividendPresentationOverlay';
+   overlay.innerHTML='<div id="nmnl-dividend-lab"><nav class="dp-steps" hidden></nav><section class="dp-screen"><h2 class="dp-title"></h2><div class="dp-body"></div><footer class="dp-footer"><small></small><button class="dp-next">次へ</button></footer></section></div>';
+   d.body.append(overlay);
+   const entries=players.map((p,i)=>({name:p.name,characterId:p.characterId,icon:w.eval('PLAYER_CONTENTS')[p.characterId].icon,
+    cash:p.money,property:p.total-p.money,history:history.map(point=>point.totals[i])}));
+   const cleanup=w.DividendPresentation.mount(overlay.firstElementChild,{stage:chartStage,players:entries,historyTurns:history.map(p=>p.turn),readOnly:true,onNext(){}});
+   return {root:overlay,close(){cleanup();overlay.remove()}};
+  };
+  const ending=(players,history,step)=>{
+   w.players=players;
+   const ranks=players.map((p,i)=>({playerIndex:i,name:p.name,totalAsset:p.total}));
+   w.EndingPresentation.show(ranks,players,history,false,{progress:{step,eventId:'layout-'+Math.random()},onCheckpoint(){}});
+   return d.getElementById('endingPresentationOverlay');
+  };
+  let checks=0;
+  for(const [width,height] of [[1920,1080],[1280,720],[852,393],[393,852]]){
+   frame.style.width=width+'px';frame.style.height=height+'px';await delay(80);
+   for(const count of [2,4,6]){
+    const players=Array.from({length:count},(_,i)=>({name:'P'+i,characterId:i+1,money:i===0?-20000:20000+i*11000,total:222900+i*881600}));
+    const history=[0,10,20,30].map((turn,j)=>({turn,totals:players.map(p=>Math.round(p.total*(j+1)/4))}));
+    for(const chartStage of [2,3]){
+     stage='chart '+width+' '+count+' '+chartStage;
+     const ref=reference(players,history,chartStage);await delay(80);
+     const expected=signature(ref.root);ref.close();
+     const root=ending(players,history,chartStage+2);await delay(80);
+     for(const entry of expected){
+      const actual=box(root.querySelector(entry.selector));
+      check(same(actual,entry.box),entry.selector+' differs at '+width+'/'+count+'/'+chartStage+': '+JSON.stringify({expected:entry.box,actual}));
+     }
+     const plot=root.querySelector('.dp-plot'),svg=plot.querySelector('svg');
+     check(plot.getBoundingClientRect().height>=112,'plot collapsed');
+     const ticks=[...svg.querySelectorAll('.dp-y-tick')].map(el=>el.getBoundingClientRect()).sort((a,b)=>a.top-b.top);
+     for(let i=1;i<ticks.length;i++)check(ticks[i].top>=ticks[i-1].bottom-1,'axis labels overlap');
+     check(root.querySelectorAll('.dp-axis-player').length===count,'wrong player count');
+     check([...root.querySelectorAll('.dp-axis-player img')].every(img=>img.getBoundingClientRect().width<=36.5),'axis icons too large');
+     w.EndingPresentation.close();check(presentationObservers().length===0,'ending observers remain after close: '+presentationObservers().flatMap(o=>o.targets).map(el=>el.id||el.className).join(','));checks++;
+    }
+    stage='winner '+width+' '+count;
+    const ref=reference(players,history,4);await delay(60);
+    const expectedIcon=box(ref.root.querySelector('.dp-player-summary img')).slice(2);
+    const expectedCenter=ref.root.querySelector('.dp-player-summary').getBoundingClientRect();
+    ref.close();
+    let root=ending(players,history,3);await delay(60);
+    const winner=root.querySelector('.bf-new-winner'),r=winner.getBoundingClientRect(),img=box(winner.querySelector('img'));
+    check(same(img.slice(2),expectedIcon),'winner icon differs from dividend at '+width);
+    check(Math.abs(r.left+r.width/2-expectedCenter.left-expectedCenter.width/2)<.8,'winner horizontal position differs from dividend');
+    const staff=root.querySelector('.bf-staff').getBoundingClientRect(),banner=root.querySelector('.bf-banner').getBoundingClientRect();
+    check(Math.abs(staff.left+staff.width/2-width/2)<.8,'winner staff not centered');
+    check(Math.abs(staff.bottom-banner.top)<.8,'winner staff foot not aligned');
+    const face=winner.querySelector('img').getBoundingClientRect();
+    check(face.right<=staff.left||face.left>=staff.right||face.bottom<=staff.top||face.top>=staff.bottom,'winner icon overlaps the staff');
+    check(w.getComputedStyle(root.querySelector('.bf-main')).backgroundColor==='rgba(0, 0, 0, 0)','oversized winner panel remains');
+    w.EndingPresentation.close();
+    const ties=players.map(p=>({...p,total:1000000}));root=ending(ties,history,3);await delay(60);
+    const winnerImages=[...root.querySelectorAll('.bf-new-winner img')];check(winnerImages.length===count,'tied winners missing');
+    check(winnerImages.every(img=>same(box(img).slice(2),expectedIcon)),'tied winner icon sizes differ');
+    w.EndingPresentation.close();check(presentationObservers().length===0,'winner observer remains');checks++;
+   }
+   for(const step of [0,1,7]){
+    const players=[{name:'P0',characterId:1,money:1000,total:1000}],root=ending(players,[],step);await delay(60);
+    const staff=root.querySelector('.bf-staff').getBoundingClientRect(),banner=root.querySelector('.bf-banner').getBoundingClientRect();
+    check(Math.abs(staff.left+staff.width/2-width/2)<.8,'staff not centered: '+step+'/'+width);
+    check(Math.abs(staff.bottom-banner.top)<.8,'staff foot differs from banner: '+step+'/'+width);
+    w.EndingPresentation.close();check(presentationObservers().length===0,'staff observer remains');checks++;
+   }
+  }
+  results.push({layoutChecks:checks,viewports:4,playerCounts:[2,4,6]});
+  stage='graph progression';
+  const players=[{name:'A',characterId:1,money:2000,total:10000},{name:'B',characterId:2,money:5000,total:20000}];
+  const root=ending(players,[{turn:0,totals:[1000,2000]},{turn:30,totals:[10000,20000]}],4);
+  for(let i=0;i<300&&root.querySelector('.bf-next').disabled;i++)await delay(20);
+  check(!root.querySelector('.dp-footer .bf-next').disabled,'asset chart never enabled next');root.querySelector('.bf-next').click();
+  check(root.dataset.step==='5','chart next skipped history or failed');
+  for(let i=0;i<300&&root.querySelector('.bf-next').disabled;i++)await delay(20);
+  root.querySelector('.bf-next').click();check(root.dataset.step==='6','history next did not reach ranking');
+  root.querySelector('.bf-next').click();check(root.dataset.step==='7'&&root.querySelector('.bf-banner .bf-next'),'caption next was not restored');
+  w.EndingPresentation.close();check(presentationObservers().length===0,'progression observers remain');
+  results.push('chart buttons advance once and return to the caption; all resize observers disconnect');
+ }catch(error){failures.push(error.stack||String(error))}
+ stage='complete';output();document.body.dataset.complete='true';
+})();
+</script>

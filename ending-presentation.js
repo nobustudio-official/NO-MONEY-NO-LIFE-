@@ -54,6 +54,12 @@
         let pending = false, raceStarted = Boolean(ending?.raceStarted), raceStartedAt = Number(ending?.raceStartedAt) || null;
         let raceComplete = false, animationFrame = 0, chartCleanup = null, voice = null, bgm = null;
         let raceStartHandler = null, listener = null, returnAfterBlack = false, disposed = false, chartObserver = null;
+        function positionStaff() {
+            if (disposed || staff.hidden || banner.hidden) return;
+            staff.style.bottom = `${root.getBoundingClientRect().bottom - banner.getBoundingClientRect().top}px`;
+        }
+        const staffObserver = new ResizeObserver(positionStaff);
+        staffObserver.observe(root); staffObserver.observe(banner);
         let fadeTimer = 0, sceneGeneration = 0, bgmGain = 1, endingConfirmed = false;
         const canControl = () => !sync || window.onlineGame?.playerId ===
             (sync.state?.endingPresentation?.ownerId || sync.state?.players?.[sync.state?.activePlayerIndex]?.id);
@@ -154,6 +160,7 @@
             root.classList.toggle('bf-new-ending-race-scene', step === 2);
             root.classList.toggle('bf-new-ending-winner-scene', step === 3);
             root.classList.toggle('bf-new-ending-graph-scene', step === 4 || step === 5);
+            root.classList.toggle('dp-game-layout', step === 4 || step === 5);
             root.classList.toggle('bf-new-ending-rank-scene', step === 6);
             root.dataset.stage = sceneName;
             root.dataset.step = String(step);
@@ -195,7 +202,9 @@
         function mountDividendChart(chartStage) {
             const mount = document.createElement('div');
             mount.id = 'nmnl-dividend-lab'; mount.className = 'bf-dividend-embed';
-            mount.innerHTML = '<nav class="dp-steps" hidden></nav><section class="dp-screen"><h2 class="dp-title"></h2><div class="dp-body" aria-live="polite"></div><footer class="dp-footer"><small></small><button type="button" class="dp-next">次へ▶</button></footer></section>';
+            mount.innerHTML = '<nav class="dp-steps" hidden></nav><section class="dp-screen"><h2 class="dp-title"></h2><div class="dp-body" aria-live="polite"></div><footer class="dp-footer"><small></small></footer></section>';
+            next.classList.add('dp-next');
+            mount.querySelector('.dp-footer').append(next);
             main.append(mount);
             chartCleanup = window.DividendPresentation.mount(mount, {
                 stage: chartStage, map: 'images/backgrounds/scenes/配当.webp',
@@ -204,12 +213,13 @@
                 players: finalPlayers.map(player => ({ name: player.name, characterId: player.characterId, icon: player.icon,
                     color: player.color, cash: player.cash, property: player.assets, income: 0,
                     history: player.history })),
-                readOnly: true, onNext() {}
+                readOnly: true, onNext: advance
             });
             chartObserver = new MutationObserver(() => {
                 next.disabled = pending || !canControl() || mount.querySelector('.dp-plot')?.dataset.revealState !== 'complete';
             });
             chartObserver.observe(mount, { subtree:true, attributes:true, attributeFilter:['data-reveal-state'] });
+            next.disabled = pending || !canControl() || mount.querySelector('.dp-plot')?.dataset.revealState !== 'complete';
         }
 
         function returnToTitle() {
@@ -420,6 +430,8 @@
             if (step === 8) { returnToTitle(); return; }
             root.classList.remove('bf-final-fadeout', 'bf-race-finished');
             setSceneClasses();
+            next.classList.remove('dp-next');
+            banner.append(next);
             main.className = `bf-main bf-stage-${sceneNames[step]}`;
             main.replaceChildren();
             copy.textContent = '';
@@ -435,8 +447,8 @@
             } else if (step === 3) {
                 main.classList.add('bf-new-ending-winner');
                 const winners = rows.filter(row => row.totalAsset === rows[0].totalAsset);
-                const cards = winners.map(winner => `<div class="bf-new-winner"><img src="${PLAYER_CONTENTS[winner.player.characterId]?.icon || ''}" alt="${escapeHTML(winner.name)}のアイコン"><span class="bf-new-winner-name">${escapeHTML(winner.name)}</span></div>`).join('');
-                main.insertAdjacentHTML('beforeend', winners.length > 1 ? `<div class="bf-new-winners" style="--winner-columns:${Math.min(3, winners.length)}">${cards}</div>` : cards);
+                const cards = winners.map(winner => `<div class="bf-new-winner dp-player-summary${winners.length === 1 ? ' dp-ranking-summary' : ''}"><img src="${PLAYER_CONTENTS[winner.player.characterId]?.icon || ''}" alt="${escapeHTML(winner.name)}のアイコン"><span class="bf-new-winner-name">${escapeHTML(winner.name)}</span></div>`).join('');
+                main.insertAdjacentHTML('beforeend', winners.length > 1 ? `<div class="bf-new-winners dp-ranking-summary">${cards}</div>` : cards);
                 playEffect(effects.cheers); copy.textContent = `優勝は、${winners.map(winner => `${winner.name}さん`).join('、')}！おめでとうございます！`;
             } else if (step === 4 || step === 5) {
                 main.classList.add('bf-new-ending-chart');
@@ -465,6 +477,7 @@
             }
             if (step < 7) next.onclick = advance;
             else next.onclick = null;
+            positionStaff();
             // Replay an interrupted animation from its scene boundary, never its frames.
             if (!online) local?.onCheckpoint?.(step);
         }
@@ -479,6 +492,7 @@
         current = {
             close(keepScreen = false) {
                 if (disposed) return; disposed = true;
+                staffObserver.disconnect();
                 cancelScene(); listener?.(); stopBGM();
                 seSlider?.removeEventListener('input', updateVolumes);
                 if (!keepScreen) { root.remove(); current = null; }

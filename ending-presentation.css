@@ -1,10 +1,8 @@
-/* Copied from the approved new-ending demo by scripts/ending-style-port.js.
-   Keep the demo's cascade, dimensions and motion. No demo dependency at runtime. */
+/* Ending scenes. Race motion is local; charts and player summaries share the
+   production dividend layout. No demo dependency at runtime. */
 #endingPresentationOverlay{position:absolute;top:174px;bottom:42px;left:212px;right:24px;max-width:1560px;margin-inline:auto;overflow:hidden;border:1px solid #ccae7b;border-radius:22px;isolation:isolate;background:#17394e;color:#fcfcfc;font-family:"Yu Gothic","Meiryo",sans-serif}
 #endingPresentationOverlay .bf-background{position:absolute;inset:0;z-index:-2;background:url("images/backgrounds/scenes/戦闘1.webp") center/cover no-repeat}
 #endingPresentationOverlay .bf-shade{position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#071a2a55,#071a2a1f 72%)}
-#endingPresentationOverlay .bf-staff{position:absolute;right:2%;bottom:calc(4% + 156px);height:74%;width:35%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 8px 8px #071a2a66);pointer-events:none}
-#endingPresentationOverlay.bf-intro-scene .bf-staff{left:50%;right:auto;width:48%;transform:translateX(-50%)}
 #endingPresentationOverlay .bf-main{position:absolute;left:3%;top:4%;width:62%;bottom:calc(5% + 156px);border:1px solid #ccae7b;border-radius:18px;background:linear-gradient(135deg,#102b40f2,#0b2033ed);padding:23px 28px;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:14px;text-align:left;box-shadow:0 12px 26px #071a2a55;overflow:hidden}
 #endingPresentationOverlay .bf-main h1{margin:0;padding-bottom:12px;border-bottom:1px solid #ccae7b8c;font-size:29px;line-height:1.25;letter-spacing:.04em}
 #endingPresentationOverlay .bf-banner{position:absolute;left:3%;right:3%;bottom:3%;height:156px;padding:22px 130px 22px 28px;border:1px solid #ccae7b;border-radius:12px;background:linear-gradient(125deg,#18384ff5,#10293cf5);display:flex;flex-direction:column;justify-content:center;gap:8px;box-shadow:0 6px 25px #071a2a55}
@@ -19,13 +17,10 @@
 @media(max-height:850px){#endingPresentationOverlay{top:174px;bottom:26px}
 #endingPresentationOverlay .bf-banner{height:125px;padding-block:13px}
 #endingPresentationOverlay .bf-main{bottom:calc(5% + 125px)}
-#endingPresentationOverlay .bf-staff{bottom:calc(4% + 125px);height:72%}
-#endingPresentationOverlay.bf-intro-scene .bf-staff{bottom:calc(4% + 125px);height:72%}
 #endingPresentationOverlay .bf-copy{font-size:18px}
 #endingPresentationOverlay .bf-speaker{font-size:13px}}
 @media(max-width:1120px){#endingPresentationOverlay{left:160px;right:12px}
 #endingPresentationOverlay .bf-main{width:66%;left:2%}
-#endingPresentationOverlay .bf-staff{right:0;width:34%}
 #endingPresentationOverlay .bf-banner{left:2%;right:2%}}
 #endingPresentationOverlay .bf-banner.has-portrait .bf-copy{margin-left:100px}
 #endingPresentationOverlay .bf-banner .bf-speaker{position:absolute;top:20px;left:28px}
@@ -35,8 +30,7 @@
 .bf-ending-sequence#endingPresentationOverlay{position:fixed;inset:0;max-width:none;margin:0;border:0;border-radius:0;z-index:1000}
 #endingPresentationOverlay.bf-ending-sequence .bf-background{background-image:url("images/backgrounds/scenes/王都ロビー.webp")}
 #endingPresentationOverlay.bf-ending-sequence .bf-shade{background:linear-gradient(110deg,#071a2a99,#071a2a55 70%,#071a2a77)}
-#endingPresentationOverlay.bf-ending-sequence .bf-staff{z-index:1}
-#endingPresentationOverlay.bf-ending-sequence.bf-intro-scene .bf-staff{left:50%;right:auto;bottom:calc(3% + 156px);width:38%;height:70%;transform:translateX(-50%)}
+#endingPresentationOverlay.bf-ending-sequence .bf-staff{z-index:1;left:50%;right:auto;bottom:21%;width:38%;height:70%;transform:translateX(-50%)}
 #endingPresentationOverlay.bf-ending-sequence.bf-intro-scene .bf-main{display:flex;left:4%;top:4%;width:92%;bottom:calc(3% + 156px);padding:20px;border:0;background:transparent;box-shadow:none;align-items:center;justify-content:center;text-align:center}
 #endingPresentationOverlay.bf-ending-sequence.bf-intro-scene .bf-main h1{display:none}
 #endingPresentationOverlay.bf-ending-sequence .bf-ending-cardless{pointer-events:none}
@@ -114,9 +108,6 @@
 #endingPresentationOverlay.bf-final-fadeout::after{content:"";position:absolute;z-index:100;inset:0;background:#000;pointer-events:none;animation:bf-final-darken 2s linear forwards}
 @keyframes bf-final-darken{from{opacity:0}to{opacity:1}}
 #endingPresentationOverlay.bf-new-ending-race-scene.bf-race-finished,#endingPresentationOverlay.bf-new-ending-race-scene.bf-race-finished .bf-race-route{cursor:pointer}
-#endingPresentationOverlay.bf-new-ending-winner-scene .bf-main{left:4%;width:56%;top:4%;bottom:calc(3% + 142px);align-items:center;justify-content:center}
-#endingPresentationOverlay .bf-new-ending-winner .bf-new-winner{display:grid;place-items:center;width:100%;height:100%}
-#endingPresentationOverlay .bf-new-winner img{width:clamp(130px,22vw,290px);height:clamp(130px,22vw,290px);object-fit:contain;filter:drop-shadow(0 10px 14px #061421aa)}
 #endingPresentationOverlay.bf-new-ending-rank-scene .bf-staff,#endingPresentationOverlay.bf-new-ending-rank-scene .bf-banner{display:none!important}
 #endingPresentationOverlay.bf-new-ending-rank-scene .bf-main{inset:2% 2%;width:auto;bottom:2%;padding:24px 4%;border-radius:20px;background:#0c2439ed;justify-content:center}
 #endingPresentationOverlay .bf-new-rank-table{width:100%;max-width:none;margin:auto;display:flex;flex-direction:column;gap:12px}
@@ -130,15 +121,9 @@
 #endingPresentationOverlay .bf-new-rank-table h2{margin-bottom:5px;font-size:clamp(24px,5vw,34px)}
 #endingPresentationOverlay .bf-new-rank-row{grid-template-columns:56px 46px minmax(0,1fr) auto;gap:8px;min-height:72px;padding:7px 9px;font-size:clamp(15px,3.3vw,20px)}
 #endingPresentationOverlay .bf-new-rank-row img{width:42px;height:42px}
-#endingPresentationOverlay.bf-new-ending-winner-scene .bf-main{width:58%}}
-#endingPresentationOverlay.bf-new-ending-graph-scene .bf-main{inset:3%;width:auto;bottom:3%;padding:18px 26px;border:0;border-radius:0;background:transparent;box-shadow:none}
-#endingPresentationOverlay.bf-new-ending-graph-scene #nmnl-dividend-lab{display:flex;flex:1;min-width:0;min-height:0;width:100%;height:100%}
-#endingPresentationOverlay.bf-new-ending-graph-scene #nmnl-dividend-lab .dp-screen{height:100%;min-height:0;aspect-ratio:auto;flex:1;padding:clamp(12px,2vw,28px)}
-#endingPresentationOverlay.bf-new-ending-graph-scene #nmnl-dividend-lab .dp-footer{display:none}
+}
+#endingPresentationOverlay.bf-new-ending-graph-scene .bf-main{inset:0;width:auto;bottom:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;align-items:center;gap:0}
 #endingPresentationOverlay.bf-new-ending-graph-scene .bf-banner{display:none!important}
-#endingPresentationOverlay.bf-new-ending-winner-scene .bf-main{left:5%;width:56%}
-#endingPresentationOverlay .bf-new-ending-winner .bf-new-winner{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
-#endingPresentationOverlay .bf-new-winner-name{color:#fcfcfc;font-size:clamp(20px,2vw,30px);font-weight:800;text-align:center;overflow-wrap:anywhere}
 
 /* Production integration and later explicit requests: central staff without an
    empty intro panel, a borderless full-screen race, and variable player counts. */
@@ -154,13 +139,15 @@
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-racer img{width:100%;height:100%}
 #endingPresentationOverlay .bf-next:disabled,#endingPresentationOverlay .bf-race-ready button:disabled{cursor:default}
 #endingPresentationOverlay.bf-ending-returning::after{content:"";position:absolute;inset:0;z-index:101;background:#000}
-#endingPresentationOverlay .bf-new-winners{display:grid;grid-template-columns:repeat(var(--winner-columns),minmax(0,1fr));gap:clamp(8px,2vh,24px);width:100%;max-height:100%}
-#endingPresentationOverlay .bf-new-winners .bf-new-winner{min-width:0;height:auto;gap:8px}
-#endingPresentationOverlay .bf-new-winners .bf-new-winner img{width:clamp(80px,9vw,150px);height:clamp(80px,9vw,150px)}
-#endingPresentationOverlay .bf-new-winners .bf-new-winner-name{font-size:clamp(16px,1.5vw,24px)}
 
 @media (pointer:coarse) and (hover:none) and (orientation:landscape) and (max-width:1100px){
  #endingPresentationOverlay.bf-ending-sequence .bf-banner{height:18%;min-height:0;grid-template-rows:auto minmax(0,1fr);gap:3px 12px;padding:6px 14px;overflow:hidden}
  #endingPresentationOverlay.bf-ending-sequence .bf-banner .bf-copy{min-width:0;min-height:0;font-size:clamp(13px,min(3vw,4vh),17px);line-height:1.12;align-self:center}
  #endingPresentationOverlay.bf-ending-sequence .bf-next{grid-row:2}
 }
+#endingPresentationOverlay.bf-new-ending-winner-scene .bf-main{left:50%;top:0;bottom:0;width:min(96vw,1450px);transform:translateX(-50%);padding:clamp(12px,2vw,28px);padding-bottom:calc(clamp(12px,2vw,28px) + 100px);border:0;border-radius:0;background:transparent;box-shadow:none;flex-direction:row;align-items:center;justify-content:space-around;gap:0}
+#endingPresentationOverlay.bf-new-ending-winner-scene .bf-staff{width:auto;max-width:42vw;aspect-ratio:auto 683/1024;height:clamp(160px,60vh,188px)}
+#endingPresentationOverlay .bf-new-winner-name{max-width:100%;overflow-wrap:anywhere}
+#endingPresentationOverlay .bf-new-winners{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,clamp(90px,12vw,170px)),1fr));gap:clamp(8px,2vh,24px);max-height:calc(100% - var(--an02-min-height) - var(--an02-bottom));overflow:auto}
+#endingPresentationOverlay .bf-new-winners .bf-new-winner{margin:0;width:auto;transform:none}
+@media(max-width:600px){#endingPresentationOverlay .bf-new-winners{width:36%;margin-right:60%}}
