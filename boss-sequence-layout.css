@@ -158,12 +158,6 @@
     font-size: clamp(12px, 2.8vh, 15px);
 }
 
-#boss-aftermath .bf-progress {
-    flex: 0 0 auto;
-    padding-bottom: 0;
-    font-size: clamp(12px, 2.8vh, 16px);
-}
-
 #boss-aftermath .bf-main.bf-stage-receipt .bf-receipt-list {
     flex: 1 1 auto;
     box-sizing: border-box;

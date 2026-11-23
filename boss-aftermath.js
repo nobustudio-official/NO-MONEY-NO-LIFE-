@@ -97,18 +97,16 @@
             function showReceipt() {
                 stopGuide(); stage = 'receipt'; header('報酬受取'); main.classList.add('bf-stage-receipt'); next.hidden = true;
                 const list = document.createElement('div'); list.className = 'bf-receipt-list'; list.dataset.count = String(claims.length); list.style.setProperty('--recipient-count', claims.length);
-                const progress = document.createElement('p'); progress.className = 'bf-progress';
                 for (const claim of claims) {
                     const player = players[claim.playerIndex], card = document.createElement('article'); card.className = 'bf-receipt-card';
                     card.innerHTML = `<img src="${esc(icon(player))}" alt=""><strong class="bf-receipt-name">${esc(player.name)}</strong><strong class="bf-total">＋${fmt(claim.amount)}G</strong><button type="button" class="bf-action bf-receive">受け取る</button>`;
                     card.querySelector('button').onclick = () => {
                         if (!BossCeremonyRules.claimReward(players, claims, claim.playerIndex)) return;
                         sound('moneyDisplay'); options.onClaim(player); card.classList.add('is-claimed'); card.querySelector('button').disabled = true;
-                        const count = claims.filter(row => row.claimed).length; progress.textContent = `受取完了　${count} / ${claims.length}`;
-                        if (count === claims.length) { progress.textContent = '全員の受け取りが完了しました'; timer = setTimeout(afterGoldReceipt, 1000); }
+                        if (claims.every(row => row.claimed)) timer = setTimeout(afterGoldReceipt, 1000);
                     }; list.append(card);
                 }
-                progress.textContent = `受取完了　0 / ${claims.length}`; main.append(list, progress); message('それでは報酬を受け取ってください！');
+                main.append(list); message('それでは報酬を受け取ってください！');
                 if (!claims.length) timer = setTimeout(afterGoldReceipt, 1000);
                 requestAnimationFrame(() => main.querySelectorAll('.bf-total').forEach(el => { const available = el.parentElement.clientWidth - 12; if (el.scrollWidth > available) el.style.fontSize = Math.max(10, parseFloat(getComputedStyle(el).fontSize) * available / el.scrollWidth) + 'px'; }));
             }
@@ -256,8 +254,8 @@
             const list = document.createElement('div'); list.className='bf-receipt-list'; list.dataset.count=String(c.claims.length); list.style.setProperty('--recipient-count',c.claims.length);
             if (snapshot.lastCeremonyAction === 'claim' && !snapshot.ceremonyCuePlayed) snd('moneyDisplay');
             c.claims.forEach(claim => { const p=players[claim.playerIndex]; if(!p)return; const card=document.createElement('article'); card.className='bf-receipt-card'+(claim.claimed?' is-claimed':''); card.innerHTML='<img src="'+esc(icon(p))+'" alt=""><strong class="bf-receipt-name">'+esc(p.name)+'</strong><strong class="bf-total">＋'+fmt(claim.amount)+'G</strong><button type="button" class="bf-action bf-receive">受け取る</button>'; const button=card.querySelector('button'); button.disabled=claim.claimed || me!==claim.playerIndex; button.onclick=()=>sendOnce('claim'); list.append(card); });
-            main.append(list); const progress=document.createElement('p'); progress.className='bf-progress'; const done=c.claims.filter(r=>r.claimed).length; progress.textContent=done===c.claims.length?'全員の受け取りが完了しました':'受取完了　'+done+' / '+c.claims.length; main.append(progress); line('それでは報酬を受け取ってください！');
-            if (owner && done===c.claims.length) onlineTimer=setTimeout(()=>sendOnce('next'),1000);
+            main.append(list); line('それでは報酬を受け取ってください！');
+            if (owner && c.claims.every(claim => claim.claimed)) onlineTimer=setTimeout(()=>sendOnce('next'),1000);
         } else if (stage === 'guidebook') {
             header('ドロップアイテム受取');
             next.hidden = true;
