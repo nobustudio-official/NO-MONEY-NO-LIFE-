@@ -6075,7 +6075,7 @@ function finishDiceMovement(
         : itemMovement ? [startSquare, startSquare] : [startSquare];
 
     const resolveSquareEvent = function () {
-        if (!itemMovement) window.GameActionInput?.get('dice')?.setPhase('arrival');
+        window.GameActionInput?.get(itemMovement ? 'item-use' : 'dice')?.setPhase('arrival');
         localSave?.checkpoint('arrival');
         handleSquareEvent(player);
     };
@@ -10855,7 +10855,9 @@ function resumeLocalStep(saved) {
         case 'arrival': window.GameActionInput.begin('dice', `${currentTurn}:${currentPlayer}`, 'arrival'); handleSquareEvent(player); break;
         case 'finish-turn': finishTurn(player); break;
         case 'movement':
-            window.GameActionInput.begin(diceMovementState.isItemMovement ? 'item-use' : 'dice', `${currentTurn}:${currentPlayer}`, 'move');
+            // Restore the same menu lock used when a movement item starts normally.
+            if (diceMovementState.isItemMovement) window.GameActionInput.beginMenuAction('item-use', `${currentTurn}:${currentPlayer}`);
+            else window.GameActionInput.begin('dice', `${currentTurn}:${currentPlayer}`, 'move');
             rouletteButton.disabled = true; inventoryButton.disabled = true;
             setupDiceMovementReturnButton(); showDiceMovementReturnButton(); showDiceMovementCounter();
             if (remainingSteps <= 0) finishDiceMovement(player); else showDiceMovementArrows();
