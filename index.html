@@ -787,6 +787,7 @@
 
     <h2>プレイ時間を選択</h2>
     <div class="turn-select-group">
+        <div class="turn-select-scroll">
         <p>何ターンで遊びますか？</p>
 
         <p id="setupPlayTimeEstimate" class="setup-play-time-estimate" aria-live="polite"></p>
@@ -809,11 +810,19 @@
 
         </div>
 
+        <div class="orientation-guide">
+            <div class="orientation-guide__icon" aria-hidden="true">
+                <span class="orientation-guide__phone"></span>
+            </div>
+            <p class="orientation-guide__text">スマホを横画面にしてください</p>
+        </div>
+
         <button
             id="confirmTurnButton"
         >
             このターンで開始
         </button>
+        </div>
     </div>
     
 </template>

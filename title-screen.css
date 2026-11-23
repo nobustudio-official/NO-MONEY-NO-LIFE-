@@ -483,14 +483,32 @@
 .title-screen.is-setup .turn-select-group {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    align-items: stretch;
+    justify-content: flex-start;
     width: min(100%, 560px);
     min-height: 0;
     height: 100%;
     margin: 0 auto;
-    padding-bottom: 18px;
+    padding: 0;
+    overflow: hidden;
     box-sizing: border-box;
+}
+
+.title-screen.is-setup .turn-select-scroll {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: center;
+    min-width: 0;
+    min-height: 0;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 8px 14px;
+    box-sizing: border-box;
+    scrollbar-width: thin;
 }
 
 .game-loading-screen.title-screen {
@@ -623,6 +641,77 @@
     border-color: var(--title-setup-control-border);
     color: var(--title-setup-text);
     background: var(--title-setup-input-bg);
+}
+
+.title-screen.is-setup .orientation-guide {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    margin: 10px auto 0;
+}
+
+.title-screen.is-setup .orientation-guide__icon {
+    display: grid;
+    place-items: center;
+    width: 76px;
+    height: 66px;
+}
+
+.title-screen.is-setup .orientation-guide__phone {
+    position: relative;
+    display: block;
+    width: 38px;
+    height: 62px;
+    box-sizing: border-box;
+    border: 3px solid #ffe3a0;
+    border-radius: 10px;
+    background: linear-gradient(145deg, #30435a, #18263a);
+    box-shadow: inset 0 0 0 4px #9bc9d922, 0 0 12px #f4d28f45;
+    transform-origin: center;
+    animation: orientation-phone-rotate-left 3s ease-in-out infinite;
+}
+
+.title-screen.is-setup .orientation-guide__phone::before {
+    position: absolute;
+    top: 4px;
+    left: 50%;
+    width: 10px;
+    height: 2px;
+    border-radius: 2px;
+    background: #ffe3a0;
+    content: "";
+    transform: translateX(-50%);
+}
+
+.title-screen.is-setup .orientation-guide__phone::after {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #ffe3a0;
+    content: "";
+    transform: translateX(-50%);
+}
+
+.title-screen.is-setup .orientation-guide__text {
+    margin: 0;
+}
+
+@keyframes orientation-phone-rotate-left {
+    0%, 20% { transform: rotate(0deg); }
+    48%, 72% { transform: rotate(-90deg); }
+    100% { transform: rotate(0deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .title-screen.is-setup .orientation-guide__phone {
+        animation: none;
+        transform: rotate(-90deg);
+    }
 }
 
 .title-screen.is-setup #confirmTurnButton {
