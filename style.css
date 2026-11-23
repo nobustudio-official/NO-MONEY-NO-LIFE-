@@ -11002,33 +11002,6 @@ max-height:
 }
 
 /* =========================
-   ボスまでの最短ルート
-========================= */
-
-.map-shortest-path-line {
-    stroke: #f873bc;
-    stroke-width: 5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    opacity: 0.75;
-    pointer-events: none;
-}
-
-/* 最短ルートは既存の描画形状を保ち、案3の控えめな強調にする */
-.map-stone-roads .map-road-shortest-highlight rect {
-    fill: #f873bc40;
-}
-
-.map-stone-roads .map-road-shortest-highlight line:not(.map-road-route-edge) {
-    stroke: #ff9bce80;
-}
-
-.map-stone-roads .map-road-shortest-highlight .map-road-route-edge {
-    stroke: #fff;
-    stroke-width: 2;
-}
-
-/* =========================
    マス詳細パネル
    ========================= */
 

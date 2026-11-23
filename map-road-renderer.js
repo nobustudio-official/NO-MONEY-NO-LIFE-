@@ -4,24 +4,6 @@
  const ns='http://www.w3.org/2000/svg',scenes=new WeakMap();let serial=0;
  const palette={base:'#82796a',border:'#605a4e',tiles:['#b8afa0','#d0c8b8','#aaa395','#c3bbac'],curbs:['#a49a88','#bfb4a0'],curbBorder:'#756c5b'};
  function add(parent,tag,attributes){const node=document.createElementNS(ns,tag);for(const [key,value] of Object.entries(attributes))node.setAttribute(key,String(value));parent.append(node);return node;}
- function ensureRouteSurface(svg,scene){
-  if(!scene.routeSurface){
-   const surface=document.createElementNS(ns,'svg');
-   surface.classList.add('map-shortest-route-overlay');
-   surface.setAttribute('viewBox',svg.getAttribute('viewBox')||`0 0 ${window.MapScene.config.width} ${window.MapScene.config.height}`);
-   surface.setAttribute('preserveAspectRatio','none');
-   surface.setAttribute('aria-hidden','true');
-   surface.append(scene.routeHighlight);
-   scene.routeSurface=surface;
-  }
-  const board=svg.closest('#mapBoard')||document.getElementById('mapBoard');
-  const background=board?.querySelector(':scope > .map-background');
-  if(!background)return;
-  if(scene.routeSurface.parentElement!==background){
-   background.querySelector(':scope > .map-shortest-route-overlay')?.remove();
-   background.append(scene.routeSurface);
-  }
- }
  function edgeKey(a,b){return [String(a),String(b)].sort().join(':');}
  function pattern(defs,id,width,height,x=0,y=0){return add(defs,'pattern',{id,patternUnits:'userSpaceOnUse',x,y,width,height,viewBox:`0 0 ${width} ${height}`});}
  function definitions(svg){
@@ -48,7 +30,7 @@
    const to=byId.get(String(next)),key=edgeKey(from.id,next);if(!to||edges.has(key))continue;
    const path=window.MapWorkshopScene?.roadPoints(from.id,to.id);
    if(path?.length>2){
-    const shadow=add(shadows,'g',{'data-shadow-edge':key}),group=add(vector,'g',{class:'map-stone-edge','data-road-edge':key,transform:'matrix(1 0 0 1 0 0)'}),segments=[];
+    const shadow=add(shadows,'g',{'data-shadow-edge':key}),group=add(vector,'g',{class:'map-stone-edge','data-road-edge':key,transform:'matrix(1 0 0 1 0 0)'});
     for(let i=1;i<path.length;i++){
      const a=path[i-1],b=path[i],dx=b.x-a.x,dy=b.y-a.y,length=Math.hypot(dx,dy);if(!length)continue;
      const transform=`matrix(${dx/length} ${dy/length} ${-dy/length} ${dx/length} ${a.x} ${a.y})`;
@@ -57,9 +39,8 @@
      add(part,'rect',{x:0,y:-18,width:length,height:36,rx:5,fill:palette.base,stroke:palette.border,'stroke-width':1});
      add(part,'rect',{x:0,y:-12,width:length,height:25,fill:`url(#${ids.paving})`});
      for(const y of [-18,13])add(part,'rect',{x:0,y:0,width:length,height:5,transform:`translate(0 ${y})`,fill:`url(#${ids.curb})`});
-     segments.push({transform,length});
     }
-    edges.set(key,{group,segments,points:path,transform:'matrix(1 0 0 1 0 0)',highlight:null});continue;
+    edges.set(key,{group,points:path});continue;
    }
    const dx=to.x-from.x,dy=to.y-from.y,length=Math.hypot(dx,dy);if(!Number.isFinite(length)||length<=0)continue;
    // Keep the centerline joined to both squares. Only the road's cross-section
@@ -71,7 +52,7 @@
    add(group,'rect',{x:0,y:-18,width:length,height:36,rx:5,fill:palette.base,stroke:palette.border,'stroke-width':1});
    add(group,'rect',{x:0,y:-12,width:length,height:25,fill:`url(#${ids.paving})`});
    for(const y of [-18,13])add(group,'rect',{x:0,y:0,width:length,height:5,transform:`translate(0 ${y})`,fill:`url(#${ids.curb})`});
-   edges.set(key,{group,length,points:[from,to],transform,highlight:null});
+   edges.set(key,{group,points:[from,to]});
   }
   // Bridge artwork is rendered separately so it can be removed cleanly when
   // the temporary collapse effect is active.
@@ -81,40 +62,18 @@
    edge.group.classList.add('map-road-bridge-edge');edge.group.style.display='none';
    const shadow=svg.querySelector(`[data-shadow-edge="${key}"]`);if(shadow)shadow.style.display='none';
   }
-  const overlay=add(svg,'g',{class:'map-road-overlay'});
-  const simpleRoute=add(overlay,'g',{class:'map-road-simple-shortest',display:'none','pointer-events':'none'});
-  add(simpleRoute,'path',{class:'map-road-simple-shortest-halo',fill:'none',stroke:'#f873bc','stroke-width':14,'stroke-linecap':'round','stroke-linejoin':'round',opacity:.88});
-  add(simpleRoute,'path',{class:'map-road-simple-shortest-core',fill:'none',stroke:'#fff5fa','stroke-width':3.5,'stroke-linecap':'round','stroke-linejoin':'round'});
-  const routeHighlight=add(overlay,'g',{class:'map-road-route-highlight','pointer-events':'none'});
+  // Paint one shared route after the road artwork in both detail modes.
+  const routeHighlight=add(svg,'g',{class:'map-road-route-highlight','pointer-events':'none'});
   for(const [className,color,width,opacity] of [
    ['map-road-route-halo','#ff168e',38,.96],
    ['map-road-route-core','#ffe24d',20,1],
    ['map-road-route-center','#ffffff',5,1]
   ])add(routeHighlight,'path',{class:className,fill:'none',stroke:color,'stroke-width':width,'stroke-linecap':'round','stroke-linejoin':'round',opacity});
-  scenes.set(svg,{edges,overlay,simpleRoute,routeHighlight,active:new Set(),simpleMode:false,collapseState:window.bridgeCollapseVisualState});
+  scenes.set(svg,{edges,routeHighlight,simpleMode:false,collapseState:window.bridgeCollapseVisualState});
   queueMicrotask(()=>window.MapRoadCache?.prepare(svg,squares));
  }
  function setShortestPath(svg,path){
   const scene=scenes.get(svg);if(!scene)return;
-  const next=new Set();for(let i=0;i<path.length-1;i++){const key=edgeKey(path[i],path[i+1]);if(scene.edges.has(key))next.add(key);}
-  for(const key of new Set([...scene.active,...next])){
-   const edge=scene.edges.get(key),active=next.has(key);if(!edge||active===scene.active.has(key))continue;
-   edge.group.classList.toggle('is-shortest',active);
-   if(active){
-    const highlight=document.createElementNS(ns,'g');highlight.classList.add('map-road-shortest-highlight');
-    highlight.setAttribute('transform',edge.transform);
-    scene.overlay.append(highlight);
-    for(const segment of edge.segments||[edge]){
-    const part=edge.segments?add(highlight,'g',{transform:segment.transform}):highlight;
-    if(segment.length>36)add(part,'rect',{x:18,y:-12,width:segment.length-36,height:24,rx:4,fill:'#e896b526'});
-    if(segment.length>50)for(const y of [-16,16]){
-     add(part,'line',{x1:25,y1:y,x2:segment.length-25,y2:y,stroke:'#ff91c44d','stroke-width':6,'stroke-linecap':'round'});
-     add(part,'line',{class:'map-road-route-edge',x1:25,y1:y,x2:segment.length-25,y2:y,stroke:'#ffd2e7','stroke-width':1.5,'stroke-linecap':'round'});
-    }
-    }
-    edge.highlight=highlight;
-   }else{edge.highlight?.remove();edge.highlight=null;}
-  }
   const route=[];
   for(let i=0;i<path.length-1;i++){
    const key=edgeKey(path[i],path[i+1]),edge=scene.edges.get(key);
@@ -124,10 +83,9 @@
    route.push('M '+points.map(point=>`${point.x} ${point.y}`).join(' L '));
   }
   const routeData=route.join(' ');
-  for(const line of scene.simpleRoute.querySelectorAll('path'))line.setAttribute('d',routeData);
-  for(const line of scene.routeHighlight.querySelectorAll('path'))line.setAttribute('d',routeData);
-  ensureRouteSurface(svg,scene);
-  scene.active=next;
+  for(const line of scene.routeHighlight.querySelectorAll('path')){
+   if(line.getAttribute('d')!==routeData)line.setAttribute('d',routeData);
+  }
  }
  function syncBridgeVisibility(svg,scene){
   for(const [key,edge] of scene.edges){
@@ -141,8 +99,6 @@
  function setSimpleMode(svg,enabled){
   const scene=scenes.get(svg);if(!scene)return;
   scene.simpleMode=Boolean(enabled);
-  scene.simpleRoute.style.display=scene.simpleMode?'':'none';
-  scene.routeHighlight.style.display=scene.simpleMode?'none':'';
   syncBridgeVisibility(svg,scene);
  }
  function setBridgeCollapse(svg,squares,state){
