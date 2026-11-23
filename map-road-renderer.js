@@ -64,12 +64,7 @@
   }
   // Paint one shared route after the road artwork in both detail modes.
   const routeHighlight=add(svg,'g',{class:'map-road-route-highlight','pointer-events':'none'});
-  for(const [className,color,width,opacity] of [
-   ['map-road-route-halo','#ff168e',38,.96],
-   ['map-road-route-core','#ffe24d',20,1],
-   ['map-road-route-center','#ffffff',5,1]
-  ])add(routeHighlight,'path',{class:className,fill:'none',stroke:color,'stroke-width':width,'stroke-linecap':'round','stroke-linejoin':'round',opacity});
-  scenes.set(svg,{edges,routeHighlight,simpleMode:false,collapseState:window.bridgeCollapseVisualState});
+  scenes.set(svg,{edges,routeHighlight,routeKey:null,simpleMode:false,collapseState:window.bridgeCollapseVisualState});
   queueMicrotask(()=>window.MapRoadCache?.prepare(svg,squares));
  }
  function setShortestPath(svg,path){
@@ -79,12 +74,22 @@
    const key=edgeKey(path[i],path[i+1]),edge=scene.edges.get(key);
    if(!edge)continue;
    const points=window.MapWorkshopScene?.roadPoints(path[i],path[i+1])||edge.points;
-   if(!points?.length)continue;
-   route.push('M '+points.map(point=>`${point.x} ${point.y}`).join(' L '));
+   if(points?.length>1)route.push(points);
   }
-  const routeData=route.join(' ');
-  for(const line of scene.routeHighlight.querySelectorAll('path')){
-   if(line.getAttribute('d')!==routeData)line.setAttribute('d',routeData);
+  const routeKey=route.map(points=>points.map(point=>`${point.x} ${point.y}`).join(' L ')).join(' M ');
+  if(scene.routeKey===routeKey)return;
+  scene.routeKey=routeKey;
+  scene.routeHighlight.replaceChildren();
+  // Preserve the original inset pink fill and white road-edge accents, without blur.
+  for(const points of route)for(let i=1;i<points.length;i++){
+   const a=points[i-1],b=points[i],dx=b.x-a.x,dy=b.y-a.y,length=Math.hypot(dx,dy);
+   if(!Number.isFinite(length)||length<=0)continue;
+   const part=add(scene.routeHighlight,'g',{transform:`matrix(${dx/length} ${dy/length} ${-dy/length} ${dx/length} ${a.x} ${a.y})`});
+   if(length>36)add(part,'rect',{x:18,y:-12,width:length-36,height:24,rx:4,fill:'#f873bc40'});
+   if(length>50)for(const y of [-16,16]){
+    add(part,'line',{x1:25,y1:y,x2:length-25,y2:y,stroke:'#ff9bce80','stroke-width':6,'stroke-linecap':'round'});
+    add(part,'line',{x1:25,y1:y,x2:length-25,y2:y,stroke:'#fff','stroke-width':2,'stroke-linecap':'round'});
+   }
   }
  }
  function syncBridgeVisibility(svg,scene){
