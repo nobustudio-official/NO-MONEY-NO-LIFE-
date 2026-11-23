@@ -211,9 +211,13 @@
     min-height: 4.4em;
     max-height: 4.4em;
     box-sizing: border-box;
+    align-self: stretch;
+    width: 100%;
     padding-top: clamp(3px, .5vh, 6px);
     line-height: 1.2;
     font-size: clamp(13px, 2.8vh, 20px);
+    text-align: center;
+    transform: translateY(clamp(16px, 10vh, 36px));
 }
 
 /* Lower the punishment character, multiplier, and die together without changing their spacing. */
