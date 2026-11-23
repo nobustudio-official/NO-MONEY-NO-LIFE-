@@ -46,6 +46,7 @@ function runtime(zoom = 1) {
         querySelectorAll(selector) { return this.children.flatMap(child => [...(child.matches(selector) ? [child] : []), ...child.querySelectorAll(selector)]); }
         querySelector(selector) { return this.querySelectorAll(selector)[0] || null; }
         addEventListener(type, callback, options = {}) { if (!this.events.has(type)) this.events.set(type, []); this.events.get(type).push({ callback, once: options.once }); }
+        removeEventListener(type, callback) { this.events.set(type, (this.events.get(type) || []).filter(listener => listener.callback !== callback)); }
         emit(type) {
             for (const listener of [...this.events.get(type) || []]) {
                 if (listener.once) this.events.get(type).splice(this.events.get(type).indexOf(listener), 1);
@@ -201,6 +202,7 @@ test('a handoff without a map board completes normally', async () => {
 
 test('cancelling the previous animated pan prevents it from overwriting the new camera position', async () => {
     const f = runtime(), game = read('game.js');
+    f.run(read('map-movement-presentation.js'));
     f.run(game.slice(game.indexOf('const MAP_TAP_CAMERA_SPEED'), game.indexOf('function focusCurrentPlayerFromAvatar()')));
     const pan = f.run('animateMapCameraScroll(document.querySelector(".map-area"), 4000, 0, 1200)');
     await f.step();

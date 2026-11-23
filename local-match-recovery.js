@@ -48,7 +48,8 @@
         }
         loading.remove();
         if (!saved || saved.status !== 'unfinished' || window.onlineGame?.isOnline) return;
-        const message = `${saved.state.currentTurn}ターン目・${saved.state.players[saved.state.currentPlayer].name}の手番\n最終保存：${new Date(saved.savedAt).toLocaleString('ja-JP')}`;
+        const progress = saved.step.phase === 'ending' ? '終了演出の続き' : `${saved.state.currentTurn}ターン目・${saved.state.players[saved.state.currentPlayer].name}の手番`;
+        const message = `${progress}\n最終保存：${new Date(saved.savedAt).toLocaleString('ja-JP')}`;
         if (!await choose('前回のゲームを再開しますか？', message, true)) { await saves.discard(); return; }
         try { await resume(saved); }
         catch (error) {

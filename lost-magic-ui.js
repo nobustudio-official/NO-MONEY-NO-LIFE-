@@ -33,8 +33,8 @@
         const next = node('span', 'lost-magic-an02-next', '次へ ▶');
         telop.append(portrait, copy, next);
         panel.append(title, body, back);
-        scene.append(panel, telop);
-        root.append(scene);
+        scene.append(panel);
+        root.append(scene, telop);
         document.body.append(root);
         root._scene = scene;
         root._panel = panel;
@@ -44,6 +44,7 @@
         root._portrait = portrait;
         root._copy = copy;
         root._next = next;
+        root._telop = telop;
         return root;
     }
 
@@ -52,6 +53,11 @@
         root._portrait.src = icon || '';
         root._copy.replaceChildren(...parts);
         root._next.hidden = !next;
+        styleTelop();
+    }
+
+    function styleTelop() {
+        window.TelopStandard?.apply(root._telop, { message: root._copy, portrait: root._portrait, next: root._next });
     }
 
     function setBack(handler, visible = true) {
@@ -95,6 +101,7 @@
             root._copy.replaceChildren(node('strong', 'lost-magic-item-name', ITEM_CONTENTS[18].name), document.createTextNode('を使った！'));
             root._next.hidden = false;
             root._next.textContent = '次へ ▶';
+            styleTelop();
             container.onclick = () => {
                 handlers.onAdvance?.();
             };

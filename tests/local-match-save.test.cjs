@@ -118,3 +118,59 @@ test('real offline dividend stages restore without paying or applying the market
     twice.next();
     assert.equal(twice.dividends.snapshot().marketExponent, 1);
 });
+
+function endingState(step = 0) {
+    const s = state();
+    s.currentTurn = s.maxTurns + 1;
+    s.dividends.lastDividendTurn = s.maxTurns;
+    s.flows.ending = { eventId: 'local-ending:test', startedAt: 1000, step,
+        ranking: [{ playerIndex: 0, name: 'A', totalAsset: 60000 }],
+        history: [{ turn: 0, totals: [50000] }, { turn: 30, totals: [60000] }] };
+    return s;
+}
+test('all ending scenes remain resumable with their settled result until explicitly completed', async () => {
+    const store = storage();
+    let save = controller({ store, id: () => 'ending-match' });
+    await save.start(state());
+    for (let step = 0; step <= 7; step++) {
+        const s = endingState(step);
+        await save.checkpoint(s, { phase: 'ending' });
+        const reloaded = await controller({ store }).read();
+        assert.equal(reloaded.status, 'unfinished');
+        assert.equal(reloaded.step.phase, 'ending');
+        assert.deepEqual(reloaded.state, s);
+        save = controller({ store });
+        await save.start(null, null, null, reloaded);
+    }
+    await save.finish();
+    assert.equal((await controller({ store }).read()).status, 'finished');
+});
+test('late game callbacks and camera saves cannot replace an ending checkpoint', async () => {
+    const store = storage(), save = controller({ store });
+    await save.start(state());
+    await save.checkpoint(endingState(7), { phase: 'ending' });
+    assert.equal(await save.checkpoint(state(), { phase: 'ready' }), false);
+    assert.equal(await save.pending('late-item-use'), false);
+    await save.camera({ zoom: .8, top: 1, left: 2 });
+    assert.equal((await save.read()).step.phase, 'ending');
+    assert.deepEqual((await save.read()).state, endingState(7));
+    const stale = controller({ store });
+    await stale.start(null, null, null, await save.read());
+    await save.finish();
+    assert.equal(await stale.checkpoint(endingState(7), { phase: 'ending' }), false);
+    assert.equal((await save.read()).status, 'finished');
+});
+test('invalid ending stages and mismatched final results fail validation', async () => {
+    const save = controller({ store: storage() });
+    await save.start(endingState(), { phase: 'ending' });
+    const good = await save.read();
+    for (const mutate of [r => { r.state.flows.ending = null; },
+        r => { r.state.flows.ending.step = 8; }, r => { r.state.flows.ending.ranking = []; },
+        r => { r.state.flows.ending.ranking[0].playerIndex = 1; },
+        r => { r.state.flows.ending.ranking[0].totalAsset = null; },
+        r => { r.state.flows.ending.history[0].totals = []; },
+        r => { r.step.phase = 'ready'; }]) {
+        const bad = copy(good); mutate(bad);
+        assert.throws(() => validate(bad), /終了演出/);
+    }
+});

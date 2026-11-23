@@ -73,6 +73,7 @@
             ? '複製するアイテムを選んでください。'
             : '複製できるアイテムがありません。');
         root.append(panel, announcement);
+        window.TelopStandard?.apply(announcement);
         document.body.append(root);
         if (!observer) {
             const screen = document.querySelector('.game-screen');

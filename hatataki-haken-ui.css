@@ -108,31 +108,7 @@
 .hatataki-button:hover:not(:disabled) { background: linear-gradient(#315876, #173b57); }
 .hatataki-button:disabled { opacity: .55; cursor: default; }
 .hatataki-progress { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); }
-.hatataki-an02, #eventPopup.common-announcement.hatataki-announcement {
-    position: fixed;
-    inset: auto var(--an02-right) var(--an02-bottom) var(--an02-left);
-    max-width: var(--an02-max-width);
-    height: var(--an02-min-height);
-    min-height: var(--an02-min-height);
-    max-height: none;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    gap: 22px;
-    padding: 24px 22px;
-    border: 1px solid #ccae7b;
-    border-radius: 12px;
-    background: linear-gradient(125deg, #18384fe8, #10293cee);
-    box-shadow: 0 5px 20px #07192345;
-    pointer-events: auto;
-}
-.hatataki-an02-icon { width: 80px; height: 80px; flex: none; object-fit: contain; }
-.hatataki-an02-copy { min-width: 0; max-height: 100%; overflow: auto; margin: 0; font-size: 22px; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
 .hatataki-item-name { color: #f2d58d; }
-.hatataki-notice-next { order: 1; margin-left: auto; flex: none; white-space: nowrap; }
-#eventPopup.common-announcement.hatataki-announcement {
-    grid-template-rows: minmax(0, 1fr);
-}
 
 @media (max-height: 650px), (max-width: 1000px) {
     .hatataki-overlay, #eventPopup.hatataki-announcement {
@@ -161,46 +137,6 @@
     .hatataki-item-row, .hatataki-finished { padding: 2px 0; font-size: max(11px, calc(19 * var(--hatataki-unit))); }
     .hatataki-button { min-width: 0; min-height: 24px; padding: 2px 8px; font-size: max(11px, calc(16 * var(--hatataki-unit))); }
     .hatataki-progress { bottom: 5px; }
-    .hatataki-an02, #eventPopup.common-announcement.hatataki-announcement {
-        inset: calc(var(--hatataki-panel-top) + 750.08 * var(--hatataki-unit)) auto auto 50%;
-        transform: translateX(-50%);
-        width: calc(1480 * var(--hatataki-unit));
-        height: calc(160 * var(--hatataki-unit));
-        min-height: calc(160 * var(--hatataki-unit));
-        padding: 0 max(5px, calc(22 * var(--hatataki-unit)));
-        gap: max(5px, calc(22 * var(--hatataki-unit)));
-    }
-    .hatataki-an02-icon { width: calc(80 * var(--hatataki-unit)); height: calc(80 * var(--hatataki-unit)); }
-    .hatataki-an02-copy { font-size: max(12px, calc(22 * var(--hatataki-unit))); }
-    #eventPopup.common-announcement.hatataki-announcement:not(.announcement-no-portrait) {
-        grid-template-columns: calc(80 * var(--hatataki-unit)) minmax(0, 1fr);
-    }
-    #eventPopup.common-announcement.hatataki-announcement .announcement-portrait {
-        left: max(5px, calc(22 * var(--hatataki-unit)));
-        width: calc(80 * var(--hatataki-unit));
-        height: calc(80 * var(--hatataki-unit));
-    }
-    #eventPopup.common-announcement.hatataki-announcement:has(.event-popup-button:not([hidden])) {
-        padding-block: 0;
-        padding-right: max(57px, calc(106 * var(--hatataki-unit)));
-    }
-    #eventPopup.common-announcement.hatataki-announcement .event-popup-message {
-        padding: 0;
-        max-height: 100%;
-        font-size: max(12px, calc(22 * var(--hatataki-unit)));
-        line-height: 1.35;
-    }
-    #eventPopup.common-announcement.hatataki-announcement .event-popup-button {
-        right: 4px;
-        top: 50%;
-        bottom: auto;
-        transform: translateY(-50%);
-        min-width: 0;
-        min-height: 24px;
-        padding: 0 3px;
-        font-size: max(11px, calc(14 * var(--hatataki-unit)));
-        white-space: nowrap;
-    }
 }
 
 .hatataki-panel[data-plane02] { padding-bottom:calc(var(--an02-bottom) + var(--an02-min-height) + 62px); }

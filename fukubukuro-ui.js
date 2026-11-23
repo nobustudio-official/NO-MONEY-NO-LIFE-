@@ -61,7 +61,7 @@
         const cardRow=$('div','fukubukuro-card-row');(event.cards||[]).forEach((card,index)=>cardRow.append(cardNode(card,String(index+1))));panel.append(cardRow);
         const telop=$('div','fukubukuro-an02'),icon=$('img','fukubukuro-player-icon');telop.dataset.frameId='AN02';icon.src=options.playerIcon||'';icon.alt=player.name||'プレイヤー';
         const telopCopy=$('p','fukubukuro-an02-copy');telopCopy.append($('strong','fukubukuro-item-name',itemName),document.createTextNode('を使った！'));telop.append(icon,telopCopy);layer.append(panel,telop);document.body.append(layer);
-        window.CommonAnnouncements?.fitText?.(telopCopy);
+        window.TelopStandard?.apply(telop, { message: telopCopy, portrait: icon, reserveSpace: true });
         const current={eventId:event.eventId,layer,canvas,rollButton,cardRow,telopCopy,audio:null,raf:0,owner:options.owner===true,busy:false,phase:'ready'};
         if (current.owner) {
             const screen = document.querySelector?.('.game-screen');

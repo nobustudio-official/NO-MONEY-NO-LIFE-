@@ -27,13 +27,26 @@
     function reachable(position, previous, steps) {
         return [...reachableRoutes(position, previous, steps).keys()];
     }
+    function movementHistory(flow, mine) {
+        // Older checkpoints know only the last edge. Preserve that undo without
+        // inventing an unknown starting square for a full movement reset.
+        if (!Array.isArray(flow.moveHistory)) flow.moveHistory = flow.previousPosition == null
+            ? [mine.position] : [flow.previousPosition, mine.position];
+        return flow.moveHistory;
+    }
+    function canResetMove(flow) {
+        return Array.isArray(flow?.moveHistory) && flow.moveHistory.length > 1
+            && flow.moveHistory.length === flow.move - flow.remaining + 1;
+    }
     function moveTo(flow, mine, target) {
+        const history = movementHistory(flow, mine);
         flow.moveFrom = mine.position;
-        flow.previousPosition = mine.position;
+        if (target === history.at(-2)) { history.pop(); flow.remaining++; }
+        else { history.push(target); flow.remaining--; }
+        flow.previousPosition = history.at(-2) ?? null;
         mine.position = target;
         const from = track[flow.moveFrom], to = track[target];
         mine.direction = to[0] > from[0] ? 'right' : to[0] < from[0] ? 'left' : to[1] > from[1] ? 'down' : 'up';
-        flow.remaining--;
         setStage(flow, 'moving');
     }
     const amounts = Array.from({ length: 8 }, (_, index) => (index + 2) * 10000);
@@ -233,8 +246,19 @@
             moveTo(flow, mine, first);
             return true;
         }
+        if (flow.stage === 'choose' && action === 'resetMove') {
+            if (!canResetMove(flow)) return false;
+            flow.moveFrom = mine.position;
+            mine.position = flow.moveHistory[0];
+            flow.moveHistory = [mine.position];
+            flow.remaining = flow.move;
+            flow.previousPosition = null;
+            delete flow.route;
+            setStage(flow, 'moving');
+            return true;
+        }
         if (flow.stage === 'choose' && (action === 'clockwise' || action === 'counterclockwise' || /^target:\d+$/.test(action))) {
-            const choices = neighbors(mine.position, flow.previousPosition ?? null);
+            const choices = neighbors(mine.position);
             const ringTarget = (mine.position + (action === 'clockwise' ? 1 : 15)) % 16;
             const target = action.startsWith('target:') ? Number(action.slice(7)) : ringTarget;
             if (!choices.includes(target) || flow.remaining <= 0) return false;
@@ -268,6 +292,8 @@
             flow.move = die(random);
             flow.remaining = flow.move;
             flow.previousPosition = null;
+            flow.moveHistory = [mine.position];
+            delete flow.route;
             setStage(flow, 'diceResult');
             break;
         case 'diceResult': setStage(flow, 'choose'); break;
@@ -380,5 +406,5 @@
         return true;
     }
 
-    return { act, startTurn, endTurn, track, neighbors, reachable, amounts, drawPenica, stake, total, ownsImmunity, holdsMonopolizedBranch };
+    return { act, startTurn, endTurn, track, neighbors, reachable, canResetMove, amounts, drawPenica, stake, total, ownsImmunity, holdsMonopolizedBranch };
 });

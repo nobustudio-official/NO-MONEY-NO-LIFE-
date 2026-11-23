@@ -1,0 +1,49 @@
+<!doctype html><meta charset="utf-8"><title>Camera speed regression</title>
+<!-- Use an isolated profile through run-local-recovery-browser.cjs. -->
+<pre id="report">RUNNING</pre><iframe id="game" style="width:1920px;height:1080px"></iframe>
+<script>
+(async()=>{
+ const frame=document.getElementById('game'),results=[],failures=[];
+ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+ const check=(yes,message)=>{if(!yes)throw Error(message)};
+ const wait=async(test,message)=>{for(let i=0;i<1600;i++){if(test())return;await delay(25)}throw Error(message)};
+ let stage='setup',w;
+ const output=()=>document.getElementById('report').textContent=JSON.stringify({stage,results,failures});
+ try{
+  await new Promise(resolve=>{frame.onload=resolve;frame.src='../index.html?camera-test='+Math.random()});
+  w=frame.contentWindow;w.waitForGameAssets=()=>Promise.resolve();w.HTMLMediaElement.prototype.play=()=>Promise.resolve();
+  w.requestAnimationFrame=callback=>w.setTimeout(()=>callback(w.performance.now()),16);w.cancelAnimationFrame=id=>w.clearTimeout(id);
+  w.addEventListener('error',event=>{failures.push(event.message);output()});
+  await wait(()=>w.localMatchRecoveryReady,'startup');await w.localMatchRecoveryReady;
+  await w.loadMapData();await w.selectBossSquare();
+  const start=w.mapData.find(square=>square.id===139),far=w.mapData.reduce((best,square)=>Math.hypot(square.x-start.x,square.y-start.y)>Math.hypot(best.x-start.x,best.y-start.y)?square:best,start);
+  w.players=[start,far].map((square,index)=>({name:'P'+index,money:500000,magicPower:1000,bossDamage:0,position:square.id,characterId:index+1,inventory:[],assets:[],magic:[1],jobTurnsRemaining:0,jobReward:0}));
+  w.OfflineDividends.reset(w.players);w.gameOpeningComplete=true;w.showGameScreen(w.players,30);await delay(100);
+  const area=w.document.querySelector('.game-screen .map-area');
+  let last={left:area.scrollLeft,top:area.scrollTop,time:w.performance.now()},monitor=true;
+  const sample=()=>{
+   if(!monitor)return;
+   const now=w.performance.now(),distance=Math.hypot(area.scrollLeft-last.left,area.scrollTop-last.top);
+   check(distance<=1200*(now-last.time+32)/1000+2,'visible camera exceeded boss-icon speed');
+   last={left:area.scrollLeft,top:area.scrollTop,time:now};w.setTimeout(sample,16);
+  };sample();
+  stage='player focus';output();let arrived=false;
+  w.centerPlayerOnMap(1,'smooth',()=>{arrived=true});
+  await delay(900);check(!arrived,'far camera focus skipped to its target early');
+  await wait(()=>arrived,'player camera never arrived');
+  results.push('long player focus uses the capped pan and waits past the old timeout');output();
+  stage='warp camera';output();let warpDone=false;
+  w.centerOnWarpPlayer(0).then(()=>{warpDone=true});
+  await delay(950);check(!warpDone,'warp stopped waiting at its former fixed timeout');
+  await wait(()=>warpDone,'warp camera never arrived');
+  results.push('warp choreography waits for the capped camera to arrive');output();
+  stage='cancel';output();arrived=false;
+  w.centerPlayerOnMap(1,'smooth',()=>{arrived=true});await delay(80);w.cancelMapCameraScroll();
+  await wait(()=>arrived,'cancelled camera did not release its continuation');
+  const left=area.scrollLeft,top=area.scrollTop;await delay(80);
+  check(Math.hypot(area.scrollLeft-left,area.scrollTop-top)<1,'cancelled camera kept moving');
+  monitor=false;results.push('cancelling a pan releases the continuation and stops movement');
+ }catch(error){failures.push(error.stack||String(error))}
+ stage='complete';output();document.body.dataset.complete='true';
+})();
+</script>

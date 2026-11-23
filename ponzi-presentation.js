@@ -54,7 +54,9 @@
    advance(()=>{if(reveal)submit('finish');else{s.line++;render();}});
   }
   if(s.stage==='payout'&&!s.observer){const next=el('.ponzi-payout-next');stopPageAdvance=window.CommonAnnouncements?.bindPageAdvance(root,()=>{if(session===s&&!s.busy&&!next.disabled)next.onclick();});}
-  if(notify&&!s.observer)s.sync?.('open',{stage:s.stage,line:s.line});
+   if(panel.parentElement!==root)root.append(panel);
+   window.TelopStandard?.apply(panel,{message:text,next:el('.ponzi-next'),speaker});
+   if(notify&&!s.observer)s.sync?.('open',{stage:s.stage,line:s.line});
  }
  async function submit(action,amount){const s=session;if(!s||s.busy||s.observer)return;s.busy=true;try{const next=await s.submit(action,amount);if(session!==s)return;if(!next)throw new Error('イベント操作を確定できませんでした。');if(action==='invest')window.GameSE?.play?.('payment').catch(error=>console.warn('[SE] 出資の支払い音を再生できません:',error));s.state=next;s.busy=false;if(!window.PonziRules.pending(next)){const done=s.done;close();done?.();return;}s.stage=next.ponzi.phase==='payout'?'payout':next.ponzi.phase==='ending'?'ending':next.ponzi.phase==='thanks'?'thanks':'offer';s.line=0;render();}catch(error){s.busy=false;alert(error.message||'イベント操作を確定できませんでした。');render();}}
  function open(state,options){mount();if(session&&!session.observer)return;const p=state.ponzi;session={state,observer:false,submit:options.submit,sync:options.sync,done:options.done,busy:false,line:0,stage:p.phase==='payout'?'report':p.phase==='ending'?'ending':p.phase==='thanks'?'thanks':p.round===0&&state.activePlayerIndex===0?'intro':'greeting'};render();}

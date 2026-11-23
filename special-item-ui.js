@@ -41,7 +41,7 @@
         const itemName=ITEM_CONTENTS[itemId].name;
         const text=document.createElement('span'),name=document.createElement('strong');name.className='special-item-announcement-name';name.textContent=itemName;
         text.append(name,document.createTextNode('を使った！'));announcement.append(portrait,text);popup.append(announcement);
-        window.CommonAnnouncements?.fitText?.(text);
+        window.TelopStandard?.apply(announcement, { message: text, portrait });
     }
     window.SpecialItemUI = Object.freeze({show, hide});
 })();

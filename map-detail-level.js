@@ -25,6 +25,7 @@
             element.decoding = 'async';
             if ('fetchPriority' in element) element.fetchPriority = request.priority === 0 ? 'high' : 'low';
             const finish = () => {
+                cleanup();
                 if (Number(element.dataset.mapLoadToken) !== token) return;
                 activeImages.delete(element);
                 activeRequests.delete(element);
@@ -32,12 +33,19 @@
                 scheduleImagePump();
             };
             const fail = () => {
+                cleanup();
                 if (Number(element.dataset.mapLoadToken) !== token) return;
                 activeImages.delete(element);
                 activeRequests.delete(element);
                 request.reject?.(new Error(`画像を読み込めません: ${request.image}`));
                 scheduleImagePump();
             };
+            const cleanup = () => {
+                element.removeEventListener('load', finish);
+                element.removeEventListener('error', fail);
+                request.cleanup = null;
+            };
+            request.cleanup = cleanup;
             activeRequests.set(element, request);
             element.addEventListener('load', finish, { once: true });
             element.addEventListener('error', fail, { once: true });
@@ -55,10 +63,12 @@
         const pending = pendingImages.get(element);
         pendingImages.delete(element);
         pending?.resolve?.(null);
-        if (!element.hasAttribute('src')) return;
+        const active = activeRequests.get(element);
+        if (!active && !element.hasAttribute('src')) return;
         element.dataset.mapLoadToken = String(Number(element.dataset.mapLoadToken || 0) + 1);
+        active?.cleanup?.();
         activeImages.delete(element);
-        activeRequests.get(element)?.resolve?.(null);
+        active?.resolve?.(null);
         activeRequests.delete(element);
         element.removeAttribute('src');
         scheduleImagePump();

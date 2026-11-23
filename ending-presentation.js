@@ -15,11 +15,11 @@
     const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
     let current = null;
 
-    function show(ranking, players, history, online) {
+    function show(ranking, players, history, online, local = null) {
         if (current) return;
         const sync = online ? window.onlineGame?.sync : null;
         const initialState = sync?.state;
-        const ending = initialState?.endingPresentation;
+        const ending = online ? initialState?.endingPresentation : local?.progress;
         const eventId = ending?.eventId || `ending:${initialState?.roomCode || 'local'}:${initialState?.completedTurns || 0}`;
         const rows = ranking.map(entry => {
             const playerIndex = Number.isInteger(entry.playerIndex) ? entry.playerIndex : players.findIndex(player => player.name === entry.name);
@@ -221,7 +221,13 @@
 
         async function finishEnding() {
             if (!returnAfterBlack || disposed || pending || !canControl()) return;
-            if (!sync) { returnToTitle(); return; }
+            if (!sync) {
+                pending = true;
+                try { await local?.onComplete?.(); if (!disposed) returnToTitle(); }
+                catch (error) { console.error('[新・エンディング] 終了の保存:', error); }
+                finally { pending = false; }
+                return;
+            }
             pending = true;
             try {
                 const response = await sync.advanceEnding({ eventId, step:8, requestId:`${eventId}:advance:8` });
@@ -459,6 +465,8 @@
             }
             if (step < 7) next.onclick = advance;
             else next.onclick = null;
+            // Replay an interrupted animation from its scene boundary, never its frames.
+            if (!online) local?.onCheckpoint?.(step);
         }
 
         root.addEventListener('click', event => {

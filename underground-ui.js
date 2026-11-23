@@ -28,10 +28,22 @@
     let areaTransitionPending = false;
     let transferFade = null;
     let immunitySound;
-    let menuPlaceholder, menuNode;
+    let menuPlaceholder, menuNode, hudPlaceholder, hudNode, returnButtonState;
+    function updateHudBoundary() {
+        if (!root || root.hidden) return;
+        root.style.setProperty('--ug-hud-bottom', Math.ceil(document.querySelector('.game-hud')?.getBoundingClientRect().bottom || 80) + 'px');
+    }
+    window.addEventListener('resize', updateHudBoundary);
     function restoreMenu() {
+        if (returnButtonState) {
+            const { button, onclick, display, disabled } = returnButtonState;
+            button.onclick = onclick; button.style.display = display; button.disabled = disabled;
+            returnButtonState = null;
+        }
         if (menuNode && menuPlaceholder?.parentNode) menuPlaceholder.replaceWith(menuNode);
         menuPlaceholder = null;
+        if (hudNode && hudPlaceholder?.parentNode) hudPlaceholder.replaceWith(hudNode);
+        hudPlaceholder = null; hudNode = null;
     }
     function placeMenu() {
         const menu = document.querySelector('.action-menu');
@@ -42,6 +54,24 @@
         const host = document.createElement('div');
         host.className = 'game-screen ug-menu-host';
         host.append(menu); root.append(host);
+        // Keep the original HUD and its badge in the same stacking context as
+        // the underground board. Its controls and layout are reused unchanged.
+        const hud = document.querySelector('.game-hud');
+        if (hud) {
+            hudNode = hud;
+            hudPlaceholder = document.createComment('underground hud');
+            hud.replaceWith(hudPlaceholder);
+            const hudHost = document.createElement('div');
+            hudHost.className = 'game-screen ug-hud-host';
+            hudHost.append(hud); root.append(hudHost);
+        }
+        const button = menu.querySelector('#diceMovementReturnButton');
+        if (button) {
+            returnButtonState = { button, onclick: button.onclick, display: button.style.display, disabled: button.disabled };
+            button.style.display = latest.undergroundFlow?.stage === 'choose' ? 'grid' : 'none';
+            button.disabled = !owner || !rules.canResetMove(latest.undergroundFlow);
+            button.onclick = event => { event.stopPropagation(); click('resetMove'); };
+        }
     }
 
     function cue(name, loopEnd) {
@@ -123,13 +153,13 @@
         const [x,y] = rules.track[player.underground.position];
         const flow = latest.undergroundFlow;
         const positions = { down:'0% 0%', up:'100% 0%', left:'0% 100%', right:'100% 100%' };
-        const choices = flow?.stage === 'choose' ? rules.neighbors(player.underground.position, flow.previousPosition ?? null) : [];
+        const choices = flow?.stage === 'choose' ? rules.neighbors(player.underground.position) : [];
         const endpoints = flow?.stage === 'choose' ? rules.reachable(player.underground.position, flow.previousPosition ?? null, flow.remaining) : [];
         const glowElapsed = Math.max(0, Date.now() - (player.underground.memoGlowStartedAt || Date.now()));
         return '<div class="ug-map"><div class="ug-cross-rail ug-cross-horizontal"></div><div class="ug-cross-rail ug-cross-vertical"></div>' + rules.track.map(([column,row], index) => {
             const reachable = endpoints.includes(index);
             const memo = player.underground.memoTile === index && !player.underground.memo;
-            const action = reachable ? 'destination:' + index : choices.includes(index) ? 'target:' + index : '';
+            const action = choices.includes(index) ? 'target:' + index : reachable ? 'destination:' + index : '';
             return '<div class="ug-tile' + (reachable ? ' ug-reachable' : '') + (memo ? ' ug-memo-tile' : '') + '" ' +
                 (action && owner ? 'data-action="' + action + '"' : '') +
                 ' style="--x:' + column + ';--y:' + row + (memo ? ';--ug-glow-delay:-' + glowElapsed % 3000 + 'ms' : '') + '"></div>';
@@ -363,7 +393,7 @@
         const caption = flow && message(flow, player);
         root.className = (underground ? 'ug-underground' : 'ug-ground') + (scene ? ' ug-scene-active' : '');
         root.classList.toggle('ug-immunity-sound', playingImmunitySound || (immunityNotice && Boolean(immunitySound)));
-        root.style.setProperty('--ug-hud-bottom', Math.ceil(document.querySelector('.game-hud')?.getBoundingClientRect().bottom || 80) + 'px');
+        updateHudBoundary();
         const button = (label, action = 'next', css = '') => '<button type="button" class="' + css + '" data-action="' + action + '">' + label + '</button>';
         const score = side => flow[side + 'Dice'] && !(stage === 'playerResult' && side === 'player') && !(['duelResult','foremanRolling','interrupt','cheat'].includes(stage) && side === 'foreman')
             ? rules.total(flow[side + 'Dice']) : '';
@@ -393,7 +423,9 @@
                 (!['offer','duel'].includes(stage) && (!immunityNotice || owner) ? button('次へ▶','next','ug-next') : '') + '</div>' :
                 (['playerRolling','playerResult','duelResult'].includes(stage) ? button('次へ▶','next','ug-next') : '')) +
             '<div class="ug-error" role="status"></div>';
-        if (!scene) window.CommonAnnouncements?.fitText?.(root.querySelector('.ug-caption > p'));
+        const telop = root.querySelector('.ug-caption');
+        window.TelopStandard?.apply(telop, { message: telop?.querySelector('p'), portrait: telop?.querySelector('img'),
+            next: telop?.querySelector('.ug-next'), speaker: telop?.querySelector('.ug-speaker') });
         if (underground) placeMenu();
         if (underground && ['choose','moving'].includes(stage) && flow.remaining > 0) window.DiceMovementCounter?.show(flow.remaining, !owner);
         else if (underground) window.DiceMovementCounter?.hide();

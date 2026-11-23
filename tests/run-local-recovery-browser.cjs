@@ -19,7 +19,8 @@ const server = http.createServer((req, res) => {
 server.listen(0, '127.0.0.1', () => {
     const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'nmnl-recovery-chrome-'));
     const fileMode = process.env.NMNL_RECOVERY_FILE_TEST === '1';
-    const url = fileMode ? pathToFileURL(path.join(__dirname, 'local-match-browser.html')).href : `http://127.0.0.1:${server.address().port}/tests/local-match-browser.html`;
+    const testPage = process.env.NMNL_RECOVERY_TEST_PAGE || 'local-match-browser.html';
+    const url = fileMode ? pathToFileURL(path.join(__dirname, testPage)).href : `http://127.0.0.1:${server.address().port}/tests/${testPage}`;
     const child = spawn(chrome, ['--headless=new', ...(process.env.NMNL_CHROME_NO_SANDBOX === '1' ? ['--no-sandbox'] : []), '--disable-gpu', '--no-first-run', '--no-default-browser-check', '--mute-audio',
         ...(fileMode ? ['--allow-file-access-from-files'] : []),
         '--disable-background-networking', '--blink-settings=imagesEnabled=false', '--window-size=1000,800',

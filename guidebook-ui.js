@@ -67,12 +67,18 @@
         banner.setAttribute('aria-live', 'polite');
         banner.append(image(icon), make('p', '', name + 'の攻略本の購入申請は、所持金不足のため取り下げられた！'));
         document.body.append(banner);
+        styleBanner(banner, false, true);
         withdrawalTimer = setTimeout(() => {
             banner.remove();
             withdrawalBanner = null;
             currentWithdrawal = null;
             showWithdrawal();
         }, 4000);
+    }
+
+    function styleBanner(banner, reserveSpace = true, passive = false) {
+        window.TelopStandard?.apply(banner, { message: banner.querySelector('p'), portrait: banner.querySelector('img'),
+            next: banner.querySelector('.guidebook-next'), notice: banner.querySelector('.guidebook-notice'), reserveSpace, passive });
     }
     function reset() {
         close();
@@ -282,6 +288,7 @@
         if (banner.childNodes.length) banner.append(notice);
         root.append(panel, banner);
         document.body.append(root);
+        styleBanner(banner);
         const screen = document.querySelector('.game-screen');
         const hud = screen?.querySelector('.game-hud');
         if (hud && !panel.hidden) stopHudTracking = trackHud(root, hud);
@@ -378,6 +385,7 @@
         }
         root.append(panel, banner);
         document.body.append(root);
+        styleBanner(banner);
         const screen = document.querySelector('.game-screen');
         if (screen && !screen.inert) { screen.inert = true; gameScreen = screen; }
         if (control) root.focus?.({ preventScroll: true });
@@ -421,6 +429,7 @@
         banner.append(next);
         root.append(panel, banner);
         document.body.append(root);
+        styleBanner(banner);
         const screen = document.querySelector('.game-screen');
         if (screen && !screen.inert) { screen.inert = true; gameScreen = screen; }
         root.focus?.({ preventScroll: true });

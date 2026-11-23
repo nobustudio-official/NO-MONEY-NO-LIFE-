@@ -3,7 +3,10 @@
     'use strict';
     const duration = 280;
     const worldPixelsPerMs = 200 / duration;
-    const durationForDistance=(distance,speedMultiplier=1)=>Math.max(0,distance)/worldPixelsPerMs/(speedMultiplier===2?2:1);
+    const cameraSpeedLimit = 1200;
+    // Keep the existing fast-move flag for synchronized clients; only its
+    // presentation speed changes from 2x to the midpoint, 1.5x.
+    const durationForDistance=(distance,speedMultiplier=1)=>Math.max(0,distance)/worldPixelsPerMs/(speedMultiplier===2?1.5:1);
     const active = new WeakMap();
     function capture(board, playerIndex) {
         const piece = board.querySelector(`.player-piece[data-player-index="${playerIndex}"]`);
@@ -54,29 +57,39 @@
             top:clamp(start.top+(node.top+node.height/2)-(view.top+view.height/2),
                 limits?.minTop ?? 0,limits?.maxTop ?? area.scrollHeight-area.clientHeight)
         } : null;
-        const state = {cancel(){cancelAnimationFrame(frame);animation.cancel();piece.classList.remove('map-piece-moving');}};
+        const cameraAbort = new AbortController();
+        const state = {cancel(){cameraAbort.abort();cancelAnimationFrame(frame);animation.cancel();piece.classList.remove('map-piece-moving');}};
         active.set(board,state);
-        function follow() {
+        let lastCameraTick = performance.now();
+        function follow(now) {
             if (!area || !piece.isConnected || active.get(board)!==state) return;
             // Read the sprite's animation clock: camera and character share the
             // exact progress even if rendering temporarily misses a frame.
             const progress = clamp(Number(animation.currentTime || 0)/duration,0,1);
             const end=positions.findIndex(p=>p.offset>=progress),a=positions[Math.max(0,end-1)],b=positions[Math.max(0,end)],t=(progress-a.offset)/(b.offset-a.offset||1);
             const x=a.x+(b.x-a.x)*t,y=a.y+(b.y-a.y)*t,sx=parentRect.width/parent.offsetWidth,sy=parentRect.height/parent.offsetHeight;
-            area.scrollTo({left:clamp(start.left+(x-dx)*sx+(target.left-start.left+dx*sx)*progress,limits?.minLeft??0,limits?.maxLeft??area.scrollWidth-area.clientWidth),
-                top:clamp(start.top+(y-dy)*sy+(target.top-start.top+dy*sy)*progress,limits?.minTop??0,limits?.maxTop??area.scrollHeight-area.clientHeight),behavior:'instant'});
+            const desiredLeft=clamp(start.left+(x-dx)*sx+(target.left-start.left+dx*sx)*progress,limits?.minLeft??0,limits?.maxLeft??area.scrollWidth-area.clientWidth);
+            const desiredTop=clamp(start.top+(y-dy)*sy+(target.top-start.top+dy*sy)*progress,limits?.minTop??0,limits?.maxTop??area.scrollHeight-area.clientHeight);
+            const maxStep=cameraSpeedLimit*Math.max(0,Math.min(32,now-lastCameraTick))/1000;
+            lastCameraTick=now;
+            const distance=Math.hypot(desiredLeft-area.scrollLeft,desiredTop-area.scrollTop),fraction=distance?Math.min(1,maxStep/distance):1;
+            area.scrollTo({left:area.scrollLeft+(desiredLeft-area.scrollLeft)*fraction,top:area.scrollTop+(desiredTop-area.scrollTop)*fraction,behavior:'instant'});
             frame=requestAnimationFrame(follow);
         }
         if (area) frame=requestAnimationFrame(follow);
-        return animation.finished.catch(() => {}).then(() => {
+        return animation.finished.catch(() => {}).then(async () => {
             cancelAnimationFrame(frame);
             if (active.get(board)===state) {
-                if (area && piece.isConnected) area.scrollTo({...target,behavior:'instant'});
-                active.delete(board);
+                // If a zoomed-in or off-center view lagged behind the sprite,
+                // finish at the same camera limit instead of snapping to it.
+                if (area && piece.isConnected && !cameraAbort.signal.aborted) {
+                    await window.panMapCameraTo?.(area,target.left,target.top,cameraSpeedLimit,cameraAbort.signal);
+                }
+                if(active.get(board)===state)active.delete(board);
             }
             animation.cancel();
             piece.classList.remove('map-piece-moving');
         });
     }
-    window.MapMovementPresentation = Object.freeze({ duration, durationForDistance, worldPixelsPerMs, capture, play, isMoving:board=>active.has(board) });
+    window.MapMovementPresentation = Object.freeze({ duration, durationForDistance, worldPixelsPerMs, cameraSpeedLimit, capture, play, isMoving:board=>active.has(board) });
 })();

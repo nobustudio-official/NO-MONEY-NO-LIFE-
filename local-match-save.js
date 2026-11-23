@@ -7,7 +7,7 @@
     'use strict';
     const VERSION = 1;
     const PHASES = new Set(['ready', 'turn-start', 'movement', 'arrival', 'finish-turn',
-        'notice', 'store', 'asset-store', 'dividend', 'guidebook', 'underground', 'ponzi', 'fukubukuro', 'hatataki', 'mugging', 'boss-choice']);
+        'notice', 'store', 'asset-store', 'dividend', 'guidebook', 'underground', 'ponzi', 'fukubukuro', 'hatataki', 'mugging', 'boss-choice', 'ending']);
     const copy = value => JSON.parse(JSON.stringify(value));
     const finite = value => typeof value === 'number' && Number.isFinite(value);
     const integer = value => Number.isInteger(value) && value >= 0;
@@ -55,6 +55,18 @@
         if (step.phase === 'dividend' && (!s.dividends.pending?.summary
             || !Array.isArray(s.dividends.pending.dividends)
             || !['announcement', 'dividend', 'assets', 'history', 'leader', 'last', 'market', 'closing'].includes(s.dividends.pending.summary.stage))) throw new Error('配当の保存情報が壊れています。');
+        if (step.phase === 'ending') {
+            const ending = s.flows.ending;
+            if (!ending || typeof ending.eventId !== 'string' || !ending.eventId || !finite(ending.startedAt)
+                || !integer(ending.step) || ending.step > 7 || !Array.isArray(ending.ranking)
+                || ending.ranking.length !== s.players.length
+                || !ending.ranking.every(row => row && integer(row.playerIndex) && row.playerIndex < s.players.length
+                    && typeof row.name === 'string' && finite(row.totalAsset))
+                || new Set(ending.ranking.map(row => row.playerIndex)).size !== s.players.length
+                || !Array.isArray(ending.history) || !ending.history.length
+                || !ending.history.every(point => point && integer(point.turn) && Array.isArray(point.totals)
+                    && point.totals.length === s.players.length && point.totals.every(finite))) throw new Error('終了演出の保存情報が壊れています。');
+        } else if (s.flows.ending) throw new Error('終了演出の再開地点が一致しません。');
         if (record.camera && (!finite(record.camera.zoom) || record.camera.zoom <= 0
             || !finite(record.camera.left) || !finite(record.camera.top))) throw new Error('カメラの保存情報が壊れています。');
         return record;
@@ -124,6 +136,8 @@
             },
             checkpoint(state, step) {
                 if (!active || online()) return Promise.resolve(false);
+                // Late turn/menu callbacks cannot replace the final settled result.
+                if (record.step.phase === 'ending' && step.phase !== 'ending') return Promise.resolve(false);
                 const next = { ...record, state: copy(state), step: copy(step), interruptedAction: null, revision: record.revision + 1, savedAt: now() };
                 validate(next);
                 record = next;
@@ -139,6 +153,7 @@
             },
             pending(kind) {
                 if (!active || online() || !record) return Promise.resolve(false);
+                if (record.step.phase === 'ending') return Promise.resolve(false);
                 record = { ...record, interruptedAction: String(kind), revision: record.revision + 1, savedAt: now() };
                 return enqueue(record);
             },

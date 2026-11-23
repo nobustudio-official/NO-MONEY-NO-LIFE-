@@ -15,6 +15,19 @@
         w = frame.contentWindow;
         w.waitForGameAssets = () => Promise.resolve();
         w.HTMLMediaElement.prototype.play = function () { return Promise.resolve(); };
+        if (stage.startsWith('ending')) {
+            // Deterministic rendering clock; media completion is triggered explicitly below.
+            const Audio = w.Audio; w.testClosingVoices = [];
+            w.Audio = function (...args) {
+                const audio = new Audio(...args);
+                if (decodeURI(audio.src).endsWith('/終了アナウンス4.mp3')) w.testClosingVoices.push(audio);
+                return audio;
+            };
+            w.requestAnimationFrame = callback => w.setTimeout(() => callback(w.performance.now()), 16);
+            w.cancelAnimationFrame = id => w.clearTimeout(id);
+            const match = w.matchMedia.bind(w);
+            w.matchMedia = query => query.includes('prefers-reduced-motion') ? { matches: true } : match(query);
+        }
         w.addEventListener('error', event => { failures.push('page: ' + event.message); output(); });
         await wait(() => w.localMatchRecoveryReady, 'startup recovery did not initialize');
         await delay(30);
@@ -126,11 +139,55 @@
         check(w.localMatchSession.snapshot().gameId !== saved.gameId, 'new game retained old game ID');
         results.push('new game replaces the old match without mixing players or assets'); output();
 
-        w.showGameResult(); await w.localMatchSession.flush();
-        check(w.localMatchSession.snapshot().status === 'finished', 'completion not persisted');
-        await load(); await w.localMatchRecoveryReady;
-        check(!w.document.querySelector('.local-resume-overlay'), 'finished match offered for resume');
-        results.push('completed match is not offered after reload'); output();
+        stage = 'ending final settlement'; output();
+        let finalSetup = w.localMatchSession.snapshot();
+        finalSetup.state.currentTurn = 30; finalSetup.state.currentPlayer = 1;
+        finalSetup.state.players[0].assets = [assetId]; finalSetup.state.assetOwners[assetId] = 0;
+        await put(finalSetup); await resume();
+        const beforeFinal = w.players[0].money, finalDividend = w.calculateAssetDividend(w.players[0]);
+        w.finishTurn(w.players[1]);
+        const endingRoot = () => w.document.getElementById('endingPresentationOverlay');
+        await wait(() => endingRoot()?.dataset.step === '0', 'ending did not begin');
+        await w.localMatchSession.flush();
+        check(w.players[0].money === beforeFinal + finalDividend, 'final dividend was not settled once');
+        const finalPlayers = JSON.stringify(w.players), finalResult = JSON.stringify(w.localMatchRuntime.capture().flows.ending.ranking);
+        async function resumeEnding(step) {
+            await w.localMatchSession.flush(); await resume();
+            check(endingRoot()?.dataset.step === String(step), 'ending scene not restored: ' + step);
+            check(w.localMatchSession.snapshot().status === 'unfinished', 'ending became finished too soon');
+            check(JSON.stringify(w.players) === finalPlayers, 'ending reload changed settled players or paid twice');
+            check(JSON.stringify(w.localMatchRuntime.capture().flows.ending.ranking) === finalResult, 'final result changed on reload');
+        }
+        await resumeEnding(0);
+        endingRoot().querySelector('.bf-next').click(); await resumeEnding(1);
+        endingRoot().querySelector('.bf-next').click(); await resumeEnding(2);
+        endingRoot().querySelector('.bf-race-ready button').click(); await delay(40);
+        await resumeEnding(2);
+        check(!endingRoot().querySelector('.bf-race-ready').hidden, 'interrupted race did not restart at its safe boundary');
+        endingRoot().querySelector('.bf-race-ready button').click();
+        const now = w.Date.now(); w.Date.now = () => now + 120000;
+        await wait(() => endingRoot().classList.contains('bf-race-finished'), 'race did not complete');
+        endingRoot().click(); await resumeEnding(3);
+        endingRoot().querySelector('.bf-next').click(); await resumeEnding(4);
+        await wait(() => !endingRoot().querySelector('.bf-next').disabled, 'asset chart not completed');
+        endingRoot().click(); await resumeEnding(5);
+        await wait(() => !endingRoot().querySelector('.bf-next').disabled, 'history chart not completed');
+        endingRoot().click(); await resumeEnding(6);
+        endingRoot().querySelector('.bf-next').click(); await resumeEnding(7);
+        // The save survives the closing voice and fade until the final return action.
+        const closingVoice = w.testClosingVoices;
+        check(closingVoice.length, 'closing voice missing');
+        closingVoice.forEach(audio => audio.dispatchEvent(new w.Event('ended')));
+        await delay(2200); await w.localMatchSession.flush();
+        check(w.localMatchSession.snapshot().status === 'unfinished', 'closing fade removed resume data');
+        results.push('ending scenes, interrupted race, charts and final announcement all restore the settled result'); output();
+        endingRoot().click();
+        await wait(() => !endingRoot(), 'ending did not return to title');
+        await wait(() => w.localMatchRecoveryReady, 'title recovery did not initialize');
+        await w.localMatchRecoveryReady;
+        check((await w.LocalMatchSave.indexedDBStore(w.indexedDB).read()).status === 'finished', 'final acknowledgement not persisted');
+        check(!w.document.querySelector('.local-resume-overlay'), 'acknowledged ending offered for resume');
+        results.push('only returning to title after the final announcement removes the resume candidate'); output();
 
         saved.version = 999; await put(saved); await load();
         await wait(() => w.document.querySelector('.local-resume-overlay'), 'unsupported save explanation missing');

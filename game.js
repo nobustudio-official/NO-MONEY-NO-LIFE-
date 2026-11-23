@@ -1005,11 +1005,7 @@ function showBossDestinationPopup(
         // ボスマス中央へ移動
         // =========================
 
-        mapArea.scrollTo({
-            left: finalScrollLeft,
-            top: finalScrollTop,
-            behavior: "smooth"
-        });
+        window.panMapCameraTo?.(mapArea, finalScrollLeft, finalScrollTop);
 
     }, 50);
 
@@ -2014,6 +2010,7 @@ function showGameScreen(
 ) {
     let localSave = null;
     let localMugging = null;
+    let localEnding = null;
     let resumeResolve, resumeReject;
     const localResumeReady = localResume ? new Promise((resolve, reject) => { resumeResolve = resolve; resumeReject = reject; }) : null;
 
@@ -9081,13 +9078,12 @@ function showItemShopPopup(player) { ApprovedCommerce.showStore(player,'item'); 
 function showGameResult(serverRanking = null) {
 
     const online = Boolean(window.onlineGame?.isOnline);
-    if (!online) localSave?.finish();
     if (online && !Array.isArray(serverRanking)) {
         const state = window.onlineGame.sync && window.onlineGame.sync.state;
         if (!state || state.matchPhase !== "finished" || !Array.isArray(state.finalRanking)) return;
         serverRanking = state.finalRanking;
     }
-    if (!online) window.OfflineDividends.resetMarket();
+    if (!online && !localEnding) window.OfflineDividends.resetMarket();
 
     window.GameActionInput?.reset();
     // 地下マップが前面に残らないよう、終了演出の表示前に閉じる。
@@ -9107,7 +9103,7 @@ function showGameResult(serverRanking = null) {
 // 総資産の多い順に並べる
 // =========================
 
-const ranking = Array.isArray(serverRanking) ? serverRanking : players.map(function (player, playerIndex) {
+const ranking = !online && localEnding ? localEnding.ranking : Array.isArray(serverRanking) ? serverRanking : players.map(function (player, playerIndex) {
     return { playerIndex, name: player.name, totalAsset: calculateTotalAssetValue(player) };
 }).sort(function (a, b) { return b.totalAsset - a.totalAsset; });
 
@@ -9122,11 +9118,24 @@ const ranking = Array.isArray(serverRanking) ? serverRanking : players.map(funct
         });
         if (history.length && history[history.length - 1].turn === completed) history[history.length - 1] = { turn: completed, totals };
         else history.push({ turn: completed, totals });
+        if (!online) {
+            localEnding ||= { eventId: `local-ending:${Date.now()}`, startedAt: Date.now(), step: 0, ranking, history };
+            localSave?.checkpoint('ending');
+        }
         gameStarted = false;
-        window.EndingPresentation.show(ranking, participants, history, online);
+        window.EndingPresentation.show(ranking, participants, online ? history : localEnding.history, online, online ? null : {
+            progress: localEnding,
+            onCheckpoint(step) {
+                if (localEnding.step === step) return;
+                localEnding.step = step;
+                return localSave?.checkpoint('ending');
+            },
+            onComplete: () => localSave?.finish()
+        });
         return;
     }
 
+    if (!online) localSave?.finish();
 
     resultRanking.replaceChildren();
 
@@ -10462,10 +10471,10 @@ window.centerCurrentPlayerOnMap =
 
 // Tap-triggered camera pans use a fixed screen-space speed. Longer jumps
 // therefore take proportionally longer instead of feeling abrupt.
-const MAP_TAP_CAMERA_SPEED = 1200;
+const MAP_TAP_CAMERA_SPEED = MapMovementPresentation.cameraSpeedLimit;
 let activeMapCameraScroll = null;
 
-function animateMapCameraScroll(mapArea, left, top, speed, signal) {
+function animateMapCameraScroll(mapArea, left, top, speed = MAP_TAP_CAMERA_SPEED, signal) {
     activeMapCameraScroll?.cancel();
     const limits = window.MapScene?.getCameraLimits?.();
     const maxScrollLeft = Math.max(0, mapArea.scrollWidth - mapArea.clientWidth);
@@ -10478,8 +10487,9 @@ function animateMapCameraScroll(mapArea, left, top, speed, signal) {
     const deltaLeft = left - startLeft;
     const deltaTop = top - startTop;
     const distance = Math.hypot(deltaLeft, deltaTop);
-    const duration = speed > 0 ? distance / speed * 1000 : 0;
-    const startedAt = performance.now();
+    speed = Number.isFinite(speed) && speed > 0 ? Math.min(speed, MAP_TAP_CAMERA_SPEED) : MAP_TAP_CAMERA_SPEED;
+    const duration = distance / speed * 1000;
+    let lastTick = performance.now(), elapsed = 0;
     let frame = 0;
     let settled = false;
     let resolvePromise;
@@ -10497,7 +10507,8 @@ function animateMapCameraScroll(mapArea, left, top, speed, signal) {
     function cancel() { finish(false); }
     function tick(now) {
         if (signal?.aborted || !mapArea.isConnected) { finish(false); return; }
-        const progress = duration === 0 ? 1 : Math.min(1, (now - startedAt) / duration);
+        elapsed += Math.max(0, Math.min(32, now - lastTick)); lastTick = now;
+        const progress = duration === 0 ? 1 : Math.min(1, elapsed / duration);
         mapArea.scrollLeft = startLeft + deltaLeft * progress;
         mapArea.scrollTop = startTop + deltaTop * progress;
         if (progress < 1) frame = requestAnimationFrame(tick);
@@ -10519,6 +10530,7 @@ function animateMapCameraScroll(mapArea, left, top, speed, signal) {
     if (!settled) frame = requestAnimationFrame(tick);
     return promise;
 }
+window.panMapCameraTo = animateMapCameraScroll;
 
 window.cancelMapCameraScroll = function () {
     avatarCameraFocus?.abort();
@@ -10599,6 +10611,7 @@ function centerPlayerOnMap(
 ) {
 
     avatarCameraFocus?.abort();
+    activeMapCameraScroll?.cancel();
     const mapArea =
         document.querySelector(
             ".game-screen .map-area"
@@ -10692,9 +10705,9 @@ function centerPlayerOnMap(
             // マス中央へ移動
             // =========================
 
-            if (cameraSpeed > 0) {
+            if (behavior === 'smooth') {
                 animateMapCameraScroll(mapArea, finalScrollLeft, finalScrollTop, cameraSpeed)
-                    .then(completed => { if (completed) onCentered?.(); });
+                    .then(() => onCentered?.());
                 return;
             }
 
@@ -10703,22 +10716,7 @@ function centerPlayerOnMap(
                 top: finalScrollTop,
                 behavior
             });
-            if (onCentered) {
-                const reached = () => Math.abs(mapArea.scrollLeft - finalScrollLeft) < 1
-                    && Math.abs(mapArea.scrollTop - finalScrollTop) < 1;
-                function report() {
-                    clearTimeout(timeout);
-                    mapArea.removeEventListener('scroll', onScroll);
-                    onCentered();
-                }
-                function onScroll() { if (reached()) report(); }
-                const timeout = setTimeout(() => {
-                    mapArea.scrollTo({ left: finalScrollLeft, top: finalScrollTop, behavior: 'instant' });
-                    report();
-                }, 700);
-                if (reached()) report();
-                else mapArea.addEventListener('scroll', onScroll, { passive: true });
-            }
+            onCentered?.();
 
         }
     );
@@ -10844,7 +10842,7 @@ function captureLocalMatch() {
             guidebookWithdrawalsSeen, guidebookDraft, underground: offlineUndergroundFlow,
             undergroundTurnKey: offlineUndergroundTurnKey, itemSealCheckKey: offlineItemSealCheckKey,
             completedUndergroundKey, walletAnnouncementsTurnKey, ponzi: offlinePonzi,
-            fukubukuro: offlineFukubukuroEvent, mugging: localMugging,
+            fukubukuro: offlineFukubukuroEvent, mugging: localMugging, ending: localEnding,
             assetStore: activeAssetPurchaseView ? { assetIds: activeAssetPurchaseView.assetIds,
                 pendingMonopolyEvents: activeAssetPurchaseView.pendingMonopolyEvents } : null,
             hatataki: activeHatatakiFlow && !activeHatatakiFlow.online ? { ...activeHatatakiFlow,
@@ -10883,6 +10881,7 @@ function restoreLocalMatch(saved) {
     offlineItemSealCheckKey = flow.itemSealCheckKey; completedUndergroundKey = flow.completedUndergroundKey;
     walletAnnouncementsTurnKey = flow.walletAnnouncementsTurnKey; offlinePonzi = flow.ponzi;
     offlineFukubukuroEvent = flow.fukubukuro; localMugging = flow.mugging;
+    localEnding = flow.ending || null;
     activeHatatakiFlow = flow.hatataki ? { ...flow.hatataki, playedSoundIds: new Set(), busy: false,
         offlineTargets: flow.hatataki.offlineTargets.map(decodePlayer) } : null;
     if (flow.assetStore) activeAssetPurchaseView = { ...flow.assetStore, playerIndex: currentPlayer, callback: () => finishTurn(players[currentPlayer]) };
@@ -10904,6 +10903,7 @@ function completeLocalDividend(closeDividend) {
 function resumeLocalStep(saved) {
     const { phase, details = {} } = saved.step, player = players[currentPlayer];
     switch (phase) {
+        case 'ending': showGameResult(); break;
         case 'turn-start': beginPlayerTurn(player); break;
         case 'arrival': window.GameActionInput.begin('dice', `${currentTurn}:${currentPlayer}`, 'arrival'); handleSquareEvent(player); break;
         case 'finish-turn': finishTurn(player); break;
@@ -10945,7 +10945,7 @@ if (!window.onlineGame?.isOnline && window.LocalMatchRecovery) {
     localSave = window.LocalMatchRecovery.attach(adapter, localResume);
     window.localMatchRuntime = adapter;
     window.addEventListener('local-action-finished', () => queueMicrotask(() => {
-        if (diceMovementState.active || window.isSquareMovementInProgress || rouletteButton.disabled || inventoryButton.disabled
+        if (localEnding || diceMovementState.active || window.isSquareMovementInProgress || rouletteButton.disabled || inventoryButton.disabled
             || window.TurnHandoff?.isActive() || activeHatatakiFlow || localMugging || offlineFukubukuroEvent
             || window.PonziPresentation?.isOpen() || window.PonziRules?.pending({ players, currentTurn, activePlayerIndex: currentPlayer, ponzi: offlinePonzi })
             || (offlineUndergroundFlow && offlineUndergroundFlow.stage !== 'done') || offlineImmunityExpiry
@@ -10979,6 +10979,7 @@ const finishInitialLocalView = function () {
     if (localResume) {
         window.gameOpeningComplete = true;
         resumeLocalStep(localResume);
+        if (localResume.step.phase === 'ending') { resumeResolve(); return; }
         if (localResume.camera) {
             window.setMapZoomUI?.(localResume.camera.zoom);
             const area = document.querySelector('.game-screen .map-area');
@@ -12931,24 +12932,12 @@ if (
     // ボスの1マス手前への移動結果
     // =========================
 
-    setTimeout(
-        function () {
-
-            window.CommonAnnouncements.showArrival(
-                item.name,
-                warpToBossAnnouncement(player),
-                function () {
-
-                    finishTurn(
-                        player
-                    );
-
-                }
-            );
-
-        },
-        1000
-    );
+    Promise.all([
+        new Promise(resolve => setTimeout(resolve, 1000)),
+        centerOnWarpPlayer(players.indexOf(player))
+    ]).then(() => {
+        window.CommonAnnouncements.showArrival(item.name, warpToBossAnnouncement(player), () => finishTurn(player));
+    });
 
     return;
 
@@ -13259,11 +13248,9 @@ if (
 
 function centerOnWarpPlayer(playerIndex) {
     return new Promise(resolve => {
-        const timeout = setTimeout(resolve, 900);
         try {
-            window.centerPlayerOnMap(playerIndex, 'smooth', () => { clearTimeout(timeout); resolve(); });
+            window.centerPlayerOnMap(playerIndex, 'smooth', resolve);
         } catch (error) {
-            clearTimeout(timeout);
             console.warn('[ワープ] カメラを移動できません:', error);
             resolve();
         }
@@ -13525,7 +13512,7 @@ function useOnlineWarpItem(player, itemId, useButton, destination = null) {
                 warpSound.currentTime = 0;
                 (window.GameSE ? window.GameSE.playLocal(warpSound) : warpSound.play()).catch(function () {});
             }
-            completeWarp();
+            centerOnWarpPlayer(window.players.indexOf(player)).then(completeWarp);
         } else {
             playOnlineWarpMoves(response, completeWarp);
         }

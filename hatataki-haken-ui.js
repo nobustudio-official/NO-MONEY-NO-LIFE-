@@ -94,9 +94,9 @@
             }
         }
         telop.append(portrait, copy);
-        scene.append(telop);
-        root.append(scene);
+        root.append(scene, telop);
         document.body.append(root);
+        window.TelopStandard?.apply(telop, { message: copy, portrait, next: telop.querySelector('.hatataki-notice-next') });
         const activePanel = root.querySelector('.hatataki-panel');
         if (activePanel) window.Plane02Layout?.apply(activePanel);
     }

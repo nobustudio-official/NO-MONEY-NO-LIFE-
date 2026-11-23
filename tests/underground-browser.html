@@ -1,0 +1,103 @@
+<!doctype html><meta charset="utf-8"><title>Underground map regression</title>
+<!-- Use the isolated profile/origin in run-local-recovery-browser.cjs. -->
+<pre id="report">RUNNING</pre><iframe id="game" style="width:1920px;height:1080px"></iframe>
+<script>
+(async()=>{
+ const frame=document.getElementById('game'),results=[],failures=[];
+ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+ const check=(yes,message)=>{if(!yes)throw Error(message)};
+ const wait=async(test,message)=>{for(let i=0;i<400;i++){if(test())return;await delay(25)}throw Error(message)};
+ let w,stage='setup';
+ const output=()=>document.getElementById('report').textContent=JSON.stringify({stage,results,failures});
+ const rect=e=>{const r=e.getBoundingClientRect();return [r.x,r.y,r.width,r.height]};
+ const close=(a,b)=>a.every((v,i)=>Math.abs(v-b[i])<.8);
+ async function load(){
+  await new Promise(resolve=>{frame.onload=resolve;frame.src='../index.html?underground-test='+Math.random()});
+  w=frame.contentWindow;w.waitForGameAssets=()=>Promise.resolve();w.HTMLMediaElement.prototype.play=()=>Promise.resolve();
+  w.addEventListener('error',e=>{failures.push(e.message);output()});
+  await wait(()=>w.localMatchRecoveryReady,'startup');await delay(25);
+ }
+ async function resume(){
+  await load();await wait(()=>w.document.querySelector('.local-resume-overlay'),'resume choice');
+  [...w.document.querySelectorAll('.local-resume-overlay button')].find(b=>b.textContent==='続きから再開').click();
+  await w.localMatchRecoveryReady;await delay(50);
+ }
+ const underground=()=>w.localMatchRuntime.capture().flows.underground;
+ async function target(position){
+  const arrow=w.document.querySelector('.ug-arrow[data-action="target:'+position+'"]');
+  check(arrow,'direction missing: '+position);arrow.click();
+  await wait(()=>underground().stage==='choose'&&w.players[0].underground.position===position,'movement did not settle');
+  await w.localMatchSession.flush();
+ }
+ function centerCheck(){
+  const tile=[...w.document.querySelectorAll('.ug-tile')].find(e=>e.style.getPropertyValue('--x')==='2'&&e.style.getPropertyValue('--y')==='2');
+  const r=tile.getBoundingClientRect();
+  check(Math.abs(r.x+r.width/2-w.innerWidth/2)<.8&&Math.abs(r.y+r.height/2-w.innerHeight/2)<.8,'central square off screen center');
+  return rect(w.document.querySelector('.ug-map'));
+ }
+ try{
+  await load();await w.localMatchRecoveryReady;await w.loadMapData();await w.selectBossSquare();
+  w.players=[{name:'A',money:0,magicPower:1000,bossDamage:0,position:139,characterId:1,inventory:[],assets:[],magic:[1],jobTurnsRemaining:0,jobReward:0}];
+  w.OfflineDividends.reset(w.players);w.gameOpeningComplete=true;w.showGameScreen(w.players,30);
+  await delay(50);await w.localMatchSession.flush();
+  const hud=w.document.querySelector('.game-hud'),hudBox=rect(hud),hudStyle=w.getComputedStyle(hud);
+  const appearance=[hudStyle.backgroundImage,hudStyle.opacity,hudStyle.filter,hudStyle.color];
+  let saved=w.localMatchSession.snapshot();saved.step={phase:'underground',details:{}};
+  saved.state.players[0].underground={position:0,penica:10000,turns:1};
+  saved.state.flows.underground={turnKey:'1:0',step:3,stage:'choose',playerIndex:0,move:4,remaining:4,previousPosition:null,moveHistory:[0]};
+  saved.state.dividends.marketExponent=1;saved.state.dividends.marketKind='boom';
+  await w.localMatchSession.flush();w.localMatchSession.dispose();
+  await w.LocalMatchSave.indexedDBStore(w.indexedDB).write(saved,true);await resume();
+  stage='hud and map';output();
+  const ugHud=w.document.querySelector('.game-hud'),style=w.getComputedStyle(ugHud);
+  check(close(hudBox,rect(ugHud)),'HUD geometry changed');
+  check(JSON.stringify(appearance)===JSON.stringify([style.backgroundImage,style.opacity,style.filter,style.color]),'HUD appearance changed');
+  check(w.document.querySelectorAll('.game-hud').length===1,'duplicate HUD');
+  const h=ugHud.getBoundingClientRect();
+  check(w.document.elementFromPoint(h.x+h.width/2,h.y+h.height/2)?.closest('.game-hud'),'HUD covered');
+  const badge=w.document.querySelector('.hud-market-badge');check(badge,'market badge missing');
+  const b=badge.getBoundingClientRect();check(w.document.elementFromPoint(b.x+b.width/2,b.y+b.height/2)?.closest('.hud-market-badge'),'market badge covered');
+  let camera=centerCheck();
+  check(w.document.querySelector('.ug-tile').getBoundingClientRect().width>=145,'map was not enlarged');
+  const root=w.document.getElementById('undergroundPresentation');
+  check(w.getComputedStyle(root,'::before').content==='none','dark HUD overlay remains');
+  for(const path of ['../images/map/underground/earth-tile.svg','../images/map/underground/mine-track.svg']){
+   const source=await(await fetch(path)).text();check(!new DOMParser().parseFromString(source,'image/svg+xml').querySelector('parsererror'),'invalid material');
+  }
+  check(w.getComputedStyle(root).backgroundImage.includes('earth-tile.svg'),'floor not selected');
+  check(w.getComputedStyle(w.document.querySelector('.ug-cross-rail')).backgroundImage.includes('mine-track.svg'),'rail not selected');
+  results.push('HUD and market badge keep their geometry and appearance above the map; floor and rails resolve');output();
+  await target(1);await target(2);
+  check(close(camera,centerCheck()),'camera followed player');
+  await resume();check(underground().moveHistory.join()==='0,1,2','history not restored');
+  await target(1);check(underground().remaining===3,'back step did not restore allowance');
+  const reset=w.document.getElementById('diceMovementReturnButton');check(!reset.disabled&&w.getComputedStyle(reset).display!=='none','reset button unavailable');
+  reset.click();await wait(()=>underground().stage==='choose'&&w.players[0].underground.position===0,'reset did not return to start');
+  check(underground().remaining===4&&w.players[0].underground.penica===10000,'reset changed rolled steps or balance');
+  check(close(camera,centerCheck()),'camera changed after reset');
+  results.push('backtracking, movement reset and reload preserve history, allowance, money and fixed camera');output();
+  for(const [width,height] of [[1000,700],[852,393],[393,852]]){
+   frame.style.width=width+'px';frame.style.height=height+'px';await delay(60);centerCheck();
+   const tile=w.document.querySelector('.ug-tile').getBoundingClientRect();
+   check(tile.y-tile.height*.22>=w.document.querySelector('.game-hud').getBoundingClientRect().bottom-1,'board overlaps HUD after resize');
+  }
+  results.push('center square remains at viewport center through three viewport resizes');output();
+  w.UndergroundUI.suspend();
+  check(w.document.querySelector('.game-container .game-hud')&&w.document.querySelector('.game-container .action-menu'),'ground HUD/menu not restored');
+  check(w.getComputedStyle(w.document.querySelector('.map-area')).visibility==='visible','ground map remains hidden');
+  check(w.document.querySelectorAll('#diceMovementReturnButton').length===1,'duplicated reset button');
+  results.push('leaving underground restores the original ground HUD, menu and map');
+  const state=w.localMatchRuntime.capture();
+  w.UndergroundUI.render({players:w.players,currentTurn:state.currentTurn,activePlayerIndex:0,undergroundFlow:state.flows.underground},true,()=>{});
+  check(w.document.querySelector('.ug-hud-host .game-hud'),'underground HUD not remounted');
+  w.players=[{...w.players[0],name:'Fresh',underground:undefined}];w.OfflineDividends.reset(w.players);
+  w.showGameScreen(w.players,30);
+  await wait(()=>w.document.getElementById('undergroundPresentation').hidden,'old underground transition did not close');
+  check(w.document.querySelector('.game-container .game-hud'),'old underground screen removed the new game HUD');
+  check(w.document.querySelector('.game-container .action-menu'),'old underground screen removed the new game menu');
+  check(w.document.querySelectorAll('.game-hud').length===1,'old HUD survived in the new game');
+  results.push('replacing a game while underground keeps the new game HUD and menu intact');
+ }catch(error){failures.push(error.stack||String(error))}
+ stage='complete';output();document.body.dataset.complete='true';
+})();
+</script>

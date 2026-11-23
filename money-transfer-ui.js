@@ -117,7 +117,8 @@
         }
         document.body.append(root);
         if ([13, 19, 21].some(id => ITEM_CONTENTS[id]?.name === itemName)) window.Plane02Layout?.apply(panel);
-        window.CommonAnnouncements?.fitText?.(root.querySelector('.mt-telop > span'));
+        const telop = root.querySelector('.mt-telop');
+        window.TelopStandard?.apply(telop, { message: telop?.querySelector('span'), portrait: telop?.querySelector('img') });
         if (!remote) cfg.onSync(stage, targetIndex, type, stage === 'amount' ? Number(root.querySelector('.mt-amount').value) : cfg.amount);
     }
     window.MoneyTransferUI = Object.freeze({ show, close, limit });
