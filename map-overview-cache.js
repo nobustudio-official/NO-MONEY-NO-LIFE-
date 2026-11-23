@@ -24,22 +24,14 @@
         image.src = baseImage;
         background.classList.add('map-static-background');
         background.append(image);
-        if (window.MapDetailLevel?.touchDevice && data.lowDetailMobileImage) {
-            const lowDetailImage = new Image(data.width, data.height);
-            lowDetailImage.alt = '';
-            lowDetailImage.draggable = false;
-            lowDetailImage.className = 'map-low-detail-raster';
-            Object.assign(lowDetailImage.style, { position: 'absolute', left: '0', top: '0',
-                width: data.width + 'px', height: data.height + 'px', maxWidth: 'none',
-                pointerEvents: 'none', zIndex: '3' });
-            background.append(lowDetailImage);
-            const loading = window.MapDetailLevel.loadImage(lowDetailImage, data.lowDetailMobileImage, 0);
-            Promise.resolve(loading).then(loaded => {
-                if (!loaded || !background.isConnected) return;
-                lowDetailImage.classList.add('is-ready');
-                const board = background.closest('#mapBoard');
-                if (board && getMapZoomUI() <= .6) setZoom(board, getMapZoomUI());
-            }).catch(error => console.warn('[map] 軽量マップ背景を読み込めません。', error));
+        if (window.MapDetailLevel?.touchDevice) {
+            const flatLayer = window.MapRegionBackground?.createFlatLayer();
+            if (flatLayer) {
+                flatLayer.classList.add('is-ready');
+                Object.assign(flatLayer.style, { position: 'absolute', left: '0', top: '0', width: `${data.width}px`, height: `${data.height}px`,
+                    maxWidth: 'none', pointerEvents: 'none', zIndex: '3' });
+                background.append(flatLayer);
+            }
         }
         if (data.mobileImage) window.MapWorkshopScene?.mount(background, { bakedScenery: true });
         if (data.detailTiles?.length) {
@@ -195,21 +187,16 @@
         if (!data || data.signature !== signature()) return;
         try {
             if (window.MapDetailLevel?.touchDevice) {
-                if (!data.lowDetailMobileImage) return;
-                let lowImage = background.querySelector('.map-low-detail-raster');
-                if (!lowImage) {
-                    lowImage = new Image(data.width, data.height);
-                    lowImage.alt = '';
-                    lowImage.draggable = false;
-                    lowImage.className = 'map-low-detail-raster';
-                    Object.assign(lowImage.style, { position: 'absolute', left: '0', top: '0',
-                        width: data.width + 'px', height: data.height + 'px', maxWidth: 'none',
-                        pointerEvents: 'none', zIndex: '3' });
-                    background.append(lowImage);
+                let flatLayer = background.querySelector('.map-flat-region-layer');
+                if (!flatLayer) {
+                    flatLayer = window.MapRegionBackground?.createFlatLayer();
+                    if (!flatLayer) return;
+                    Object.assign(flatLayer.style, { position: 'absolute', left: '0', top: '0', width: `${data.width}px`, height: `${data.height}px`,
+                        maxWidth: 'none', pointerEvents: 'none', zIndex: '3' });
+                    background.append(flatLayer);
                 }
-                await window.MapDetailLevel.loadImage(lowImage, data.lowDetailMobileImage, 0);
                 if (!background.isConnected) return;
-                lowImage.classList.add('is-ready');
+                flatLayer.classList.add('is-ready');
                 state.ready = true;
                 const board = background.closest('#mapBoard');
                 if (board) window.MapDetailLevel?.setZoom(board, getMapZoomUI());
@@ -238,8 +225,8 @@
         const state = states.get(background);
         const lowDetail=Boolean(window.MapDetailLevel?.touchDevice&&zoom<=.6);
         const wasLowDetail=board.classList.contains('map-low-detail-active');
-        const lowImageReady = Boolean(background?.querySelector('.map-low-detail-raster.is-ready'));
-        const useLowDetail = lowDetail && lowImageReady;
+        const flatLayerReady = Boolean(background?.querySelector('.map-flat-region-layer.is-ready'));
+        const useLowDetail = lowDetail && flatLayerReady;
         board.classList.toggle('map-low-detail-active',useLowDetail);
         if (useLowDetail) releaseMobileBase(board);
         else if (wasLowDetail) restoreMobileBase(board);
@@ -264,8 +251,8 @@
         background.classList.toggle('map-overview-active', active);
         board.classList.toggle('map-overview-active', active);
         if(active&&window.MapDetailLevel?.touchDevice){
-            // The overview is a prebuilt image. Release decoded detail layers as
-            // soon as it takes over, rather than retaining them through the pinch.
+            // Flat region vectors replace the overview. Release decoded detail
+            // layers as soon as they take over, rather than retaining them through the pinch.
             releaseTouchDetails(board);
         }
     }

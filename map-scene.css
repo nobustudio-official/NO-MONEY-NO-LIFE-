@@ -34,7 +34,17 @@
 .map-static-background > .map-static-raster {
     position:absolute; inset:0; width:100%; height:100%; max-width:none; pointer-events:none;
 }
-.map-background > .map-low-detail-raster { display:none; }
+.map-background > .map-flat-region-layer { display:none; }
+.map-flat-region-layer .map-flat-land { fill:#add13e; stroke:#536b3d; stroke-width:24; stroke-linejoin:round; }
+.map-flat-region-layer .map-flat-region { fill:#add13e; stroke:#344d46; stroke-opacity:.28; stroke-width:20; stroke-linejoin:round; }
+.map-flat-region-layer .map-flat-region-capital { fill:#b1c6d8; }
+.map-flat-region-layer .map-flat-region-town { fill:#ead1a1; }
+.map-flat-region-layer .map-flat-region-forest { fill:#52812c; }
+.map-flat-region-layer .map-flat-region-desert { fill:#f6d47a; }
+.map-flat-region-layer .map-flat-region-snow { fill:#edf4f5; }
+.map-flat-region-layer .map-flat-region-ruins { fill:#c7b28a; }
+.map-flat-region-layer .map-flat-region-volcano { fill:#615866; }
+.map-flat-region-layer .map-flat-lake { fill:#2dbdd7; stroke:#388e9e; stroke-width:18; }
 .map-static-background > .map-static-detail {
     position:absolute; z-index:1; max-width:none; pointer-events:none; opacity:0; transition:opacity 110ms linear;
 }
@@ -52,7 +62,7 @@
 .map-background.map-low-detail-active > .map-road-raster { display:none; }
 #mapBoard.map-low-detail-active .map-static-background > .map-static-raster,
 #mapBoard.map-low-detail-active .map-background > .map-overview-raster { display:none; }
-#mapBoard.map-low-detail-active .map-background > .map-low-detail-raster.is-ready { display:block; }
+#mapBoard.map-low-detail-active .map-background > .map-flat-region-layer.is-ready { display:block; }
 #mapBoard.map-low-detail-active .map-static-background > .map-static-detail,
 #mapBoard.map-low-detail-active .map-workshop-objects,
 #mapBoard.map-low-detail-active .map-workshop-magic-effects { display:none; }
