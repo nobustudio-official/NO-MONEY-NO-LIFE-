@@ -67,7 +67,13 @@
   const simpleRoute=add(overlay,'g',{class:'map-road-simple-shortest',display:'none','pointer-events':'none'});
   add(simpleRoute,'path',{class:'map-road-simple-shortest-halo',fill:'none',stroke:'#f873bc','stroke-width':14,'stroke-linecap':'round','stroke-linejoin':'round',opacity:.88});
   add(simpleRoute,'path',{class:'map-road-simple-shortest-core',fill:'none',stroke:'#fff5fa','stroke-width':3.5,'stroke-linecap':'round','stroke-linejoin':'round'});
-  scenes.set(svg,{edges,overlay,simpleRoute,active:new Set(),simpleMode:false,collapseState:window.bridgeCollapseVisualState});
+  const routeHighlight=add(overlay,'g',{class:'map-road-route-highlight','pointer-events':'none'});
+  for(const [className,color,width,opacity] of [
+   ['map-road-route-halo','#ff168e',38,.96],
+   ['map-road-route-core','#ffe24d',20,1],
+   ['map-road-route-center','#ffffff',5,1]
+  ])add(routeHighlight,'path',{class:className,fill:'none',stroke:color,'stroke-width':width,'stroke-linecap':'round','stroke-linejoin':'round',opacity});
+  scenes.set(svg,{edges,overlay,simpleRoute,routeHighlight,active:new Set(),simpleMode:false,collapseState:window.bridgeCollapseVisualState});
   queueMicrotask(()=>window.MapRoadCache?.prepare(svg,squares));
  }
  function setShortestPath(svg,path){
@@ -101,6 +107,8 @@
   }
   const routeData=route.join(' ');
   for(const line of scene.simpleRoute.querySelectorAll('path'))line.setAttribute('d',routeData);
+  for(const line of scene.routeHighlight.querySelectorAll('path'))line.setAttribute('d',routeData);
+  scene.overlay.append(scene.routeHighlight);
   scene.active=next;
  }
  function syncBridgeVisibility(svg,scene){
@@ -114,7 +122,10 @@
  }
  function setSimpleMode(svg,enabled){
   const scene=scenes.get(svg);if(!scene)return;
-  scene.simpleMode=Boolean(enabled);scene.simpleRoute.style.display=scene.simpleMode?'':'none';syncBridgeVisibility(svg,scene);
+  scene.simpleMode=Boolean(enabled);
+  scene.simpleRoute.style.display=scene.simpleMode?'':'none';
+  scene.routeHighlight.style.display=scene.simpleMode?'none':'';
+  syncBridgeVisibility(svg,scene);
  }
  function setBridgeCollapse(svg,squares,state){
   if(!svg)return;

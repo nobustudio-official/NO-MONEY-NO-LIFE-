@@ -2,6 +2,12 @@
 .map-road-overlay .map-road-shortest-highlight{animation:boss-shortest-route-pulse 1.35s ease-in-out infinite}
 @keyframes boss-shortest-route-pulse{0%,100%{opacity:.38}50%{opacity:1}}
 @media(prefers-reduced-motion:reduce){.map-road-overlay .map-road-shortest-highlight{animation:none}}
+.map-road-route-highlight{animation:map-shortest-route-glow 1.2s ease-in-out infinite alternate}
+.map-road-route-halo{filter:drop-shadow(0 0 8px #ff168e) drop-shadow(0 0 17px #ff168ecc)}
+.map-road-route-core{filter:drop-shadow(0 0 8px #ffe24d) drop-shadow(0 0 15px #ffe24dcc)}
+.map-road-route-center{filter:drop-shadow(0 0 5px #fff)}
+@keyframes map-shortest-route-glow{from{opacity:.84}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.map-road-route-highlight{animation:none}}
 .map-stone-roads[data-road-cache="ready"] > .map-road-vector { display:none; }
 .map-road-material-replaced { display:none; }
 #mapBoard.map-low-detail-active .map-stone-roads > .map-road-vector { display:inline !important; }
