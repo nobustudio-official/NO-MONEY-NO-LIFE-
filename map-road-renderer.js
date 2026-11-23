@@ -4,6 +4,24 @@
  const ns='http://www.w3.org/2000/svg',scenes=new WeakMap();let serial=0;
  const palette={base:'#82796a',border:'#605a4e',tiles:['#b8afa0','#d0c8b8','#aaa395','#c3bbac'],curbs:['#a49a88','#bfb4a0'],curbBorder:'#756c5b'};
  function add(parent,tag,attributes){const node=document.createElementNS(ns,tag);for(const [key,value] of Object.entries(attributes))node.setAttribute(key,String(value));parent.append(node);return node;}
+ function ensureRouteSurface(svg,scene){
+  if(!scene.routeSurface){
+   const surface=document.createElementNS(ns,'svg');
+   surface.classList.add('map-shortest-route-overlay');
+   surface.setAttribute('viewBox',svg.getAttribute('viewBox')||`0 0 ${window.MapScene.config.width} ${window.MapScene.config.height}`);
+   surface.setAttribute('preserveAspectRatio','none');
+   surface.setAttribute('aria-hidden','true');
+   surface.append(scene.routeHighlight);
+   scene.routeSurface=surface;
+  }
+  const board=svg.closest('#mapBoard')||document.getElementById('mapBoard');
+  const background=board?.querySelector(':scope > .map-background');
+  if(!background)return;
+  if(scene.routeSurface.parentElement!==background){
+   background.querySelector(':scope > .map-shortest-route-overlay')?.remove();
+   background.append(scene.routeSurface);
+  }
+ }
  function edgeKey(a,b){return [String(a),String(b)].sort().join(':');}
  function pattern(defs,id,width,height,x=0,y=0){return add(defs,'pattern',{id,patternUnits:'userSpaceOnUse',x,y,width,height,viewBox:`0 0 ${width} ${height}`});}
  function definitions(svg){
@@ -108,7 +126,7 @@
   const routeData=route.join(' ');
   for(const line of scene.simpleRoute.querySelectorAll('path'))line.setAttribute('d',routeData);
   for(const line of scene.routeHighlight.querySelectorAll('path'))line.setAttribute('d',routeData);
-  scene.overlay.append(scene.routeHighlight);
+  ensureRouteSurface(svg,scene);
   scene.active=next;
  }
  function syncBridgeVisibility(svg,scene){
