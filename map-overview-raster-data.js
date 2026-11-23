@@ -7,7 +7,7 @@ window.MapOverviewRasterData={
   "image": "images/map/backgrounds/overview/static-c68ed9a8ccb72a51.webp",
   "cleanImage": "images/map/backgrounds/overview/clean-748ac099efa1cb4b.webp",
   "mobileImage": "images/map/backgrounds/overview/mobile-9c63cbcfb8a52e95.webp",
-  "lowDetailMobileImage": "images/map/backgrounds/overview/roadless-mobile-v1.webp",
+  "lowDetailMobileImage": "images/map/backgrounds/overview/roadless-mobile-25pct-v1.webp",
   "detailTiles": [
     {
       "x": 2048,
