@@ -4,6 +4,17 @@
  const ns='http://www.w3.org/2000/svg',scenes=new WeakMap();let serial=0;
  const palette={base:'#82796a',border:'#605a4e',tiles:['#b8afa0','#d0c8b8','#aaa395','#c3bbac'],curbs:['#a49a88','#bfb4a0'],curbBorder:'#756c5b'};
  function add(parent,tag,attributes){const node=document.createElementNS(ns,tag);for(const [key,value] of Object.entries(attributes))node.setAttribute(key,String(value));parent.append(node);return node;}
+ function mountRouteSurface(svg,scene){
+  const board=svg.closest('#mapBoard')||document.getElementById('mapBoard');
+  if(!board)return;
+  const viewBox=svg.getAttribute('viewBox');
+  if(viewBox&&scene.routeSurface.getAttribute('viewBox')!==viewBox)scene.routeSurface.setAttribute('viewBox',viewBox);
+  // Keep Canvas foreignObject compositing in a separate, lower SVG root on Safari.
+  const before=svg.parentElement===board?svg.nextSibling:board.querySelector(':scope > .map-workshop-objects');
+  if(scene.routeSurface.parentElement!==board||(svg.parentElement===board&&before!==scene.routeSurface)){
+   board.insertBefore(scene.routeSurface,before);
+  }
+ }
  function edgeKey(a,b){return [String(a),String(b)].sort().join(':');}
  function pattern(defs,id,width,height,x=0,y=0){return add(defs,'pattern',{id,patternUnits:'userSpaceOnUse',x,y,width,height,viewBox:`0 0 ${width} ${height}`});}
  function definitions(svg){
@@ -20,6 +31,7 @@
   return ids;
  }
  function draw(svg,squares){
+  scenes.get(svg)?.routeSurface.remove();
   svg.replaceChildren();svg.classList.add('map-stone-roads');svg.setAttribute('aria-hidden','true');
   const ids=definitions(svg),edges=new Map(),byId=new Map(squares.map(square=>[String(square.id),square]));
   const depth=1; // Approved provisional road angle: 0 degrees; original paving.
@@ -62,13 +74,18 @@
    edge.group.classList.add('map-road-bridge-edge');edge.group.style.display='none';
    const shadow=svg.querySelector(`[data-shadow-edge="${key}"]`);if(shadow)shadow.style.display='none';
   }
-  // Paint one shared route after the road artwork in both detail modes.
-  const routeHighlight=add(svg,'g',{class:'map-road-route-highlight','pointer-events':'none'});
-  scenes.set(svg,{edges,routeHighlight,routeKey:null,simpleMode:false,collapseState:window.bridgeCollapseVisualState});
+  const routeSurface=document.createElementNS(ns,'svg');
+  routeSurface.setAttribute('class','map-road-route-layer');
+  routeSurface.setAttribute('preserveAspectRatio','none');
+  routeSurface.setAttribute('aria-hidden','true');
+  const routeHighlight=add(routeSurface,'g',{class:'map-road-route-highlight','pointer-events':'none'});
+  scenes.set(svg,{edges,routeSurface,routeHighlight,routeKey:null,simpleMode:false,collapseState:window.bridgeCollapseVisualState});
   queueMicrotask(()=>window.MapRoadCache?.prepare(svg,squares));
  }
  function setShortestPath(svg,path){
   const scene=scenes.get(svg);if(!scene)return;
+  // renderMap can detach other board children; remount even when the path is unchanged.
+  mountRouteSurface(svg,scene);
   const route=[];
   for(let i=0;i<path.length-1;i++){
    const key=edgeKey(path[i],path[i+1]),edge=scene.edges.get(key);
