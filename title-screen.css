@@ -408,8 +408,9 @@
         transform: translateY(-10vh);
     }
 
-    .title-screen:not(.is-setup) .game-title {
-        font-size: clamp(21px, 6.5vw, 30px);
+    .title-screen:not(.is-setup):not(.game-loading-screen) .game-title {
+        font-size: clamp(14px, calc(9.8vw - 8px), 38px);
+        letter-spacing: clamp(0px, .12vw, .6px);
     }
 
     .title-screen:not(.is-setup) .game-subtitle {
