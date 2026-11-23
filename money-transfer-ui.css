@@ -55,6 +55,8 @@
 .mt-item-row + .mt-item-row { margin-top: 8px; }
 .mt-item-row:is(:hover, :focus-within) { background: #547a954b; border-color: #ccae7b7a; }
 .mt-item-row b { min-width: 0; overflow-wrap: anywhere; }
+.mt-item-copy { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.mt-item-copy small { color: #ffdc83; font-size: 15px; }
 .mt-item-row button { flex: none; width: 104px; }
 .mt-items-empty { padding: 16px; text-align: center; }
 @media(max-width:1550px){.mt-title{font-size:24px}}

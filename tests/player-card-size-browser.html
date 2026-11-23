@@ -1,0 +1,103 @@
+<!doctype html><meta charset="utf-8"><title>Player card size regression</title>
+<pre id="report">RUNNING</pre><iframe id="game" style="width:1920px;height:1080px"></iframe>
+<script>
+(async () => {
+    const frame = document.getElementById('game'), results = [], failures = [];
+    let stage = 'setup';
+    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+    const check = (condition, message) => { if (!condition) throw Error(message); };
+    const output = () => document.getElementById('report').textContent = JSON.stringify({ stage, results, failures });
+    try {
+        await new Promise(resolve => { frame.onload = resolve; frame.src = '../index.html?player-card-test=' + Math.random(); });
+        const w = frame.contentWindow, d = w.document;
+        w.requestAnimationFrame = callback => w.setTimeout(() => callback(w.performance.now()), 16);
+        w.cancelAnimationFrame = id => w.clearTimeout(id);
+        w.HTMLMediaElement.prototype.play = () => Promise.resolve();
+        await w.localMatchRecoveryReady;
+        w.renderGameTemplate('mainGameTemplate', d.querySelector('.game-container'));
+        w.players = Array.from({length: 6}, (_, index) => ({name: 'P' + index, characterId: index + 1, money: 100000, inventory: [], assets: []}));
+        const sizeSheet = d.querySelector('link[href^="player-card-size.css"]');
+        const icon = index => w.eval('PLAYER_CONTENTS')[index + 1].icon;
+        const sameSize = (a, b) => Math.abs(a.width - b.width) < .75 && Math.abs(a.height - b.height) < .75;
+        const closeAll = () => {
+            w.MoneyTransferUI.close(); w.LostMagicUI.hide(); w.HatatakiHakenUI.hide(); w.SpecialItemUI.hide(); w.GuidebookUI.reset(); w.BossAftermath.closeOnline();
+        };
+        for (const [width, height] of [[1920,1080],[1280,720],[852,393],[393,852]]) {
+            stage = 'reference ' + width;
+            frame.style.width = width + 'px'; frame.style.height = height + 'px'; await delay(100);
+            sizeSheet.disabled = true;
+            w.BossAftermath.show({players:w.players, awards:{defeat:{playerIndex:0,value:0}}, killerIndex:0, target:null, boss:{name:'test'}, onGuidebookClaim:()=>true});
+            d.querySelector('#boss-aftermath .bf-next').click();
+            await delay(1200);
+            const card = d.querySelector('.bf-guidebook-receipt .bf-receipt-card');
+            check(card, 'guidebook reward card missing');
+            const box = card.getBoundingClientRect();
+            sizeSheet.disabled = false; await delay(80); w.PlayerCardSize.refresh();
+            check(sameSize(card.getBoundingClientRect(), box), 'guidebook reference changed at ' + width);
+            check(!d.querySelector('[data-player-card-reference]'), 'measurement frame was not removed');
+            const root = d.getElementById('boss-aftermath');
+            w.BossSequencePanelAlignment.release(root); w.Plane02Layout.release(root); root.remove();
+            let cases = 0;
+            const verify = (selector, label) => {
+                const cards = [...d.querySelectorAll(selector)];
+                check(cards.length, label + ' cards missing');
+                for (const element of cards) {
+                    const current = element.getBoundingClientRect();
+                    check(sameSize(current, box), label + ': ' + JSON.stringify([current.width,current.height]) + ' vs reference ' + JSON.stringify([box.width,box.height]) + ' at ' + width
+                        + ' vars=' + d.documentElement.style.getPropertyValue('--player-card-width') + '/' + d.documentElement.style.getPropertyValue('--player-card-height'));
+                }
+                cases++;
+            };
+            const transfer = (id, stage) => w.MoneyTransferUI.show({players:w.players, actor:w.players[0], stage, targetIndex:1, type:'send', remote:true,
+                itemName:id===19?undefined:w.eval('ITEM_CONTENTS')[id].name, icon, onSync(){}, onExit(){}, getItems:()=>[], ...(id===22?{getAssets:()=>[]}: {})});
+            for (const id of [13,19,21,22]) {
+                stage = 'target ' + id; closeAll(); transfer(id,'target'); verify('.mt-target-card',stage);
+            }
+            for (const id of [19,21,22]) {
+                stage = 'transfer people ' + id; closeAll(); transfer(id,'type'); verify('#moneyTransferScreen .mt-person',stage);
+            }
+            closeAll(); transfer(19,'amount'); verify('#moneyTransferScreen .mt-person','amount people');
+            closeAll(); w.LostMagicUI.render({stage:'targets',actorIcon:icon(0),targets:w.players.slice(1).map((p,i)=>({index:i+1,name:p.name,icon:icon(i+1),hasMagic:true}))});
+            verify('.lost-magic-target-card','lost magic');
+            closeAll(); w.HatatakiHakenUI.render({destroyedItems:[],status:'attack',targetIndex:1,targetName:'P1',targetIcon:icon(1),actorIcon:icon(0)});
+            verify('.hatataki-player-card','hatataki');
+            for (const view of ['preview','result']) {
+                closeAll(); w.SpecialItemUI.show({itemId:25,stage:view,players:w.players,actorIndex:0,observer:true,icon});
+                verify('.special-item-card','equalize ' + view);
+            }
+            closeAll(); w.SpecialItemUI.show({itemId:26,stage:'targets',players:w.players,actorIndex:0,observer:true,icon});
+            verify('.special-item-card','seal items');
+            const ctx = {players:w.players,active:0,icon,control:false,online:false,book:{withdrawals:[],offers:[{buyer:1,amount:5000}]},turnKey:'test:'+width};
+            closeAll(); w.GuidebookUI.render({kind:'offers'},ctx); verify('.guidebook-offer-list .bf-receipt-card','book offers');
+            closeAll(); w.GuidebookUI.renderSpecialReward({status:'receiving',claimed:[]},ctx); verify('.special-reward-card','special rewards');
+            closeAll(); w.BossAftermath.renderOnline({battleId:'size-'+width,playerIndex:0,ceremony:{stage:'receipt',claims:w.players.map((p,i)=>({playerIndex:i,amount:1000,claimed:false}))}},w.players,()=>{});
+            verify('#boss-aftermath .bf-receipt-card','gold receipts');
+            closeAll(); w.BossAftermath.renderOnline({battleId:'size-'+width,playerIndex:0,monster:{counterDamage:1000},ceremony:{stage:'penalty',target:{playerIndex:1,distance:9}}},w.players,()=>{});
+            verify('#boss-aftermath .bf-target-card','penalty target');
+            closeAll();
+            results.push({viewport:[width,height],reference:[box.width,box.height],cases});
+        }
+        stage = 'automatic resize and screen replacement';
+        frame.style.width = '1920px'; frame.style.height = '800px'; await delay(100);
+        // Headless iframe resize notifications can be deferred by virtual time.
+        w.dispatchEvent(new w.Event('resize')); await delay(50);
+        const resized = w.BossAftermath.measureGuidebookCard();
+        w.MoneyTransferUI.show({players:w.players,actor:w.players[0],stage:'target',remote:true,icon,onSync(){},onExit(){}});
+        check([...d.querySelectorAll('.mt-target-card')].every(card => sameSize(card.getBoundingClientRect(), resized)), 'resize did not refresh the shared dimensions');
+        closeAll();
+        w.renderGameTemplate('mainGameTemplate', d.querySelector('.game-container'));
+        const rebuilt = w.BossAftermath.measureGuidebookCard();
+        check(Math.abs(parseFloat(d.documentElement.style.getPropertyValue('--player-card-height'))-rebuilt.height)<.75, 'screen replacement did not refresh the shared dimensions');
+        results.push('dimensions refresh on resize events and screen replacement');
+        stage = 'measurement lifecycle';
+        const NativeObserver = w.ResizeObserver; let registrations = 0;
+        w.ResizeObserver = class extends NativeObserver { constructor(fn) { super(fn); registrations++; } };
+        for (let i=0;i<30;i++) w.PlayerCardSize.refresh();
+        check(registrations===0,'measurement registered observers');
+        check(!d.querySelector('[data-player-card-reference]') && !d.getElementById('boss-aftermath'),'measurement retained a boss frame');
+        w.ResizeObserver = NativeObserver;
+        results.push('thirty refreshes leave no measurement frames or observer registrations');
+    } catch (error) { failures.push(error.stack || String(error)); }
+    stage = 'complete'; output(); document.body.dataset.complete = 'true';
+})();
+</script>

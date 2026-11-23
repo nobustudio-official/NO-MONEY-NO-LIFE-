@@ -4,7 +4,7 @@
 
     const cleanups = new WeakMap();
 
-    function apply(frame) {
+    function apply(frame, { once = false } = {}) {
         if (!frame) return null;
         const existing = cleanups.get(frame);
         if (existing) return existing;
@@ -43,6 +43,8 @@
                 transform: 'none'
             });
         };
+
+        if (once) { update(); return null; }
 
         let raf = 0;
         const schedule = () => {

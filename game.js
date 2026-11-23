@@ -1275,6 +1275,7 @@ function renderGameTemplate(templateId, target) {
 
     for (const board of target.querySelectorAll('#mapBoard')) window.MapDetailLevel?.dispose(board);
     target.replaceChildren(template.content.cloneNode(true));
+    window.PlayerCardSize?.refresh();
 }
 
 function showGameLoadingScreen() {
@@ -6809,7 +6810,7 @@ inventoryButton.disabled =
                 return;
             }
             if (data.action !== "close" && data.screenData?.panel && window.GamePanels?.remote(data.screenType, data.screenData.panel, Number(data.playerIndex))) return;
-            const sharedScreenIds = ["shopPopup", "magicShopPopup", "powerShopPopup", "assetPopup", "assetPurchasePopup", "salePopup", "inventoryPopup", "magicPopup", "otherMenuPopup", "soundSettingsPopup", "lossNotePlayerPopup", "lostMagicPlayerPopup", "lostMagicSelectionPopup", "transferPlayerPopup", "transferTypePopup", "moneyTransferAmountPopup", "moneyTransferScreen", "darkSuumoAssetPopup"];
+            const sharedScreenIds = ["shopPopup", "magicShopPopup", "powerShopPopup", "assetPopup", "assetPurchasePopup", "salePopup", "inventoryPopup", "magicPopup", "otherMenuPopup", "soundSettingsPopup", "lossNotePlayerPopup", "lostMagicPlayerPopup", "lostMagicSelectionPopup", "transferPlayerPopup", "transferTypePopup", "moneyTransferAmountPopup", "moneyTransferScreen"];
             if (data.action === "close") {
                 closeLostMagic();
                 window.DuplicateItemUI?.hide();
@@ -6892,21 +6893,8 @@ inventoryButton.disabled =
                         showMoneyTransferNewUI(shopPlayer, view.stage, view.targetIndex, view.type, view.amount, true);
                     } else if (view.itemId === 21) {
                         showItemTransferUI(shopPlayer, view.stage, view.targetIndex, view.type, true);
-                    } else if (view.stage === "target") {
-                        if (view.itemId === 22) showDarkSuumoPlayerPopup(shopPlayer);
-                    } else if (targetPlayer && view.stage === "type") {
-                        if (view.itemId === 19) showMoneyTransferTypePopup(shopPlayer, targetPlayer);
-                        else showTransferTypePopup(shopPlayer, targetPlayer, {
-                            title: "闇スーモ",
-                            sendLabel: "🎁 贈与",
-                            stealLabel: "💥 強奪",
-                            onSelect: function () {},
-                            onBack: function () {}
-                        });
-                    } else if (targetPlayer && view.stage === "amount") {
-                        showMoneyTransferAmountPopup(shopPlayer, targetPlayer, view.type);
-                    } else if (targetPlayer && view.stage === "assets") {
-                        showDarkSuumoAssetPopup(shopPlayer, targetPlayer, view.type);
+                    } else if (view.itemId === 22) {
+                        showAssetTransferUI(shopPlayer, view.stage, view.targetIndex, view.type, true);
                     }
                 }
                 if (data.screenData?.panel) window.GamePanels?.remote(data.screenType, data.screenData.panel, Number(data.playerIndex));
@@ -11889,8 +11877,7 @@ function showTransferPlayerPopup(
         "transferPlayerPopup",
         "transferPlayerPopupTemplate"
     );
-    const plane02 = options.title === "闇スーモ";
-    const hidePopup = () => { if (plane02) window.Plane02Layout?.release(popup); popup.style.display = "none"; };
+    const hidePopup = () => { popup.style.display = "none"; };
 
     const title =
         popup.querySelector(
@@ -11996,7 +11983,6 @@ function showTransferPlayerPopup(
 
     popup.style.display =
         "block";
-    if (plane02) window.Plane02Layout?.apply(popup);
 
     const itemIdByTitle = { "闇みずほ": 19, "闇ヤマト": 21, "闇スーモ": 22 };
     const itemId = itemIdByTitle[options.title];
@@ -12110,8 +12096,7 @@ function showTransferTypePopup(
         "transferTypePopup",
         "transferTypePopupTemplate"
     );
-    const plane02 = options.title === "闇スーモ";
-    const hidePopup = () => { if (plane02) window.Plane02Layout?.release(popup); popup.style.display = "none"; };
+    const hidePopup = () => { popup.style.display = "none"; };
 
     const title =
         popup.querySelector(
@@ -12191,7 +12176,6 @@ function showTransferTypePopup(
 
     popup.style.display =
         "block";
-    if (plane02) window.Plane02Layout?.apply(popup);
     const itemId = options.title === "闇みずほ" ? 19 : options.title === "闇ヤマト" ? 21 : options.title === "闇スーモ" ? 22 : null;
     if (itemId) syncOnlineScreenView("item-action", usingPlayer, "open", { itemId, stage: "type", targetIndex: players.indexOf(targetPlayer) });
 
@@ -13041,7 +13025,7 @@ if (
 
     closeInventoryForAction();
 
-    showDarkSuumoPlayerPopup(player);
+    showAssetTransferUI(player);
 
     return;
 
@@ -13617,231 +13601,71 @@ function showItemTransferUI(usingPlayer, stage = 'target', targetIndex = null, t
 
 // ============================================================
 // 闇スーモ
-// プレイヤー選択
+// プレイヤー・資産選択（共通カードUI）
 // ============================================================
 
-function showDarkSuumoPlayerPopup(usingPlayer) {
-
-    showTransferPlayerPopup(
-        usingPlayer,
-        {
-            title: "闇スーモ",
-            description: "資産を贈与・強奪するプレイヤーを選択",
-            showMoney: false,
-
-            onSelect: function (targetPlayer) {
-
-                showTransferTypePopup(
-                    usingPlayer,
-                    targetPlayer,
-                    {
-                        title: "闇スーモ",
-                        sendLabel: "🎁 贈与",
-                        stealLabel: "💥 強奪",
-
-                        onSelect: function (type) {
-
-                            showDarkSuumoAssetPopup(
-                                usingPlayer,
-                                targetPlayer,
-                                type
-                            );
-
-                        },
-
-                        onBack: function () {
-
-                            showDarkSuumoPlayerPopup(usingPlayer);
-
-                        }
-                    }
-                );
-
-            },
-
-            onBack: function () {
-
-                showInventoryPopup(usingPlayer);
-
-            }
-        }
-    );
-
-}
-
-
-// ============================================================
-// 闇スーモ
-// 資産選択
-// ============================================================
-
-function showDarkSuumoAssetPopup(
-    usingPlayer,
-    targetPlayer,
-    type
-) {
-    const announceResult = (title,message,next,options={}) => window.showEventPopup(title,message,next,{subjectIndex:players.indexOf(type === "send" ? targetPlayer : usingPlayer),advanceAnywhere:true,...options});
-
-
-    let popup = getOrCreatePopupFromTemplate(
-        "darkSuumoAssetPopup",
-        "darkSuumoAssetPopupTemplate"
-    );
-    const hidePopup = () => { window.Plane02Layout?.release(popup); popup.style.display = "none"; };
-
-    const assetList =
-        popup.querySelector(".dark-suumo-asset-list");
-
-    const playerName =
-        popup.querySelector(".dark-suumo-player-name");
-
-    const backButton =
-        popup.querySelector(".dark-suumo-back-button");
-
-    const sourcePlayer =
-        type === "send"
-            ? usingPlayer
-            : targetPlayer;
-
-    playerName.textContent = sourcePlayer.name;
-    assetList.replaceChildren();
-
-    const ownedAssets =
-        (sourcePlayer.assets || [])
-            .map(function (assetId) {
-
-                return {
-                    id: Number(assetId),
-                    asset: ASSET_CONTENTS[assetId]
-                };
-
-            })
-            .filter(function (entry) {
-
-                return entry.asset &&
-                    entry.asset.owner === players.indexOf(sourcePlayer);
-
+function showAssetTransferUI(usingPlayer, stage = 'target', targetIndex = null, type = null, remote = false) {
+    window.MoneyTransferUI.show({
+        players,
+        actor: usingPlayer,
+        itemName: ITEM_CONTENTS[22].name,
+        stage, targetIndex, type, remote,
+        icon: getPlayerCharacterIcon,
+        getAssets(source) {
+            const owner = players.indexOf(source);
+            return (source.assets || []).flatMap(assetId => {
+                const id = Number(assetId), asset = ASSET_CONTENTS[id];
+                return asset && asset.owner === owner
+                    ? [{ id, name: asset.name, detail: `${formatG(marketPrice(asset.price))}G` }]
+                    : [];
             });
-
-    if (ownedAssets.length === 0) {
-
-        const emptyTemplate =
-            document.getElementById("darkSuumoEmptyAssetTemplate");
-        assetList.appendChild(
-            emptyTemplate.content.firstElementChild.cloneNode(true)
-        );
-
-    }
-
-    ownedAssets.forEach(function (entry) {
-
-        const rowTemplate =
-            document.getElementById("darkSuumoAssetItemTemplate");
-        const row =
-            rowTemplate.content.firstElementChild.cloneNode(true);
-        row.querySelector(".inventory-item-name").textContent =
-            entry.asset.name;
-        row.querySelector(".inventory-item-effect").textContent =
-            `${formatG(marketPrice(entry.asset.price))}G`;
-        row.querySelector(".inventory-item-use-button").textContent =
-            type === "send" ? "贈与" : "強奪";
-
-        const transferButton = row.querySelector(".inventory-item-use-button");
-        transferButton.onclick = function () {
-                const completeAssetTransfer = function (result) {
-                if (!result) return;
-
-                hidePopup();
-
+        },
+        onSound(sound) {
+            window.GameSE?.play(sound, { shared: true }).catch(error => console.warn('[SE] アイテム操作音:', error));
+        },
+        onSync(nextStage, index, direction) {
+            const data = { itemId: 22, stage: nextStage };
+            if (nextStage !== 'target') data.targetIndex = Number(index);
+            if (nextStage === 'assets') data.type = direction;
+            syncOnlineScreenView('item-action', usingPlayer, 'open', data);
+        },
+        onExit() {
+            syncOnlineScreenView('', usingPlayer, 'close');
+            showInventoryPopup(usingPlayer);
+        },
+        onCommitAsset(direction, index, entry, button) {
+            const target = players[index];
+            if (!target || !ApprovedCommerce.canAct(usingPlayer)) return;
+            const sourcePlayer = direction === 'send' ? usingPlayer : target;
+            if (!(sourcePlayer.assets || []).some(id => Number(id) === entry.id)
+                || ASSET_CONTENTS[entry.id]?.owner !== players.indexOf(sourcePlayer)) {
+                showAssetTransferUI(usingPlayer, 'assets', index, direction);
+                return;
+            }
+            button.disabled = true;
+            const complete = result => {
+                if (!result) { button.disabled = false; return; }
+                window.MoneyTransferUI.close();
                 if (result.immunityBlocked) {
                     syncOnlineScreenView('', usingPlayer, 'close');
-                    announceImmunityBlock("闇スーモ", targetPlayer, usingPlayer);
+                    announceImmunityBlock('闇スーモ', target, usingPlayer);
                     return;
                 }
-
-                send2Sound.pause();
-                send2Sound.currentTime = 0;
-
-                playSharedSE(send2Sound).catch(function (error) {
-
-                    console.error(
-                        "闇スーモSEの再生に失敗しました:",
-                        error
-                    );
-
-                });
-
-                updatePlayerStatusUI(usingPlayer);
-                updatePlayerStatusUI(targetPlayer);
-                renderPlayers();
-
-                announceResult(
-                    type === "send"
-                        ? "🎁 闇スーモ・贈与"
-                        : "💥 闇スーモ・強奪",
-
-                    `${sourcePlayer.name}の資産<br><br>` +
-                    `<strong>${result.assetName}（${formatG(result.price)}G）</strong><br><br>` +
-                    `${type === "send" ? targetPlayer.name : usingPlayer.name}` +
-                    `に移転した！`,
-
-                    function () {
-
-                        finishTurn(usingPlayer);
-
-                    }
-                );
-                };
-
-                if (submitOnlineTargetedItem(22, {
-                    targetIndex: players.indexOf(targetPlayer),
-                    type,
-                    assetId: entry.id
-                }, transferButton, completeAssetTransfer)) return;
-
-                completeAssetTransfer(useAssetTransfer(usingPlayer, targetPlayer, entry.id, type));
+                send2Sound.pause(); send2Sound.currentTime = 0;
+                playSharedSE(send2Sound).catch(error => console.error('闇スーモSEの再生に失敗しました:', error));
+                updatePlayerStatusUI(usingPlayer); updatePlayerStatusUI(target); renderPlayers();
+                const message = document.createElement('span');
+                message.textContent = `${sourcePlayer.name}の資産「${result.assetName}（${formatG(result.price)}G）」を${direction === 'send' ? target.name : usingPlayer.name}に移転した！`;
+                showEventPopup(direction === 'send' ? '🎁 闇スーモ・贈与' : '💥 闇スーモ・強奪', message.innerHTML,
+                    () => finishTurn(usingPlayer), {
+                        subjectIndex: players.indexOf(direction === 'send' ? target : usingPlayer),
+                        advanceAnywhere: true
+                    });
             };
-
-        assetList.appendChild(row);
-
+            if (submitOnlineTargetedItem(22, { targetIndex: index, type: direction, assetId: entry.id }, button, complete)) return;
+            complete(useAssetTransfer(usingPlayer, target, entry.id, direction));
+        }
     });
-
-    backButton.onclick = function () {
-
-        hidePopup();
-
-        showTransferTypePopup(
-            usingPlayer,
-            targetPlayer,
-            {
-                title: "闇スーモ",
-                sendLabel: "🎁 贈与",
-                stealLabel: "💥 強奪",
-
-                onSelect: function (nextType) {
-
-                    showDarkSuumoAssetPopup(
-                        usingPlayer,
-                        targetPlayer,
-                        nextType
-                    );
-
-                },
-
-                onBack: function () {
-
-                    showDarkSuumoPlayerPopup(usingPlayer);
-
-                }
-            }
-        );
-
-    };
-
-    popup.style.display = "block";
-    window.Plane02Layout?.apply(popup);
-    syncOnlineScreenView("item-action", usingPlayer, "open", { itemId: 22, stage: "assets", targetIndex: players.indexOf(targetPlayer), type });
-
 }
 
 

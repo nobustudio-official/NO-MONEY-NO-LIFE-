@@ -7,11 +7,11 @@
     const surchargeVoice = '討伐アナウンス3';
     function icon(player) { return PLAYER_CONTENTS[Number(player.characterId)]?.icon || ''; }
     const guidebookGiftLine = '今回特別に、ボスを討伐した冒険者にはアイテムの贈呈があります！';
-    function guidebookReceipt(main, player, canClaim, claim) {
+    function guidebookReceipt(main, player, canClaim, claim, measuring = false) {
         main.classList.add('bf-stage-receipt', 'bf-guidebook-receipt');
         const card = document.createElement('article');
         card.className = 'bf-receipt-card';
-        card.innerHTML = '<img src="' + esc(icon(player)) + '" alt=""><strong class="bf-receipt-name">' + esc(player.name) + '</strong><strong class="bf-total">攻略本</strong><button type="button" class="bf-action bf-receive">受け取る</button>';
+        card.innerHTML = '<img' + (measuring ? '' : ' src="' + esc(icon(player)) + '"') + ' alt=""><strong class="bf-receipt-name">' + esc(player.name) + '</strong><strong class="bf-total">攻略本</strong><button type="button" class="bf-action bf-receive">受け取る</button>';
         const button = card.querySelector('button');
         button.disabled = !canClaim;
         button.onclick = () => {
@@ -32,6 +32,27 @@
         list.style.setProperty('--recipient-count', '1');
         list.append(card);
         main.append(list);
+    }
+    function measureGuidebookCard() {
+        if (!document.querySelector('.game-screen .game-hud')) return null;
+        // Synchronous, inert measurement using the actual reward markup and CSS.
+        // Never leave a duplicate boss frame, image request or observer behind.
+        const reference = document.createElement('section');
+        reference.id = 'boss-aftermath';
+        reference.dataset.playerCardReference = '';
+        reference.inert = true;
+        reference.setAttribute('aria-hidden', 'true');
+        reference.style.cssText = 'visibility:hidden;pointer-events:none';
+        reference.innerHTML = '<section class="bf-main"><h1>ドロップアイテム受取</h1></section><div class="bf-banner"></div>';
+        const main = reference.querySelector('.bf-main');
+        guidebookReceipt(main, { name: 'プレイヤー1' }, false, () => false, true);
+        try {
+            document.body.append(reference);
+            window.Plane02Layout?.apply(reference, { once: true });
+            window.BossSequencePanelAlignment?.apply(reference, { once: true });
+            const { width, height } = main.querySelector('.bf-receipt-card').getBoundingClientRect();
+            return width > 0 && height > 0 ? { width, height } : null;
+        } finally { reference.remove(); }
     }
     function renderPenaltyEquation(equation, { distance, multiplier, die, normalAmount, additionalAmount, amount }, showDeduction) {
         const formula = `${distance} × ${fmt(multiplier)} × ${die} ＝ <strong>${fmt(normalAmount)}G</strong>`;
@@ -272,5 +293,5 @@
         next.onclick=()=>sendOnce('next');
         root.onclick=event=>{event.stopPropagation();if(!owner || next.hidden || event.target.closest('button,input,select,textarea'))return;sendOnce('next');};
     }
-    window.BossAftermath = Object.freeze({ show, renderOnline, closeOnline });
+    window.BossAftermath = Object.freeze({ show, renderOnline, closeOnline, measureGuidebookCard });
 })();

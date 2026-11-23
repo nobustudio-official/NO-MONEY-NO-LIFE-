@@ -4,7 +4,7 @@
 
     const cleanups = new WeakMap();
 
-    function apply(frame) {
+    function apply(frame, { once = false } = {}) {
         if (!frame) return null;
         cleanups.get(frame)?.();
 
@@ -56,6 +56,8 @@
                 bottom: `${Math.max(0, viewportHeight - panelBottom)}px`
             });
         };
+        if (once) { update(); return null; }
+
         const schedule = () => {
             if (!raf) raf = requestAnimationFrame(update);
         };

@@ -1,0 +1,89 @@
+<!doctype html><meta charset="utf-8"><title>Asset transfer UI regression</title>
+<!-- Run in an isolated profile with run-local-recovery-browser.cjs. -->
+<pre id="report">RUNNING</pre><iframe id="game" style="width:1920px;height:1080px"></iframe>
+<script>
+(async () => {
+    const frame = document.getElementById('game'), results = [], failures = [];
+    let stage = 'setup';
+    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+    const check = (condition, message) => { if (!condition) throw Error(message); };
+    const output = () => document.getElementById('report').textContent = JSON.stringify({ stage, results, failures });
+    try {
+        await new Promise(resolve => { frame.onload = resolve; frame.src = '../index.html?asset-transfer-test=' + Math.random(); });
+        const w = frame.contentWindow, d = w.document;
+        // Keep layout scheduling active in the runner's background iframe.
+        w.requestAnimationFrame = callback => w.setTimeout(() => callback(w.performance.now()), 16);
+        w.cancelAnimationFrame = id => w.clearTimeout(id);
+        w.HTMLMediaElement.prototype.play = () => Promise.resolve();
+        w.waitForGameAssets = () => Promise.resolve();
+        w.addEventListener('error', event => { failures.push(event.message); output(); });
+        await w.localMatchRecoveryReady;
+        await w.loadMapData(); await w.selectBossSquare();
+        const assets = w.eval('ASSET_CONTENTS'), ids = Object.keys(assets).map(Number).slice(0, 2);
+        const actor = { name: 'A', money: 500000, magicPower: 1000, bossDamage: 0, position: 139, characterId: 1, inventory: [22,22], assets: [ids[0]], magic: [1], jobTurnsRemaining: 0, jobReward: 0 };
+        const target = { ...actor, name: 'B', characterId: 2, inventory: [], assets: [ids[1]] };
+        const empty = { ...actor, name: 'C', characterId: 3, inventory: [], assets: [] };
+        w.players = [actor, target, empty];
+        assets[ids[0]].owner = 0; assets[ids[1]].owner = 1;
+        w.OfflineDividends.reset(w.players); w.gameOpeningComplete = true; w.showGameScreen(w.players, 30);
+        const q = selector => d.querySelector('#moneyTransferScreen ' + selector);
+        const all = selector => [...d.querySelectorAll('#moneyTransferScreen ' + selector)];
+        const signature = selector => {
+            const element = q(selector), r = element.getBoundingClientRect(), s = w.getComputedStyle(element);
+            return [r.x, r.y, r.width, r.height, s.backgroundImage, s.backgroundColor, s.borderRadius];
+        };
+        const choose = () => all('.mt-target-card .mt-button')[0].click();
+        for (const [width, height] of [[1920,1080], [1280,720]]) {
+            stage = 'layout ' + width; frame.style.width = width + 'px'; frame.style.height = height + 'px'; await delay(80);
+            w.showItemTransferUI(actor); await delay(80);
+            const reference = ['.mt-panel', '.mt-content', '.mt-target-card'].map(signature);
+            w.showAssetTransferUI(actor); await delay(80);
+            ['.mt-panel', '.mt-content', '.mt-target-card'].forEach((selector, i) => {
+                const current = signature(selector);
+                check(current.every((value, j) => typeof value === 'number' ? Math.abs(value - reference[i][j]) < .7 : value === reference[i][j]),
+                    selector + ' differs from Yamato at ' + width + ': ' + JSON.stringify({reference:reference[i],current}));
+            });
+            check(all('.mt-target-card').length === 2, 'exclude actor, show two player cards');
+            check(q('.mt-panel').hasAttribute('data-plane02'), 'shared panel alignment missing');
+            choose(); await delay(60); const panel = signature('.mt-panel');
+            q('.mt-choice.is-send').click(); await delay(60);
+            check(JSON.stringify(signature('.mt-panel')) === JSON.stringify(panel), 'asset list changed panel size');
+            check(all('.mt-item-row').length === 1 && q('.mt-item-row').textContent.includes(assets[ids[0]].name), 'send must list actor-owned assets');
+            check(q('.mt-item-copy small').textContent.endsWith('G'), 'asset price is missing');
+            q('.mt-back').click(); q('.mt-choice.is-steal').click();
+            check(all('.mt-item-row').length === 1 && q('.mt-item-row').textContent.includes(assets[ids[1]].name), 'steal must list target-owned assets');
+            q('.mt-back').click(); q('.mt-back').click(); q('.mt-back').click();
+            check(!d.getElementById('moneyTransferScreen'), 'back from target must close the screen');
+            check(d.getElementById('inventoryPopup').style.display === 'block', 'back must return to inventory');
+            d.getElementById('inventoryPopup').style.display = 'none';
+        }
+        results.push('Yamato panel, background and player-card geometry match at two viewport sizes; asset prices and back navigation work');
+        stage = 'remote';
+        for (const view of ['target','type','assets']) {
+            w.showAssetTransferUI(actor, view, 1, 'steal', true);
+            check(all('button').every(button => button.disabled), 'observer controls must be disabled: ' + view);
+            all('button').forEach(button => button.click());
+        }
+        check(assets[ids[1]].owner === 1 && actor.inventory.length === 2, 'observer changed asset ownership');
+        results.push('all observer stages remain read-only');
+        stage = 'empty assets';
+        w.showAssetTransferUI(actor, 'assets', 2, 'steal');
+        check(q('.mt-items-empty') && !q('.mt-item-row') && !q('.mt-back').disabled, 'empty assets must allow returning');
+        stage = 'gift';
+        w.showAssetTransferUI(actor, 'assets', 1, 'send');
+        const gift = q('.mt-item-row button'); gift.click(); gift.click();
+        check(assets[ids[0]].owner === 1 && !actor.assets.includes(ids[0]) && target.assets.includes(ids[0]), 'gift ownership not transferred');
+        check(actor.inventory.length === 1 && !d.getElementById('moneyTransferScreen'), 'gift must consume once and close');
+        check(d.getElementById('eventPopup').textContent.includes(assets[ids[0]].name), 'gift result is missing');
+        d.getElementById('eventPopup').style.display = 'none';
+        stage = 'steal';
+        w.showAssetTransferUI(actor, 'assets', 1, 'steal');
+        const row = all('.mt-item-row').find(element => element.textContent.includes(assets[ids[1]].name));
+        row.querySelector('button').click();
+        check(assets[ids[1]].owner === 0 && actor.assets.includes(ids[1]) && !target.assets.includes(ids[1]), 'steal ownership not transferred');
+        check(actor.inventory.length === 0 && !d.getElementById('moneyTransferScreen'), 'steal must consume once and close');
+        results.push('empty assets, gift, steal, result display and single item consumption work through actual game handlers');
+    } catch (error) { failures.push(error.stack || String(error)); }
+    stage = 'complete'; output(); document.body.dataset.complete = 'true';
+})();
+</script>

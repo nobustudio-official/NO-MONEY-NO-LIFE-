@@ -8,6 +8,7 @@
         close();
         const { players, actor, stage, targetIndex, type, remote } = cfg;
         const isItemTransfer = cfg.itemName != null;
+        const isAssetTransfer = typeof cfg.getAssets === 'function';
         const itemName = cfg.itemName || ITEM_CONTENTS[19].name;
         let pendingButton = null;
         const btn = (text, fn, className = 'mt-button', sound = 'confirm') => {
@@ -18,14 +19,15 @@
         const target = players[targetIndex];
         const root = node('section', stage === 'result' ? 'mt-result' : ''); root.id = 'moneyTransferScreen';
         const panel = node('div', `mt-panel${cfg.description ? ' has-description' : ''}`), content = node('div', 'mt-content');
-        const sendLabel = isItemTransfer ? '渡す' : '送金';
-        const stealLabel = isItemTransfer ? '奪う' : '強奪';
+        const sendLabel = isAssetTransfer ? '贈与' : isItemTransfer ? '渡す' : '送金';
+        const stealLabel = isAssetTransfer ? '強奪' : isItemTransfer ? '奪う' : '強奪';
         let title;
         if (stage === 'target') title = `${itemName}の対象を選んでください`;
         else if (stage === 'type') title = isItemTransfer
-            ? `${target.name}に対し、渡す／奪うを選んでください`
+            ? `${target.name}に対し、${sendLabel}／${stealLabel}を選んでください`
             : `${target.name}に対し、送金または強奪を選んでください`;
         else if (stage === 'items') title = type === 'send' ? '渡すアイテムを選んでください' : `${target.name}から奪うアイテムを選んでください`;
+        else if (stage === 'assets') title = type === 'send' ? '贈与する資産を選んでください' : `${target.name}から強奪する資産を選んでください`;
         else title = `ゴールドの移動　- ${type === 'send' ? sendLabel : stealLabel} -`;
         panel.append(node('h2', 'mt-title', title));
         if (cfg.description) panel.append(node('p', 'mt-description', cfg.description));
@@ -62,25 +64,30 @@
             const choices = node('div', 'mt-choices');
             for (const direction of ['send', 'steal']) {
                 const from = direction === 'send' ? actor : target, to = direction === 'send' ? target : actor;
-                const card = btn('', () => go(isItemTransfer ? 'items' : 'amount', targetIndex, direction), `mt-choice is-${direction}`);
+                const card = btn('', () => go(isAssetTransfer ? 'assets' : isItemTransfer ? 'items' : 'amount', targetIndex, direction), `mt-choice is-${direction}`);
                 card.disabled = Boolean(remote) || (!isItemTransfer && !limit(from));
                 card.append(node('b', 'mt-choice-title', direction === 'send' ? sendLabel : stealLabel), route(from, to, false, false));
                 if (!isItemTransfer) card.append(node('small', '', `上限 ${format(limit(from))}G${limit(from) ? '' : '（選択できる金額がありません）'}`));
                 choices.append(card);
             }
             content.append(choices);
-        } else if (stage === 'items') {
+        } else if (stage === 'items' || stage === 'assets') {
             const list = node('ul', 'mt-items');
-            const entries = cfg.getItems(type === 'send' ? actor : target, type);
-            if (!entries.length) list.append(node('li', 'mt-items-empty', '選べるアイテムがありません。'));
+            const entries = (isAssetTransfer ? cfg.getAssets : cfg.getItems)(type === 'send' ? actor : target, type);
+            if (!entries.length) list.append(node('li', 'mt-items-empty', isAssetTransfer ? '移転できる資産はありません。' : '選べるアイテムがありません。'));
             for (const entry of entries) {
                 const row = node('li', 'mt-item-row');
                 const action = btn(type === 'send' ? sendLabel : stealLabel, () => {
                     pendingButton = action;
-                    cfg.onCommitItem(type, targetIndex, entry, action);
+                    if (isAssetTransfer) cfg.onCommitAsset(type, targetIndex, entry, action);
+                    else cfg.onCommitItem(type, targetIndex, entry, action);
                 }, 'mt-button', null);
                 action.disabled = Boolean(remote);
-                row.append(node('b', '', entry.name), action);
+                const name = node('b', '', entry.name);
+                if (entry.detail) {
+                    const copy = node('div', 'mt-item-copy');
+                    copy.append(name, node('small', '', entry.detail)); row.append(copy, action);
+                } else row.append(name, action);
                 list.append(row);
             }
             content.append(list);
@@ -116,7 +123,7 @@
             }
         }
         document.body.append(root);
-        if ([13, 19, 21].some(id => ITEM_CONTENTS[id]?.name === itemName)) window.Plane02Layout?.apply(panel);
+        if ([13, 19, 21, 22].some(id => ITEM_CONTENTS[id]?.name === itemName)) window.Plane02Layout?.apply(panel);
         const telop = root.querySelector('.mt-telop');
         window.TelopStandard?.apply(telop, { message: telop?.querySelector('span'), portrait: telop?.querySelector('img') });
         if (!remote) cfg.onSync(stage, targetIndex, type, stage === 'amount' ? Number(root.querySelector('.mt-amount').value) : cfg.amount);

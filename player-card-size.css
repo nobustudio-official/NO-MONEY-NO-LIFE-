@@ -1,0 +1,22 @@
+/* Only the requested player cards; HUD cards and dialogue portraits keep their sizes.
+   The inert measurement frame must retain the original guidebook receipt sizing. */
+:is(
+    .mt-target-card,
+    #moneyTransferScreen .mt-person,
+    .lost-magic-target-card,
+    .hatataki-player-card,
+    .special-item-card,
+    #boss-aftermath:not([data-player-card-reference]) .bf-target-card,
+    #boss-aftermath:not([data-player-card-reference]) .bf-receipt-card,
+    .guidebook-offer-list .bf-receipt-card,
+    .special-reward-card
+) {
+    box-sizing: border-box;
+    width: var(--player-card-width) !important;
+    min-width: var(--player-card-width) !important;
+    max-width: var(--player-card-width) !important;
+    height: var(--player-card-height) !important;
+    min-height: var(--player-card-height) !important;
+    max-height: var(--player-card-height) !important;
+    flex: 0 0 auto !important;
+}
