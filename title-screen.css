@@ -640,7 +640,7 @@
 
     .title-screen.is-setup[data-setup-stage="players"] .title-screen__setup-card {
         width: min(1120px, 100%);
-        height: min(760px, 100%);
+        height: min(720px, calc(100% - 40px));
         max-height: 100%;
         box-sizing: border-box;
         overflow: hidden;
@@ -664,7 +664,7 @@
 
     .title-screen.is-setup[data-setup-stage="turns"] .title-screen__setup-card {
         width: min(1120px, 100%);
-        height: min(760px, 100%);
+        height: min(720px, calc(100% - 40px));
         max-height: 100%;
         box-sizing: border-box;
         overflow: hidden;
@@ -729,7 +729,7 @@
 
     .title-screen.is-setup[data-setup-stage="turns"] .turn-select-group {
         justify-content: flex-start;
-        padding-top: clamp(12px, 2vh, 18px);
+        padding-top: 0;
         padding-bottom: 0;
     }
 
