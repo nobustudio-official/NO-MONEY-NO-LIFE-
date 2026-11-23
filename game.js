@@ -1095,6 +1095,8 @@ if (callback) {
 const GAME_LOADING_MIN_TIME = 1200;
 
 const GAME_LOADING_ASSETS = [
+    "images/characters/npc/jobs/ギルド-店員.webp",
+    "images/backgrounds/scenes/王都ロビー.webp",
     "images/map/space-icons/start.webp",
     "images/map/space-icons/gold.webp",
     "images/map/space-icons/job.webp",
