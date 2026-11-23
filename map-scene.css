@@ -66,6 +66,9 @@
     background-attachment: local;
     background-origin: padding-box;
 }
+.game-screen > .map-area.map-ocean.map-ocean-flat {
+    background-image: none;
+}
 
 /* The overview already contains scenery. Squares and characters remain live above it. */
 #mapBoard.map-overview-active > .map-workshop-objects{display:none}

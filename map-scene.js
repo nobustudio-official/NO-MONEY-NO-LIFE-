@@ -36,6 +36,7 @@
   // width here so it stays thin but visible at the full-continent overview.
   document.documentElement.style.setProperty('--map-boundary-width',1.2/scale+'px');
   area.classList.add('map-ocean');
+  area.classList.toggle('map-ocean-flat',scale<=.6);
   if(!observedAreas.has(area)){observedAreas.add(area);area.addEventListener('scroll',clampScroll,{passive:true});}
   // Center-origin enlargement otherwise pushes the world's left/top into
   // negative, unreachable scroll coordinates. Reserve matching space on both sides.
