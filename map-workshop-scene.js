@@ -12,6 +12,18 @@
     const targetTemplate = 'imported-small-0a0014a28f28';
     const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
     const streamImages = Boolean(window.MapDetailLevel?.touchDevice);
+    const objectImageDwellMs = 600;
+    const objectImageMargin = 48;
+    function sameViewport(a, b) {
+        return Boolean(a && b && ['left', 'right', 'top', 'bottom'].every(key => Math.abs(a[key] - b[key]) < .5));
+    }
+    function cancelObjectLoad(state, row) {
+        const token = state.pendingObjectImages.get(row);
+        if (token === undefined) return;
+        state.pendingObjectImages.delete(row);
+        if (row.objectImageToken === token) row.objectImageToken++;
+        window.MapDetailLevel?.releaseImage(row.image);
+    }
     function prepareRoads() {
         return Promise.all([MapCapitalRoads.prepare(), MapBridgeRoads.prepare(), MapRegionRoads.prepare()]);
     }
@@ -135,11 +147,26 @@
     }
     function setViewport(board,bounds,visibleBounds=bounds) {
         const state=boards.get(board);if(!state)return;
+        const viewportChanged=!sameViewport(state.visibleBounds,visibleBounds);
         state.bounds=bounds;
         state.visibleBounds=visibleBounds;
+        if(state.streamImages&&viewportChanged){
+            state.objectImagesReady=false;
+            clearTimeout(state.objectImageTimer);
+            for(const row of [...state.pendingObjectImages.keys()])cancelObjectLoad(state,row);
+            state.objectImageTimer=window.setTimeout(()=>{
+                state.objectImageTimer=0;
+                if(!board.isConnected||!state.bounds||!state.visibleBounds)return;
+                state.objectImagesReady=true;
+                setViewport(board,state.bounds,state.visibleBounds);
+            },objectImageDwellMs);
+        }
         const overview=board.classList.contains('map-overview-active');
         const lowDetail=window.MapDetailLevel?.touchDevice&&getMapZoomUI()<=.6;
         const zooming=board.classList.contains('map-zoom-interacting');
+        const objectMargin=objectImageMargin/Math.max(.01,getMapZoomUI()||1);
+        const imageBounds={left:visibleBounds.left-objectMargin,right:visibleBounds.right+objectMargin,
+            top:visibleBounds.top-objectMargin,bottom:visibleBounds.bottom+objectMargin};
         for(const row of state.rows){
             const {image,extent}=row;
             const visible=!overview&&!lowDetail&&extent.left<bounds.right&&extent.right>bounds.left&&extent.top<bounds.bottom&&extent.bottom>bounds.top;
@@ -150,17 +177,30 @@
             }
             if(!image)continue;
             if(state.streamImages){
-                if(visible&&!zooming&&image.getAttribute('src')!==row.asset){
+                const keepImage=!overview&&!lowDetail&&extent.left<imageBounds.right&&extent.right>imageBounds.left&&extent.top<imageBounds.bottom&&extent.bottom>imageBounds.top;
+                if(!keepImage){
+                    cancelObjectLoad(state,row);
+                    window.MapDetailLevel?.releaseImage(image);
+                }else if(onScreen&&!zooming&&state.objectImagesReady&&!image.hasAttribute('src')&&!state.pendingObjectImages.has(row)){
                     const centerX=(visibleBounds.left+visibleBounds.right)/2,centerY=(visibleBounds.top+visibleBounds.bottom)/2;
                     const distance=(row.object.x-centerX)**2+(row.object.y-centerY)**2;
-                    window.MapDetailLevel?.requestImage(image,row.asset,onScreen?0:1,distance).catch(()=>{});
-                } else if(!visible)window.MapDetailLevel?.releaseImage(image);
+                    const token=(row.objectImageToken||0)+1;
+                    row.objectImageToken=token;
+                    state.pendingObjectImages.set(row,token);
+                    Promise.resolve(window.MapDetailLevel?.requestImage(image,row.asset,0,distance)).catch(()=>{}).finally(()=>{
+                        if(row.objectImageToken===token)state.pendingObjectImages.delete(row);
+                    });
+                }
             }
         }
         if(!state.effectTimer)updateMagicEffects(board,state);
     }
     function releaseDetail(board) {
         const state=boards.get(board);if(!state?.streamImages)return;
+        clearTimeout(state.objectImageTimer);
+        state.objectImageTimer=0;
+        state.objectImagesReady=false;
+        for(const row of [...state.pendingObjectImages.keys()])cancelObjectLoad(state,row);
         for(const row of state.rows){
             if(!row.image)continue;
             row.sharp=false;
@@ -213,7 +253,8 @@
             const board=background.closest('#mapBoard');
             if(!board)return;
             board.append(layer);
-            boards.set(board,{rows,bounds:null,visibleBounds:null,pairs:effects.pairs,effectTimer:0,streamImages:useStreaming});
+            boards.set(board,{rows,bounds:null,visibleBounds:null,pairs:effects.pairs,effectTimer:0,streamImages:useStreaming,
+                objectImageTimer:0,objectImagesReady:false,pendingObjectImages:new Map()});
             window.MapDetailLevel?.setZoom(board,getMapZoomUI());
         });
     }
