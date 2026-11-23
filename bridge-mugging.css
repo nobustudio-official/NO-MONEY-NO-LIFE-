@@ -21,3 +21,7 @@
 /* Keep the NPC name above its dialogue within the compact AN06 panel. */
 .bridge-mugging-speaker{top:clamp(3px,.6vh,6px)}
 .bridge-mugging-an06:not(.has-player-icon) .bridge-mugging-copy{top:calc(clamp(3px,.6vh,6px) + 1.5em);transform:none;max-height:calc(100% - 30px);overflow-y:auto}
+
+/* Match the player-line text to the common AN02 arrival announcement. */
+.bridge-mugging-an06.has-player-icon .bridge-mugging-copy{left:calc(clamp(14px,1.2vw,22px) + 60px);right:clamp(72px,6vw,115px);top:50%;transform:translateY(-50%);max-height:var(--an02-copy-max-height);overflow:auto;overflow-wrap:anywhere;font:600 clamp(14px,2.1vh,22px)/1.35 "Yu Gothic","Meiryo",sans-serif}
+@media(max-width:700px),(pointer:coarse) and (max-height:500px){.bridge-mugging-an06.has-player-icon .bridge-mugging-player-icon{left:16px}.bridge-mugging-an06.has-player-icon .bridge-mugging-copy{left:calc(clamp(8px,2.2vh,16px) + 60px);right:72px}}
