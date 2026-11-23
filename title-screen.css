@@ -275,6 +275,21 @@
     text-shadow: 0 2px 9px #344958c9, 0 0 22px #34495870;
 }
 
+.title-screen__actions {
+    display: grid;
+    grid-template-areas: "actions";
+    grid-template-rows: 62px;
+    justify-items: center;
+    align-items: start;
+    width: 100%;
+    margin-top: var(--title-action-gap);
+}
+
+.title-screen__actions > #startButton,
+.title-screen__actions > .title-screen__mode-menu {
+    grid-area: actions;
+}
+
 .title-screen #startButton {
     display: flex;
     align-items: center;
@@ -282,7 +297,7 @@
     gap: 24px;
     min-width: min(320px, 78vw);
     min-height: 62px;
-    margin-top: var(--title-action-gap);
+    margin-top: 0;
     padding: 14px 28px 14px 36px;
     border: 1px solid #fff0bd;
     border-radius: 4px;
@@ -308,7 +323,7 @@
     display: grid;
     width: min(100%, 360px);
     gap: 12px;
-    margin-top: var(--title-action-gap);
+    margin-top: 0;
     animation: title-mode-enter .28s ease-out both;
 }
 
@@ -777,6 +792,7 @@
 @media (max-height: 620px) {
     .title-screen { padding-top: 14px; padding-bottom: 14px; }
     .title-screen__hero { --title-action-gap: 16px; }
+    .title-screen__actions { grid-template-rows: 50px; }
     .title-screen__crest { width: 54px; margin-bottom: 7px; }
     .title-screen__hero { padding-block: 2px; }
     .title-screen .game-subtitle { margin-top: 12px; }
