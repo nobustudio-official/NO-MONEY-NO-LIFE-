@@ -1,0 +1,9 @@
+/* Disable browser double-tap zoom throughout the game while preserving
+ * ordinary panning and pinch-to-zoom gestures.
+ */
+html,
+body,
+.game-container,
+#gameViewportFrame {
+    touch-action: manipulation;
+}
