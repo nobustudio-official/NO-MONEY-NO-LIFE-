@@ -159,17 +159,19 @@
         if (kind === 'choice') {
             const choices = make('div', 'guidebook-choices br-choices');
             const open = make('div', 'br-card-slot'), restore = make('div', 'br-card-slot');
-            const openButton = button('開く', () => go('read'));
+            const openButton = button('開く', () => go('read'), 'guidebook-choice-button');
             openButton.dataset.reward = 'money';
             openButton.dataset.frameId = 'BT03-G';
-            const backButton = button('戻る', back);
+            const backButton = button('戻る', back, 'guidebook-choice-button guidebook-choice-back');
             backButton.dataset.frameId = 'BT03-S';
+            for (const card of [openButton, backButton]) {
+                card.replaceChildren(make('span', 'br-card-front', card.textContent));
+            }
             open.append(openButton);
             restore.append(backButton);
             if (book.remaining) panel.append(make('p', 'guidebook-expiry', '消失まであと ' + GuidebookRules.remainingTurns(book) + 'ターン'));
             choices.append(open, image(closedBook, '閉じた攻略本'), restore);
             panel.append(choices);
-            announce('攻略本を開きますか？ ' + (online ? '他の冒険者からは中身は見えません。' : '他の冒険者から画面が見えない位置で開いてください。'), active);
         } else if (kind === 'reading') {
             if (control) {
                 const heading = make('header', 'guidebook-heading');
@@ -285,10 +287,15 @@
             next();
         }
         panel.hidden = panel.hidden || !panel.childNodes.length;
-        if (banner.childNodes.length) banner.append(notice);
-        root.append(panel, banner);
+        if (kind === 'choice') {
+            panel.append(notice);
+            root.append(panel);
+        } else {
+            if (banner.childNodes.length) banner.append(notice);
+            root.append(panel, banner);
+        }
         document.body.append(root);
-        styleBanner(banner);
+        if (kind !== 'choice') styleBanner(banner);
         const screen = document.querySelector('.game-screen');
         const hud = screen?.querySelector('.game-hud');
         if (hud && !panel.hidden) stopHudTracking = trackHud(root, hud);

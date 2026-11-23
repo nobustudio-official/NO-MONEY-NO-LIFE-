@@ -69,11 +69,7 @@
                 list.append(row);
             });
         }
-        const announcement = node('div', 'duplicate-item-announcement', candidates.length
-            ? '複製するアイテムを選んでください。'
-            : '複製できるアイテムがありません。');
-        root.append(panel, announcement);
-        window.TelopStandard?.apply(announcement);
+        root.append(panel);
         document.body.append(root);
         if (!observer) {
             const screen = document.querySelector('.game-screen');

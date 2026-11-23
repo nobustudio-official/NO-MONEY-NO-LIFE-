@@ -40,7 +40,6 @@
         if (stage !== 'result') {
             const back = btn('戻る', () => { if (stage === 'target') { close(); cfg.onExit(); } else if (stage === 'type') go('target'); else go('type'); }, 'mt-back');
             back.disabled = Boolean(remote); panel.append(back);
-            const telop = node('div', 'mt-telop'), message=node('span', ''), itemLabel=node('strong','mt-item-name',itemName); message.append(itemLabel,document.createTextNode('を使った！')); telop.append(portrait(actor), message); root.append(telop);
         }
         if (stage === 'target') {
             const list = node('div', 'mt-targets');
@@ -124,8 +123,6 @@
         }
         document.body.append(root);
         if ([13, 19, 21, 22].some(id => ITEM_CONTENTS[id]?.name === itemName)) window.Plane02Layout?.apply(panel);
-        const telop = root.querySelector('.mt-telop');
-        window.TelopStandard?.apply(telop, { message: telop?.querySelector('span'), portrait: telop?.querySelector('img') });
         if (!remote) cfg.onSync(stage, targetIndex, type, stage === 'amount' ? Number(root.querySelector('.mt-amount').value) : cfg.amount);
     }
     window.MoneyTransferUI = Object.freeze({ show, close, limit });

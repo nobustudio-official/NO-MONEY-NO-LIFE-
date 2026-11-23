@@ -90,6 +90,7 @@
         }
         const container = ensureRoot();
         container.dataset.stage = view.stage;
+        root._telop.hidden = ['targets', 'magic'].includes(view.stage);
         container.onclick = null;
         root._title.textContent = ITEM_CONTENTS[18].name;
         root._body.replaceChildren();
@@ -137,7 +138,6 @@
                 grid.append(card);
             });
             root._body.append(grid);
-            setCopy(view.actorIcon, [document.createTextNode('魔法を失わせるプレイヤーを選んでください。')]);
             setBack(handlers.onBack, !view.readOnly);
             container.onclick = null;
             return;
@@ -149,7 +149,6 @@
             (view.magics || []).forEach(magic => list.append(createMagicRow(magic)));
             if (!view.magics?.length) list.append(node('p', 'lost-magic-empty', '魔法はありません。'));
             root._body.append(list);
-            setCopy(view.actorIcon, [document.createTextNode(`${view.targetName || '対象プレイヤー'}から失わせる魔法を選んでください。`) ]);
             setBack(handlers.onBack, !view.readOnly);
         }
         container.onclick = null;
@@ -178,6 +177,7 @@
         const list = root._body.querySelector('.lost-magic-list');
         if (!list) return;
         root.dataset.stage = 'result';
+        root._telop.hidden = false;
         root._panel.hidden = false;
         root._back.hidden = true;
         container.onclick = null;

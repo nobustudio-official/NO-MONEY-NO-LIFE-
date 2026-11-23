@@ -7,6 +7,7 @@
         if (!popup) { popup = document.createElement('section'); popup.id='specialItemPopup'; popup.className='special-item-popup'; document.body.append(popup); }
         window.Plane02Layout?.release(popup.querySelector('.special-item-panel'));
         popup.replaceChildren(); popup.hidden=false;
+        popup.dataset.itemSelection = String(stage !== 'result');
         const panel=document.createElement('section'); panel.className='special-item-panel';
         const header=document.createElement('header'), title=document.createElement('h2'), back=document.createElement('button');
         back.className='special-item-back';
@@ -36,12 +37,14 @@
         }
         panel.append(choices);popup.append(panel);
         if ([24,26].includes(Number(itemId))) window.Plane02Layout?.apply(panel);
-        const announcement=document.createElement('div');announcement.className='special-item-announcement';
-        const portrait=document.createElement('img');portrait.src=options.icon(actorIndex);portrait.alt='';
-        const itemName=ITEM_CONTENTS[itemId].name;
-        const text=document.createElement('span'),name=document.createElement('strong');name.className='special-item-announcement-name';name.textContent=itemName;
-        text.append(name,document.createTextNode('を使った！'));announcement.append(portrait,text);popup.append(announcement);
-        window.TelopStandard?.apply(announcement, { message: text, portrait });
+        if (stage === 'result') {
+            const announcement=document.createElement('div');announcement.className='special-item-announcement';
+            const portrait=document.createElement('img');portrait.src=options.icon(actorIndex);portrait.alt='';
+            const itemName=ITEM_CONTENTS[itemId].name;
+            const text=document.createElement('span'),name=document.createElement('strong');name.className='special-item-announcement-name';name.textContent=itemName;
+            text.append(name,document.createTextNode('を使った！'));announcement.append(portrait,text);popup.append(announcement);
+            window.TelopStandard?.apply(announcement, { message: text, portrait });
+        }
     }
     window.SpecialItemUI = Object.freeze({show, hide});
 })();

@@ -65,38 +65,26 @@
             action.onclick = () => view.status === 'end' ? handlers.onEnd?.() : handlers.onNext?.();
             panel.append(action);
         }
-        if (!view.notice) scene.append(panel);
-
-        const telop = element('section', 'hatataki-an02');
-        telop.dataset.frameId = 'AN02';
-        const portrait = element('img', 'hatataki-an02-icon');
-        const copy = element('p', 'hatataki-an02-copy');
         if (view.notice) {
+            body.classList.add('hatataki-notice');
+            const portrait = element('img');
             portrait.src = view.notice.icon || '';
             portrait.alt = '';
-            copy.textContent = view.notice.text;
+            const copy = element('p', '', view.notice.text);
             const next = element('button', 'hatataki-button hatataki-notice-next', '次へ ▶');
             next.type = 'button';
             next.disabled = Boolean(view.readOnly || view.busy);
             next.onclick = () => handlers.onNotice?.();
-            telop.append(next);
+            body.replaceChildren(portrait, copy, next);
+            panel.querySelector('.hatataki-progress')?.remove();
         } else if (view.evaded) {
-            portrait.src = view.targetIcon || '';
-            portrait.alt = '';
-            copy.textContent = '攻撃をかわした！';
-        } else {
-            portrait.src = view.actorIcon || '';
-            portrait.alt = '';
-            if (targetComplete && destroyedCount) {
-                copy.textContent = `${name.textContent}のアイテムを${destroyedCount}個叩き割った！`;
-            } else {
-                copy.append(element('strong', 'hatataki-item-name', ITEM_CONTENTS[17].name), document.createTextNode('を使った！'));
-            }
+            panel.append(element('p', 'hatataki-summary', '攻撃をかわした！'));
+        } else if (targetComplete && destroyedCount) {
+            panel.append(element('p', 'hatataki-summary', `${name.textContent}のアイテムを${destroyedCount}個叩き割った！`));
         }
-        telop.append(portrait, copy);
-        root.append(scene, telop);
+        scene.append(panel);
+        root.append(scene);
         document.body.append(root);
-        window.TelopStandard?.apply(telop, { message: copy, portrait, next: telop.querySelector('.hatataki-notice-next') });
         const activePanel = root.querySelector('.hatataki-panel');
         if (activePanel) window.Plane02Layout?.apply(activePanel);
     }

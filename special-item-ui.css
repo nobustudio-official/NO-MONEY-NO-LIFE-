@@ -17,9 +17,9 @@
 .special-item-destination div { display:flex; flex-direction:column; align-items:center; gap:14px; }
 .special-item-announcement { position:absolute; left:50%; bottom:4%; transform:translateX(-50%); width:min(81%,1560px); min-height:130px; border:1px solid #ccae7b; border-radius:14px; background:linear-gradient(125deg,#18384fef,#10293ced); display:flex; align-items:center; padding:20px 26px; font:700 22px 'Yu Gothic',Meiryo,sans-serif; }
 .special-item-panel { bottom:calc(var(--an02-bottom) + var(--an02-min-height) + 18px); height:auto; min-height:0; box-sizing:border-box; padding-bottom:68px; }
-.special-item-panel[data-plane02] { padding-bottom:calc(var(--an02-bottom) + var(--an02-min-height) + 68px); }
 .special-item-back { position:absolute; left:26px; bottom:18px; }
-.special-item-panel[data-plane02] .special-item-back { bottom:calc(var(--an02-bottom) + var(--an02-min-height) + 18px); }
+.special-item-popup[data-item-selection="true"] .special-item-panel { bottom:18px; padding-bottom:68px; }
+.special-item-popup[data-item-selection="true"] .special-item-back { bottom:18px; }
 .special-item-choices.is-equalize { flex-direction:column; gap:12px; }
 .special-equalize-cards { display:flex; justify-content:center; gap:12px; }
 .special-equalize-average { margin:0; color:#ffdc83; font-size:20px; font-weight:700; }

@@ -184,7 +184,8 @@
 .lost-magic-back { position: absolute; left: 28px; bottom: 18px; z-index: 2; }
 .lost-magic-back[hidden] { display: none; }
 
-/* AN02: same width, location and height during intro, selection and result. */
+/* AN02 is reserved for the introduction, blocked notice and result. */
+.lost-magic-an02[hidden] { display: none !important; }
 .lost-magic-an02 {
     position: absolute;
     left: 3%;

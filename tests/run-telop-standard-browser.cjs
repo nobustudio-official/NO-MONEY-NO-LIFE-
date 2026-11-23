@@ -46,28 +46,14 @@ async function childMain() {
         const add = (name, build, selector, upper, options = {}) => cases.push({ name, build, selector, upper, options });
         const lostView = { actorIcon: icon(0), targetIcon: icon(1), targets: [{ index: 1, name: players[1].name, icon: icon(1), hasMagic: true }],
             targetName: players[1].name, magics: [{ id: 1, name: 'テスト魔法', icon: icon(0) }], magicId: 1, magicName: 'テスト魔法', blockedText: '無敵の加護で防いだ！', recovery: true };
-        for (const stage of ['intro', 'targets', 'magic', 'result', 'blocked']) {
+        for (const stage of ['intro', 'result', 'blocked']) {
             add('lost-' + stage, () => LostMagicUI.render({ ...lostView, stage }), '.lost-magic-an02', '.lost-magic-panel',
                 { message: '.lost-magic-an02-copy', portrait: 'img', next: '.lost-magic-an02-next' });
         }
-        for (const itemId of [13, 19, 21]) {
-            for (const stage of itemId === 13 ? ['target'] : itemId === 19 ? ['target', 'type', 'amount'] : ['target', 'type', 'items']) {
-                add('transfer-' + itemId + '-' + stage, () => MoneyTransferUI.show({ players, actor: players[0], stage, targetIndex: 1, type: 'send', remote: false,
-                    itemName: itemId === 19 ? undefined : ITEM_CONTENTS[itemId].name, icon, onSync() {}, onExit() {}, getItems: () => [], onCommit() {} }),
-                    '.mt-telop', '.mt-panel', { message: 'span', portrait: 'img' });
-            }
-        }
-        for (const [itemId, stages] of [[24, ['areas', 'destination']], [25, ['preview', 'result']], [26, ['targets']]]) {
+        for (const [itemId, stages] of [[25, ['result']]]) {
             for (const stage of stages) add('special-' + itemId + '-' + stage, () => SpecialItemUI.show({ itemId, stage, destination: 'town', players, actorIndex: 0, icon }),
                 '.special-item-announcement', '.special-item-panel', { message: 'span', portrait: 'img' });
         }
-        add('hatataki', () => HatatakiHakenUI.render({ destroyedItems: [], status: 'attack', targetIndex: 1, targetName: 'プレイヤー2', targetIcon: icon(1), actorIcon: icon(0) }),
-            '.hatataki-an02', '.hatataki-panel', { message: 'p', portrait: 'img' });
-        add('hatataki-notice', () => HatatakiHakenUI.render({ destroyedItems: [], status: 'end', notice: { icon: icon(0), text: '攻撃をかわした！' } }),
-            '.hatataki-an02', null, { message: 'p', portrait: 'img', next: '.hatataki-notice-next' });
-        add('fukubukuro', () => FukubukuroUI.show({ eventId: 'test', status: 'ready', cards: [{ name: '人力車', rank: 1 }] }, players[0], { owner: false, playerIcon: icon(0) }),
-            '.fukubukuro-an02', '.fukubukuro-sp04', { message: 'p', portrait: 'img', reserveSpace: true });
-        add('duplicate', () => DuplicateItemUI.show({ player: players[0], useIndex: -1, observer: true }), '.duplicate-item-announcement', '.duplicate-item-panel');
         for (const kind of ['expired', 'immunity-expired', 'last-chance']) {
             add('guidebook-' + kind, () => GuidebookUI.render({ kind, owner: 0 }, ctx), '.guidebook-an02', '.guidebook-panel',
                 { message: 'p', portrait: 'img', next: '.guidebook-next', notice: '.guidebook-notice', reserveSpace: true });

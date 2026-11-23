@@ -22,11 +22,16 @@
 #jobPopup.job-approved-layout .job-choices .br-card-slot:first-child{grid-column:1}
 #jobPopup.job-approved-layout .job-choices .br-card-slot:last-child{grid-column:3}
 #jobPopup.job-approved-layout .job-choices .br-card-slot,#jobPopup.job-approved-layout .job-choices button{animation:none;translate:none}
-#jobPopup.job-approved-layout .job-choices button{--reward-accent:#f2d58d;flex:none;width:100%;height:100%;min-height:0;pointer-events:auto;padding:0 6px;color:#fcfcfc;font:600 clamp(12px,1.7vw,22px)/1.1 "Yu Gothic","Meiryo",sans-serif;white-space:nowrap;cursor:pointer}
-#jobPopup.job-approved-layout .job-choices .br-card-front{display:block;width:100%;font:inherit;color:inherit;margin:0;white-space:nowrap}
-#jobPopup.job-approved-layout .job-choices button:hover,#jobPopup.job-approved-layout .job-choices button:focus-visible,#jobPopup.job-approved-layout .job-choices button:active{background:rgba(16,25,35,.95)}
-#jobPopup.job-approved-layout .job-choices .job-none-button{--reward-accent:#c4ccd4;box-shadow:0 10px 20px #071c344d,inset 0 0 0 5px #101923,inset 0 0 0 6px #c4ccd433}
-#jobPopup.job-approved-layout .job-choices .job-none-button:hover,#jobPopup.job-approved-layout .job-choices .job-none-button:focus-visible{outline-color:#c4ccd4}
+#jobPopup.job-approved-layout .job-choices button,
+.guidebook-choices .guidebook-choice-button{--reward-accent:#f2d58d;flex:none;width:100%;height:100%;min-height:0;pointer-events:auto;padding:0 6px;color:#fcfcfc;font:600 clamp(12px,1.7vw,22px)/1.1 "Yu Gothic","Meiryo",sans-serif;white-space:nowrap;cursor:pointer}
+#jobPopup.job-approved-layout .job-choices .br-card-front,
+.guidebook-choices .guidebook-choice-button .br-card-front{display:block;width:100%;font:inherit;color:inherit;margin:0;white-space:nowrap}
+#jobPopup.job-approved-layout .job-choices button:hover,#jobPopup.job-approved-layout .job-choices button:focus-visible,#jobPopup.job-approved-layout .job-choices button:active,
+.guidebook-choices .guidebook-choice-button:is(:hover,:focus-visible,:active){background:rgba(16,25,35,.95)}
+#jobPopup.job-approved-layout .job-choices .job-none-button,
+.guidebook-choices .guidebook-choice-back{--reward-accent:#c4ccd4;box-shadow:0 10px 20px #071c344d,inset 0 0 0 5px #101923,inset 0 0 0 6px #c4ccd433}
+#jobPopup.job-approved-layout .job-choices .job-none-button:hover,#jobPopup.job-approved-layout .job-choices .job-none-button:focus-visible,
+.guidebook-choices .guidebook-choice-back:is(:hover,:focus-visible){outline-color:#c4ccd4}
 #jobPopup.job-approved-layout .job-choices button:disabled{cursor:default}
 @media(max-width:700px),(pointer:coarse) and (max-height:500px){
  #jobPopup.job-approved-layout :is(.job-dialogue-box,.job-choice-panel){padding:clamp(8px,2.2vh,16px)}

@@ -108,7 +108,10 @@
 .hatataki-button:hover:not(:disabled) { background: linear-gradient(#315876, #173b57); }
 .hatataki-button:disabled { opacity: .55; cursor: default; }
 .hatataki-progress { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); }
-.hatataki-item-name { color: #f2d58d; }
+.hatataki-summary { flex: none; margin: 8px 0 0; color: #f2d58d; font-weight: 700; }
+.hatataki-body.hatataki-notice { display: flex; flex-direction: column; justify-content: center; gap: 18px; text-align: center; }
+.hatataki-notice > img { width: 80px; height: 80px; object-fit: contain; }
+.hatataki-notice > p { margin: 0; font-size: 22px; }
 
 @media (max-height: 650px), (max-width: 1000px) {
     .hatataki-overlay, #eventPopup.hatataki-announcement {
@@ -138,6 +141,3 @@
     .hatataki-button { min-width: 0; min-height: 24px; padding: 2px 8px; font-size: max(11px, calc(16 * var(--hatataki-unit))); }
     .hatataki-progress { bottom: 5px; }
 }
-
-.hatataki-panel[data-plane02] { padding-bottom:calc(var(--an02-bottom) + var(--an02-min-height) + 62px); }
-.hatataki-panel[data-plane02] .hatataki-progress { bottom:calc(var(--an02-bottom) + var(--an02-min-height) + 16px); }

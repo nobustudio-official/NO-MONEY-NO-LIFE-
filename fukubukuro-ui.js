@@ -4,7 +4,6 @@
     const $=(tag,className,text)=>{const node=document.createElement(tag);if(className)node.className=className;if(text!=null)node.textContent=text;return node;};
     function cardNode(card,number){const slot=$('div','fukubukuro-card-slot');const frame=$('div','fukubukuro-card');frame.dataset.frameId=Number(card.rank)===2?'BT03-G':'BT03-S';frame.append($('span','fukubukuro-card-number',number),$('span','fukubukuro-card-name',card.name));slot.append(frame);return slot;}
     function stopAudio(){if(!view?.audio)return;if(view.audioLoop&&typeof view.audio.removeEventListener==='function')view.audio.removeEventListener('timeupdate',view.audioLoop);view.audio.pause();view.audio.currentTime=0;view.audio=null;view.audioLoop=null;}
-    function setTelop(text){view.telopCopy.textContent=text;window.CommonAnnouncements?.fitText?.(view.telopCopy);}
     function drawIdle(){const rect=view.canvas.getBoundingClientRect();view.canvas.width=Math.max(1,Math.round(rect.width*(devicePixelRatio||1)));view.canvas.height=Math.max(1,Math.round(rect.height*(devicePixelRatio||1)));const renderer=window.DiceAnimation.createRenderer(view.canvas,{stopMotion:window.DiceStopMotion.sample});const now=performance.now();renderer.draw({phase:'result',results:[1,1,1],count:3,began:now,stopped:now,showIndividualResults:false,centerLanding:true,canvasLanding:true,diceScale:.9},now);}
     function showResult(event){
         if(!view||event?.eventId!==view.eventId||!Array.isArray(event.rolls)||['stopping','result'].includes(view.phase))return;
@@ -28,7 +27,7 @@
             current.cardRow.replaceChildren(...cards.map((card,index)=>cardNode(card,String(event.rolls[index]))));
             current.cardRow.classList.add('is-result');
             current.rollButton.hidden=true;
-            setTelop('上記アイテムを入手した！');
+            current.statusCopy.textContent='上記アイテムを入手した！ タップして次へ';
             current.phase='result';
         };
         draw(now);
@@ -59,10 +58,11 @@
         const rollButton=$('button','fukubukuro-roll','サイコロを振る');rollButton.type='button';rollButton.disabled=options.owner!==true;
         diceStage.append(canvas,rollButton);panel.append(diceStage);
         const cardRow=$('div','fukubukuro-card-row');(event.cards||[]).forEach((card,index)=>cardRow.append(cardNode(card,String(index+1))));panel.append(cardRow);
-        const telop=$('div','fukubukuro-an02'),icon=$('img','fukubukuro-player-icon');telop.dataset.frameId='AN02';icon.src=options.playerIcon||'';icon.alt=player.name||'プレイヤー';
-        const telopCopy=$('p','fukubukuro-an02-copy');telopCopy.append($('strong','fukubukuro-item-name',itemName),document.createTextNode('を使った！'));telop.append(icon,telopCopy);layer.append(panel,telop);document.body.append(layer);
-        window.TelopStandard?.apply(telop, { message: telopCopy, portrait: icon, reserveSpace: true });
-        const current={eventId:event.eventId,layer,canvas,rollButton,cardRow,telopCopy,audio:null,raf:0,owner:options.owner===true,busy:false,phase:'ready'};
+        const statusCopy=$('p','fukubukuro-status');statusCopy.setAttribute('role','status');panel.append(statusCopy);
+        layer.append(panel);document.body.append(layer);
+        window.Plane02Layout?.apply(panel, { once: true });
+        window.Plane02Layout?.apply(panel);
+        const current={eventId:event.eventId,layer,canvas,rollButton,cardRow,statusCopy,audio:null,raf:0,owner:options.owner===true,busy:false,phase:'ready'};
         if (current.owner) {
             const screen = document.querySelector?.('.game-screen');
             if (screen && !screen.inert) { screen.inert = true; current.gameScreen = screen; }
@@ -93,11 +93,11 @@
             try{await options.onFinish();}
             catch(error){console.error('[福袋] 手番終了に失敗:',error);current.busy=false;}
         };
-        panel.onclick=finishFromResult;telop.onclick=finishFromResult;
+        panel.onclick=finishFromResult;
         drawIdle();
         if(event.status==='rolling')beginRoll(event.eventId);
         if(event.status==='result')showResult(event);
     }
-    function close(){if(!view)return;cancelAnimationFrame(view.raf);stopAudio();if(view.gameScreen)view.gameScreen.inert=false;view.layer.remove();view=null;}
+    function close(){if(!view)return;cancelAnimationFrame(view.raf);stopAudio();window.Plane02Layout?.release(view.layer.querySelector('.fukubukuro-sp04'));if(view.gameScreen)view.gameScreen.inert=false;view.layer.remove();view=null;}
     window.FukubukuroUI=Object.freeze({show,close,isOpen:()=>Boolean(view)});
 })();

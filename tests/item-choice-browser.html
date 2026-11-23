@@ -1,0 +1,101 @@
+<!doctype html><meta charset="utf-8"><title>Item choice screens</title>
+<pre id="report">RUNNING</pre><iframe id="game" style="width:1920px;height:1080px"></iframe>
+<script>
+(async () => {
+    const frame=document.getElementById('game'),results=[],failures=[];
+    let stage='setup';
+    const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+    const check=(value,message)=>{if(!value)throw Error(message)};
+    const output=()=>document.getElementById('report').textContent=JSON.stringify({stage,results,failures});
+    try {
+        await new Promise(resolve=>{frame.onload=resolve;frame.src='../index.html?item-choice-test='+Math.random()});
+        const w=frame.contentWindow,d=w.document;
+        w.requestAnimationFrame=callback=>w.setTimeout(()=>callback(w.performance.now()),16);w.cancelAnimationFrame=id=>w.clearTimeout(id);
+        w.HTMLMediaElement.prototype.play=()=>Promise.resolve();
+        w.addEventListener('error',e=>{failures.push(e.message);output()});
+        await w.localMatchRecoveryReady;
+        w.renderGameTemplate('mainGameTemplate',d.querySelector('.game-container'));
+        const players=w.players=[0,1,2].map(index=>({name:'P'+index,characterId:index+1,money:100000,inventory:[1,2,32],assets:[],magic:[1]}));
+        const icon=index=>w.eval('PLAYER_CONTENTS')[index+1].icon;
+        const items=w.eval('ITEM_CONTENTS');
+        const ctx={players,active:0,icon,control:true,online:false,book:{remaining:0,withdrawals:[]},turnKey:'test',dispatch:async()=>{},back(){}};
+        const lost={actorIcon:icon(0),targetIcon:icon(1),targetName:players[1].name,targets:[{index:1,name:players[1].name,icon:icon(1),hasMagic:true}],
+            magics:[{id:1,name:'テスト魔法',icon:icon(0)}],magicId:1,magicName:'テスト魔法',recovery:true};
+        const closeAll=()=>{w.MoneyTransferUI.close();w.LostMagicUI.hide();w.SpecialItemUI.hide();w.DuplicateItemUI.hide();w.GuidebookUI.reset();w.HatatakiHakenUI.hide();w.FukubukuroUI.close()};
+        const visible=element=>Boolean(element&&element.getClientRects().length&&w.getComputedStyle(element).visibility!=='hidden');
+        const noTelop=selector=>{
+            const root=d.querySelector(selector);check(root,'screen missing: '+selector);
+            check(![...root.querySelectorAll('[data-frame-id="AN02"],.telop-standard-frame,.mt-telop,.special-item-announcement,.duplicate-item-announcement')].some(visible),'AN02 visible: '+selector);
+        };
+        const rect=element=>{const r=element.getBoundingClientRect();return [r.left,r.top,r.width,r.height]};
+        const sameRect=(a,b)=>a.every((n,i)=>Math.abs(n-b[i])<.75);
+        const cardStyle=element=>{
+            const s=w.getComputedStyle(element);return [s.fontFamily,s.fontSize,s.fontWeight,s.lineHeight,s.color,s.backgroundColor,s.borderTopWidth,s.borderRadius,s.paddingTop,s.paddingBottom];
+        };
+        const fukuEvent={eventId:'fuku-test',status:'ready',cards:[{name:'人力車',rank:1},{name:'タクシーチケット',rank:2}]};
+        for (const [width,height] of [[1920,1080],[1280,720],[852,393],[393,852]]) {
+            stage='choices '+width;frame.style.width=width+'px';frame.style.height=height+'px';await delay(100);w.PlayerCardSize.refresh();
+            let cases=0;
+            for (const id of [13,19,21,22]) for (const view of id===13?['target']:id===19?['target','type','amount']:id===21?['target','type','items']:['target','type','assets']) {
+                closeAll();w.MoneyTransferUI.show({players,actor:players[0],stage:view,targetIndex:1,type:'send',remote:true,itemName:id===19?undefined:items[id].name,
+                    icon,onSync(){},onExit(){},getItems:()=>[],...(id===22?{getAssets:()=>[]}: {})});
+                noTelop('#moneyTransferScreen');cases++;
+            }
+            for (const view of ['targets','magic']) {closeAll();w.LostMagicUI.render({...lost,stage:view});noTelop('.lost-magic-overlay');cases++}
+            for (const [id,views] of [[24,['areas','destination']],[25,['preview']],[26,['target']]]) for (const view of views) {
+                closeAll();w.SpecialItemUI.show({itemId:id,stage:view,destination:'town',players,actorIndex:0,icon,observer:true});noTelop('#specialItemPopup');cases++;
+            }
+            closeAll();w.DuplicateItemUI.show({player:players[0],useIndex:2,observer:true});noTelop('.duplicate-item-overlay');cases++;
+            closeAll();w.GuidebookUI.render({kind:'choice'},ctx);noTelop('.guidebook-layer');cases++;
+            const bookCards=[...d.querySelectorAll('.guidebook-choices button')];
+            check(bookCards.length===2,'guidebook choices missing');
+            for (const button of bookCards) {
+                const label=button.querySelector('.br-card-front');
+                check(button.getBoundingClientRect().height>=100,'guidebook card collapsed at '+width);
+                check(label&&label.scrollWidth<=label.clientWidth&&label.scrollHeight<button.clientHeight,'guidebook label clipped at '+width);
+            }
+            const bookStyles=bookCards.map(cardStyle);
+            closeAll();
+            const job=d.getElementById('jobPopup');job.replaceChildren(d.getElementById('jobPopupContentTemplate').content.cloneNode(true));job.style.display='flex';
+            const jobScene=job.querySelector('.job-scene');w.Plane02Layout.apply(jobScene,{once:true});
+            job.querySelector('.job-choice-panel').hidden=false;job.querySelector('.job-dialogue-box').style.display='none';
+            w.JobPresentation.paintChoices({popup:job,wage:job.querySelector('.job-wage')},10000);
+            const jobStyles=[job.querySelector('.job-work-button'),job.querySelector('.job-none-button')].map(cardStyle);
+            check(JSON.stringify(bookStyles)===JSON.stringify(jobStyles),'guidebook choice appearance differs from job cards at '+width+': '+JSON.stringify({bookStyles,jobStyles}));
+            const reference=rect(jobScene);job.style.display='none';
+            w.HatatakiHakenUI.render({destroyedItems:[],status:'attack',targetIndex:1,targetName:players[1].name,targetIcon:icon(1)});await delay(50);
+            noTelop('.hatataki-overlay');check(sameRect(rect(d.querySelector('.hatataki-panel')),reference),'hatataki frame differs from job at '+width);cases++;
+            closeAll();w.FukubukuroUI.show(fukuEvent,players[0],{owner:false});await delay(50);
+            noTelop('.fukubukuro-layer');check(sameRect(rect(d.querySelector('.fukubukuro-sp04')),reference),'fukubukuro frame differs from job at '+width);cases++;
+            closeAll();results.push({viewport:[width,height],cases});
+        }
+        stage='transitions';
+        let intro=0,continued=0,opened=0,back=0,attack=0,next=0,end=0,notice=0,start=0,stop=0,finish=0;
+        w.LostMagicUI.render({...lost,stage:'intro'},{onAdvance:()=>intro++});
+        check(visible(d.querySelector('.lost-magic-an02')),'lost intro hidden');d.querySelector('.lost-magic-overlay').click();
+        w.LostMagicUI.render({...lost,stage:'magic'});noTelop('.lost-magic-overlay');
+        w.LostMagicUI.render({...lost,stage:'result'},{onContinue:()=>continued++});
+        check(visible(d.querySelector('.lost-magic-an02')),'lost result not restored');d.querySelector('.lost-magic-overlay').click();
+        check(intro===1&&continued===1,'lost magic progression failed');closeAll();
+        w.SpecialItemUI.show({itemId:25,stage:'result',players,actorIndex:0,icon});check(visible(d.querySelector('.special-item-announcement')),'equalize result hidden');closeAll();
+        w.GuidebookUI.render({kind:'choice'},{...ctx,dispatch:async action=>{if(action==='read')opened++},back:()=>back++});
+        d.querySelector('.guidebook-choice-button').click();await delay(20);d.querySelector('.guidebook-choice-back').click();
+        check(opened===1&&back===1,'guidebook choice handlers failed');closeAll();
+        const view={destroyedItems:[],status:'attack',targetIndex:1,targetName:players[1].name,targetIcon:icon(1)};
+        w.HatatakiHakenUI.render(view,{onAttack:()=>attack++});d.querySelector('.hatataki-attack').click();
+        w.HatatakiHakenUI.render({...view,status:'advance',destroyedItems:['人力車']},{onNext:()=>next++});d.querySelector('.hatataki-progress').click();
+        w.HatatakiHakenUI.render({...view,status:'end',evaded:true},{onEnd:()=>end++});d.querySelector('.hatataki-progress').click();
+        w.HatatakiHakenUI.render({...view,notice:{icon:icon(1),text:'無敵の加護で防いだ！'}},{onNotice:()=>notice++});
+        noTelop('.hatataki-overlay');check(d.querySelector('.hatataki-notice').textContent.includes('無敵の加護'),'hatataki notice lost');d.querySelector('.hatataki-notice-next').click();
+        check(attack===1&&next===1&&end===1&&notice===1,'hatataki progression failed');closeAll();
+        w.FukubukuroUI.show({...fukuEvent,eventId:'fuku-flow'},players[0],{owner:true,onStart:async()=>{start++},
+            onStop:async()=>{stop++;return {...fukuEvent,eventId:'fuku-flow',status:'result',rolls:[1,2,1]}},onFinish:async()=>{finish++;w.FukubukuroUI.close()}});
+        d.querySelector('.fukubukuro-roll').click();await delay(50);d.querySelector('.fukubukuro-roll').click();await delay(2200);
+        check(d.querySelector('.fukubukuro-status').textContent.includes('入手した'),'fukubukuro result lost');
+        const panel=d.querySelector('.fukubukuro-sp04');panel.click();panel.click();await delay(20);
+        check(start===1&&stop===1&&finish===1&&!w.FukubukuroUI.isOpen(),'fukubukuro progression failed');
+        results.push('intro/result telops and guidebook, hatataki, fukubukuro progression remain functional');
+    } catch(error) {failures.push(error.stack||String(error))}
+    stage='complete';output();document.body.dataset.complete='true';
+})();
+</script>
