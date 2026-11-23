@@ -73,7 +73,7 @@ function runtime(zoom = 1) {
         image: name, mediumImage: name + '-medium' }));
     const context = { ...clock, Image, console, AbortController, avatarCameraFocus: undefined,
         performance: { now: () => now }, matchMedia: () => ({ matches: true }), mobileRuntimeTuning: true,
-        ResizeObserver: class { observe() {} }, getMapZoomUI: () => zoom, MapScene: { getMinZoom: () => .1 },
+        ResizeObserver: class { observe() {} disconnect() {} }, getMapZoomUI: () => zoom, MapScene: { getMinZoom: () => .1 },
         MapBackgroundRasterData: { tiles }, document: { body, createElement: tag => new Element(tag), querySelector: () => area, getElementById: id => id === 'mapBoard' ? board : null },
         players: [{ x: 50 }, { x: 3050 }], currentPlayer: 1, nextPlayerCameraRequest: 0,
         renderTurn() {}, renderPlayers() {}, refreshShortestPathToBoss() {}, preloadPlayerDirectionSprites() {},

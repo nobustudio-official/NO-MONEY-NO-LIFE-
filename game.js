@@ -1273,6 +1273,7 @@ function renderGameTemplate(templateId, target) {
         return;
     }
 
+    for (const board of target.querySelectorAll('#mapBoard')) window.MapDetailLevel?.dispose(board);
     target.replaceChildren(template.content.cloneNode(true));
 }
 

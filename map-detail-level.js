@@ -2,6 +2,9 @@
 (function () {
     'use strict';
     const states = new WeakMap();
+    // Late image/camera callbacks must not recreate a retired map's state.
+    const disposedBoards = new WeakSet();
+    const disposedImages = new WeakSet();
     const touchDevice = Boolean(window.matchMedia?.('(pointer: coarse)').matches);
     const overscan = touchDevice ? 96 : 220;
     const pendingImages = new Map();
@@ -9,12 +12,13 @@
     const activeRequests = new Map();
     const maxMobileImageLoads = 2;
     let pumpScheduled = false;
-    let imageLoadsPaused = false;
+    // Each map releases only its own pause, including during screen replacement.
+    const scrollPauses = new Set();
     const cameraJumps = new Set();
 
     function pumpImageLoads() {
         pumpScheduled = false;
-        if (imageLoadsPaused || cameraJumps.size) return;
+        if (scrollPauses.size || cameraJumps.size) return;
         while (activeImages.size < maxMobileImageLoads && pendingImages.size) {
             const [element, request] = [...pendingImages.entries()].sort((a, b) =>
                 a[1].priority - b[1].priority || a[1].distance - b[1].distance)[0];
@@ -75,6 +79,8 @@
     }
 
     function enqueueImage(element, image, priority = 1, distance = 0) {
+        const board = element.closest?.('#mapBoard');
+        if (disposedImages.has(element) || (board && disposedBoards.has(board))) return Promise.resolve(null);
         const pending = pendingImages.get(element);
         if (pending?.image === image) {
             pending.priority = priority;
@@ -90,13 +96,14 @@
         releaseImage(element);
         let resolve, reject;
         const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
-        pendingImages.set(element, { image, priority, distance, promise, resolve, reject });
+        pendingImages.set(element, { board, image, priority, distance, promise, resolve, reject });
         scheduleImagePump();
         return promise;
     }
 
     function loadImage(element, image, priority = 1) {
         if (!touchDevice) {
+            if (disposedImages.has(element) || disposedBoards.has(element.closest?.('#mapBoard'))) return Promise.resolve(null);
             if (element.getAttribute('src') !== image) element.src = image;
             return typeof element.decode === 'function' ? element.decode().then(() => element) : Promise.resolve(element);
         }
@@ -121,6 +128,7 @@
         let ready = true;
         for (const tile of tiles) {
             const element = tile.element;
+            if (disposedImages.has(element) || disposedBoards.has(element.closest?.('#mapBoard'))) continue;
             if (!bounds || !intersects(tile, bounds)) {
                 if (touchDevice) releaseImage(element);
                 else if (element.hasAttribute('src')) element.removeAttribute('src');
@@ -139,43 +147,79 @@
     }
 
     function stateFor(board) {
+        if (!board || disposedBoards.has(board)) return null;
         let state = states.get(board);
         if (state) return state;
         const area = board.closest('.map-area');
         state = { area, nodes: [], important: [], bossPieces: [], zoom: 1, frame: 0, scrollSettleTimer: 0, lowDetail: null,
-            cameraJumps: 0, visibleOnly: false };
+            cameraJumps: new Set(), waits: new Set(), disposed: false, visibleOnly: false };
         states.set(board, state);
         const schedule = () => {
-            if (state.frame || state.cameraJumps) return;
+            if (state.disposed || !board.isConnected || state.frame || state.cameraJumps.size) return;
             state.frame = requestAnimationFrame(() => {
                 state.frame = 0;
-                if (!board.isConnected) return;
+                if (state.disposed || !board.isConnected) return;
                 if (board.classList.contains('map-zoom-interacting')) return;
                 const visible = cull(board, state);
                 if (visible) window.MapOverviewCache?.setMobileViewport?.(board, visible, state.zoom, { visibleOnly: state.visibleOnly });
             });
         };
         state.schedule = schedule;
-        area?.addEventListener('scroll', () => {
-            if (state.cameraJumps) return;
+        state.onScroll = () => {
+            if (state.disposed || state.cameraJumps.size) return;
             if (state.visibleOnly) { schedule(); return; }
             if (touchDevice) {
-                imageLoadsPaused = true;
+                scrollPauses.add(state);
                 clearTimeout(state.scrollSettleTimer);
                 state.scrollSettleTimer = setTimeout(() => {
-                    imageLoadsPaused = false;
+                    state.scrollSettleTimer = 0;
+                    if (state.disposed) return;
+                    scrollPauses.delete(state);
                     scheduleImagePump();
                     schedule();
                 }, 160);
             }
             schedule();
-        }, { passive: true });
-        new ResizeObserver(schedule).observe(area || board);
+        };
+        area?.addEventListener('scroll', state.onScroll, { passive: true });
+        state.observer = new ResizeObserver(schedule);
+        state.observer.observe(area || board);
         return state;
     }
 
+    function dispose(board) {
+        if (!board || disposedBoards.has(board)) return;
+        disposedBoards.add(board);
+        const state = states.get(board);
+        if (state) {
+            state.disposed = true;
+            state.observer.disconnect();
+            state.area?.removeEventListener('scroll', state.onScroll);
+            if (state.frame) cancelAnimationFrame(state.frame);
+            clearTimeout(state.scrollSettleTimer);
+            scrollPauses.delete(state);
+            for (const token of state.cameraJumps) cameraJumps.delete(token);
+            state.cameraJumps.clear();
+            for (const stopWaiting of state.waits) stopWaiting();
+            state.waits.clear();
+            state.nodes = []; state.important = []; state.bossPieces = [];
+            state.area = state.observer = state.onScroll = state.schedule = null;
+            state.frame = state.scrollSettleTimer = 0;
+            states.delete(board);
+        }
+        const images = new Set(board.querySelectorAll('img'));
+        for (const [element, request] of [...pendingImages, ...activeRequests]) {
+            if (request.board === board) images.add(element);
+        }
+        for (const image of images) {
+            disposedImages.add(image);
+            releaseImage(image);
+        }
+        scheduleImagePump();
+    }
+
     function cull(board, state) {
-        if (!state.area || state.cameraJumps) return;
+        if (state.disposed || !board.isConnected || !state.area || state.cameraJumps.size) return;
         const view = state.area.getBoundingClientRect();
         const bounds = board.getBoundingClientRect();
         const zoom = state.zoom;
@@ -198,41 +242,50 @@
     }
 
     function beginCameraJump(board) {
-        if (!board) return null;
-        const state = stateFor(board), token = {};
+        const state = stateFor(board);
+        if (!state) return null;
+        const token = {};
         cameraJumps.add(token);
-        state.cameraJumps++;
+        state.cameraJumps.add(token);
         clearTimeout(state.scrollSettleTimer);
+        state.scrollSettleTimer = 0;
+        scrollPauses.delete(state);
         if (state.frame) cancelAnimationFrame(state.frame);
         state.frame = 0;
         let finishing;
         return { finish() {
             if (finishing) return finishing;
+            if (state.disposed) return finishing = Promise.resolve();
             finishing = (async () => {
-                state.cameraJumps--;
+                state.cameraJumps.delete(token);
                 cameraJumps.delete(token);
-                if (state.cameraJumps) return;
-                let timeout;
+                if (state.cameraJumps.size) return;
+                let timeout, stopWaiting;
                 state.visibleOnly = true;
                 try {
                     // Rebuild requests only after the destination camera coordinates are final.
                     // Culling releases the old region's queued and active image sources first.
                     const visible = board.isConnected && cull(board, state);
                     const overviewReady = visible && window.MapOverviewCache?.setMobileViewport?.(board, visible, state.zoom, { visibleOnly: true });
-                    imageLoadsPaused = false;
                     scheduleImagePump();
                     const visibleLoads = [...pendingImages.values(), ...activeRequests.values()]
-                        .filter(request => request.priority === 0).map(request => request.promise);
+                        .filter(request => request.board === board && request.priority === 0).map(request => request.promise);
                     await Promise.race([
                         Promise.allSettled([overviewReady, ...visibleLoads]),
-                        new Promise(resolve => { timeout = setTimeout(resolve, 1500); })
+                        new Promise(resolve => {
+                            stopWaiting = () => { clearTimeout(timeout); resolve(); };
+                            state.waits.add(stopWaiting);
+                            timeout = setTimeout(stopWaiting, 1500);
+                        })
                     ]);
                 } finally {
                     clearTimeout(timeout);
+                    state.waits.delete(stopWaiting);
                     state.visibleOnly = false;
-                    imageLoadsPaused = false;
-                    scheduleImagePump();
-                    state.schedule();
+                    if (!state.disposed) {
+                        scheduleImagePump();
+                        state.schedule();
+                    }
                 }
             })();
             return finishing;
@@ -241,6 +294,7 @@
 
     function setZoom(board, zoom, options = {}) {
         const state = stateFor(board);
+        if (!state) return;
         state.zoom = zoom;
         if (options.preview !== true || touchDevice) window.MapOverviewCache?.setZoom(board, zoom);
         const lowDetail = touchDevice && zoom <= .6;
@@ -282,6 +336,7 @@
 
     function refreshPieces(board, zoom) {
         const state = stateFor(board);
+        if (!state) return;
         state.important = [...board.querySelectorAll('.player-piece,.boss-node')];
         state.bossPieces = [...board.querySelectorAll('.boss-node .player-piece')].map(piece => ({
             piece,
@@ -294,14 +349,15 @@
 
     function refresh(board, zoom) {
         const state = stateFor(board);
+        if (!state) return;
         state.nodes = [...board.querySelectorAll('.map-node')].map(node => ({
             node, x: parseFloat(node.style.left), y: parseFloat(node.style.top), outside: null
         }));
         refreshPieces(board, zoom);
         cull(board, state);
     }
-    window.MapDetailLevel = Object.freeze({ refresh, refreshPieces, setZoom, touchDevice, setTileSources,
+    window.MapDetailLevel = Object.freeze({ refresh, refreshPieces, setZoom, dispose, touchDevice, setTileSources,
         loadImage, requestImage: enqueueImage, releaseImage, beginCameraJump,
-        isCameraJumping: board => Boolean(states.get(board)?.cameraJumps),
-        scheduleViewport: board => stateFor(board).schedule() });
+        isCameraJumping: board => Boolean(states.get(board)?.cameraJumps.size),
+        scheduleViewport: board => stateFor(board)?.schedule() });
 })();
