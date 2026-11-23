@@ -1,12 +1,8 @@
-.map-stone-roads .map-road-route-edge{filter:drop-shadow(0 0 1.5px #ff8ac4)}
 .map-road-overlay .map-road-shortest-highlight{animation:boss-shortest-route-pulse 1.35s ease-in-out infinite}
 @keyframes boss-shortest-route-pulse{0%,100%{opacity:.38}50%{opacity:1}}
 @media(prefers-reduced-motion:reduce){.map-road-overlay .map-road-shortest-highlight{animation:none}}
 .map-shortest-route-overlay{position:absolute;inset:0;z-index:4;width:100%;height:100%;overflow:visible;pointer-events:none}
 .map-road-route-highlight{animation:map-shortest-route-glow 1.2s ease-in-out infinite alternate}
-.map-road-route-halo{filter:drop-shadow(0 0 4px #ff168e) drop-shadow(0 0 8.5px #ff168ecc)}
-.map-road-route-core{filter:drop-shadow(0 0 4px #ffe24d) drop-shadow(0 0 7.5px #ffe24dcc)}
-.map-road-route-center{filter:drop-shadow(0 0 2.5px #fff)}
 @keyframes map-shortest-route-glow{from{opacity:.84}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){.map-road-route-highlight{animation:none}}
 .map-stone-roads[data-road-cache="ready"] > .map-road-vector { display:none; }

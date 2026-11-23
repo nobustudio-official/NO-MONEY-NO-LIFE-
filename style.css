@@ -11026,7 +11026,6 @@ max-height:
 .map-stone-roads .map-road-shortest-highlight .map-road-route-edge {
     stroke: #fff;
     stroke-width: 2;
-    filter: drop-shadow(0 0 2px #f873bc99);
 }
 
 /* =========================

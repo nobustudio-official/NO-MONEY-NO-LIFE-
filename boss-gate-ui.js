@@ -19,6 +19,9 @@
         const banner = popup?.querySelector('.boss-gate-banner');
         if (!popup || !frame || !cards || !art || !banner) return;
 
+        // Match the next-boss outer frame without changing the full-screen popup.
+        const releaseFrameLayout = window.Plane02Layout?.apply(frame);
+
         let frameId = 0;
         const update = () => {
             if (!frame.isConnected || popup.style.display === 'none') return;
@@ -54,6 +57,7 @@
         schedule();
 
         cleanup = () => {
+            releaseFrameLayout?.();
             observer.disconnect();
             window.removeEventListener('resize', schedule);
             window.visualViewport?.removeEventListener('resize', schedule);
