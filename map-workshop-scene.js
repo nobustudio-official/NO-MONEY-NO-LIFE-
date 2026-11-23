@@ -148,6 +148,7 @@
         if(hasVisibleEffect)state.effectTimer=window.setTimeout(()=>updateMagicEffects(board,state),50);
     }
     function setViewport(board,bounds,visibleBounds=bounds) {
+        if(window.MapDetailLevel?.isCameraJumping?.(board))return;
         const state=boards.get(board);if(!state)return;
         const viewportChanged=!sameViewport(state.visibleBounds,visibleBounds);
         state.bounds=bounds;

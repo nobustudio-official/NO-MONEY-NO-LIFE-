@@ -9363,7 +9363,7 @@ function updateNextPlayerView() {
                     resolve();
                     return;
                 }
-                centerPlayerOnMap(focusIndex, 'smooth', resolve, true);
+                centerPlayerOnMap(focusIndex, 'instant', resolve, true);
             }));
         });
         window.TurnHandoff.waitFor(cameraReady);
@@ -10519,6 +10519,13 @@ function animateMapCameraScroll(mapArea, left, top, speed, signal) {
     if (!settled) frame = requestAnimationFrame(tick);
     return promise;
 }
+
+window.cancelMapCameraScroll = function () {
+    avatarCameraFocus?.abort();
+    activeMapCameraScroll?.cancel();
+    const area = document.querySelector('.game-screen .map-area');
+    area?.scrollTo({ left: area.scrollLeft, top: area.scrollTop, behavior: 'instant' });
+};
 
 function focusCurrentPlayerFromAvatar() {
     avatarCameraFocus?.abort();

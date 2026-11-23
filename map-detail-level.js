@@ -10,10 +10,11 @@
     const maxMobileImageLoads = 2;
     let pumpScheduled = false;
     let imageLoadsPaused = false;
+    const cameraJumps = new Set();
 
     function pumpImageLoads() {
         pumpScheduled = false;
-        if (imageLoadsPaused) return;
+        if (imageLoadsPaused || cameraJumps.size) return;
         while (activeImages.size < maxMobileImageLoads && pendingImages.size) {
             const [element, request] = [...pendingImages.entries()].sort((a, b) =>
                 a[1].priority - b[1].priority || a[1].distance - b[1].distance)[0];
@@ -64,13 +65,13 @@
     }
 
     function enqueueImage(element, image, priority = 1, distance = 0) {
+        const pending = pendingImages.get(element);
+        if (pending?.image === image) {
+            pending.priority = priority;
+            pending.distance = distance;
+            return pending.promise;
+        }
         if (element.getAttribute('src') === image) {
-            const pending = pendingImages.get(element);
-            if (pending) {
-                pending.priority = priority;
-                pending.distance = distance;
-                return pending.promise || Promise.resolve(null);
-            }
             const active = activeRequests.get(element);
             if (active) return active.promise || Promise.resolve(null);
             if (element.complete) return Promise.resolve(element.naturalWidth ? element : null);
@@ -131,20 +132,23 @@
         let state = states.get(board);
         if (state) return state;
         const area = board.closest('.map-area');
-        state = { area, nodes: [], important: [], bossPieces: [], zoom: 1, frame: 0, scrollSettleTimer: 0, lowDetail: null };
+        state = { area, nodes: [], important: [], bossPieces: [], zoom: 1, frame: 0, scrollSettleTimer: 0, lowDetail: null,
+            cameraJumps: 0, visibleOnly: false };
         states.set(board, state);
         const schedule = () => {
-            if (state.frame) return;
+            if (state.frame || state.cameraJumps) return;
             state.frame = requestAnimationFrame(() => {
                 state.frame = 0;
                 if (!board.isConnected) return;
                 if (board.classList.contains('map-zoom-interacting')) return;
                 const visible = cull(board, state);
-                if (visible) window.MapOverviewCache?.setMobileViewport?.(board, visible, state.zoom);
+                if (visible) window.MapOverviewCache?.setMobileViewport?.(board, visible, state.zoom, { visibleOnly: state.visibleOnly });
             });
         };
         state.schedule = schedule;
         area?.addEventListener('scroll', () => {
+            if (state.cameraJumps) return;
+            if (state.visibleOnly) { schedule(); return; }
             if (touchDevice) {
                 imageLoadsPaused = true;
                 clearTimeout(state.scrollSettleTimer);
@@ -161,7 +165,7 @@
     }
 
     function cull(board, state) {
-        if (!state.area) return;
+        if (!state.area || state.cameraJumps) return;
         const view = state.area.getBoundingClientRect();
         const bounds = board.getBoundingClientRect();
         const zoom = state.zoom;
@@ -170,7 +174,7 @@
         const margin = overscan / zoom;
         const { left, right, top, bottom } = { left: visible.left - margin, right: visible.right + margin,
             top: visible.top - margin, bottom: visible.bottom + margin };
-        const near = { left, right, top, bottom };
+        const near = state.visibleOnly ? visible : { left, right, top, bottom };
         window.MapBackgroundCache?.setViewport(board, near, visible);
         window.MapRoadCache?.setViewport(board, near, visible);
         window.MapWorkshopScene?.setViewport(board, near, visible);
@@ -181,6 +185,48 @@
             row.node.classList.toggle('map-detail-offscreen', outside);
         }
         return visible;
+    }
+
+    function beginCameraJump(board) {
+        if (!board) return null;
+        const state = stateFor(board), token = {};
+        cameraJumps.add(token);
+        state.cameraJumps++;
+        clearTimeout(state.scrollSettleTimer);
+        if (state.frame) cancelAnimationFrame(state.frame);
+        state.frame = 0;
+        let finishing;
+        return { finish() {
+            if (finishing) return finishing;
+            finishing = (async () => {
+                state.cameraJumps--;
+                cameraJumps.delete(token);
+                if (state.cameraJumps) return;
+                let timeout;
+                state.visibleOnly = true;
+                try {
+                    // Rebuild requests only after the destination camera coordinates are final.
+                    // Culling releases the old region's queued and active image sources first.
+                    const visible = board.isConnected && cull(board, state);
+                    const overviewReady = visible && window.MapOverviewCache?.setMobileViewport?.(board, visible, state.zoom, { visibleOnly: true });
+                    imageLoadsPaused = false;
+                    scheduleImagePump();
+                    const visibleLoads = [...pendingImages.values(), ...activeRequests.values()]
+                        .filter(request => request.priority === 0).map(request => request.promise);
+                    await Promise.race([
+                        Promise.allSettled([overviewReady, ...visibleLoads]),
+                        new Promise(resolve => { timeout = setTimeout(resolve, 1500); })
+                    ]);
+                } finally {
+                    clearTimeout(timeout);
+                    state.visibleOnly = false;
+                    imageLoadsPaused = false;
+                    scheduleImagePump();
+                    state.schedule();
+                }
+            })();
+            return finishing;
+        } };
     }
 
     function setZoom(board, zoom, options = {}) {
@@ -245,6 +291,7 @@
         cull(board, state);
     }
     window.MapDetailLevel = Object.freeze({ refresh, refreshPieces, setZoom, touchDevice, setTileSources,
-        loadImage, requestImage: enqueueImage, releaseImage,
+        loadImage, requestImage: enqueueImage, releaseImage, beginCameraJump,
+        isCameraJumping: board => Boolean(states.get(board)?.cameraJumps),
         scheduleViewport: board => stateFor(board).schedule() });
 })();

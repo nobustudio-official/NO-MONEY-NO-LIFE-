@@ -54,18 +54,19 @@
                 if (entry.image.isConnected) entry.image.classList.add('is-ready');
             };
             const loading = window.MapDetailLevel?.touchDevice
-                ? window.MapDetailLevel.loadImage(entry.image, entry.src, 1)
+                ? window.MapDetailLevel.loadImage(entry.image, entry.src, entry.priority)
                 : (entry.image.src = entry.src, entry.image.decode());
             Promise.resolve(loading).then(reveal, () => {
                 if (entry.image.naturalWidth > 0) reveal();
             }).finally(() => {
+                entry.resolveReady();
                 state.loading--;
                 loadMobileTiles(state);
             });
         }
     }
-    function setMobileViewport(board, bounds, zoom) {
-        if (board.classList.contains('map-zoom-interacting')) return;
+    function setMobileViewport(board, bounds, zoom, { visibleOnly = false } = {}) {
+        if (board.classList.contains('map-zoom-interacting') || window.MapDetailLevel?.isCameraJumping?.(board)) return;
         const background = board.querySelector('.map-static-background');
         const state = mobileStates.get(background);
         if (!state) return;
@@ -79,7 +80,7 @@
         const centerX = (bounds.left + bounds.right) / 2;
         const centerY = (bounds.top + bounds.bottom) / 2;
         const distance = tile => (tile.x + tile.width / 2 - centerX) ** 2 + (tile.y + tile.height / 2 - centerY) ** 2;
-        const margin = 48 / zoom;
+        const margin = visibleOnly ? 0 : 48 / zoom;
         const intersects = (tile, pad) => tile.x < bounds.right + pad && tile.x + tile.width > bounds.left - pad &&
             tile.y < bounds.bottom + pad && tile.y + tile.height > bounds.top - pad;
         const near = state.tiles.filter(tile => intersects(tile, margin)).map(tile => ({ tile, visible: intersects(tile, 0) }));
@@ -94,6 +95,7 @@
         const zoomingOut = zooming && state.lastPixelZoom !== null && pixelZoom < state.lastPixelZoom;
         state.lastPixelZoom = pixelZoom;
         const pending = [];
+        const visibleLoads = [];
         for (const level of state.levels) {
             const levelLimit = level.name === 'native'
                 ? Math.max(level.limit, visibleNativeCount)
@@ -113,11 +115,12 @@
             const needed = new Set(wanted.map(({ tile }) => tile));
             for (const [tile, entry] of level.images) {
                 if (needed.has(tile)) continue;
-                if (!zoomingOut && state.tuned && entry.started && pixelZoom >= level.preload && needed.size < levelLimit && intersects(tile, 128 / zoom)) {
+                if (!visibleOnly && !zoomingOut && state.tuned && entry.started && pixelZoom >= level.preload && needed.size < levelLimit && intersects(tile, 128 / zoom)) {
                     needed.add(tile);
                     continue;
                 }
                 window.MapDetailLevel?.releaseImage(entry.image);
+                entry.resolveReady();
                 entry.image.remove();
                 entry.image.removeAttribute('src');
                 level.images.delete(tile);
@@ -133,16 +136,21 @@
                     image.dataset.level = level.name;
                     image.style.left = `${tile.x}px`;
                     image.style.top = `${tile.y}px`;
-                    entry = { image, src: tile[level.source], started: false, ready: false };
+                    let resolveReady;
+                    const readyPromise = new Promise(resolve => { resolveReady = resolve; });
+                    entry = { image, src: tile[level.source], started: false, ready: false, readyPromise, resolveReady };
                     level.images.set(tile, entry);
                     background.append(image);
                 }
+                entry.priority = visible ? 0 : 1;
+                if (visibleOnly && visible && opacity > 0) visibleLoads.push(entry.readyPromise);
                 if (!entry.started) pending.push({ entry, visible, opaque: opacity === 1, resolution: level.resolution });
             }
         }
         pending.sort((a, b) => Number(b.visible) - Number(a.visible) || Number(b.opaque) - Number(a.opaque) || b.resolution - a.resolution);
         state.pending = pending.map(({ entry }) => entry);
         loadMobileTiles(state);
+        if (visibleOnly) return Promise.all(visibleLoads);
     }
     function releaseMobileDetail(board) {
         if (!window.MapDetailLevel?.touchDevice) return;
@@ -153,6 +161,7 @@
         for(const level of state.levels){
             for(const entry of level.images.values()){
                 window.MapDetailLevel.releaseImage(entry.image);
+                entry.resolveReady();
                 entry.image.remove();
             }
             level.images.clear();

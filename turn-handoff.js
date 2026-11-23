@@ -37,6 +37,8 @@
             setTimeout(() => {
                 if (!element) return;
                 phase = 'black';
+                let mapJump = window.MapDetailLevel?.beginCameraJump?.(document.getElementById('mapBoard'));
+                window.cancelMapCameraScroll?.();
                 const callbacks = blackCallbacks; blackCallbacks = [];
                 for (const callback of callbacks) { try { callback(); } catch (error) { console.error('[turn-handoff]', error); } }
                 try { apply(); } catch (error) { console.error('[turn-handoff]', error); }
@@ -44,6 +46,12 @@
                     if (!element) return;
                     if (waits.size) {
                         Promise.all([...waits]).then(() => requestAnimationFrame(fadeInWhenReady));
+                        return;
+                    }
+                    if (mapJump) {
+                        const jump = mapJump; mapJump = null;
+                        waitFor(jump.finish());
+                        requestAnimationFrame(fadeInWhenReady);
                         return;
                     }
                     phase = 'fading-in';
