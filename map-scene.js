@@ -4,9 +4,10 @@
  const config=Object.freeze({width:9216,height:7424,minZoom:.1,maxZoom:2.2,baseTileSize:1024,rippleTileSize:768});
  // World rectangle inferred from the approved 1920x952 overview framing.
  const cameraFrame=Object.freeze({left:-4992,top:-1560,width:19200,height:9520});
- const observedAreas=new WeakSet();let activeScale=1;
+ const observedAreas=new WeakSet();let activeScale=1,oceanCheckFrame=0;
  const continent=window.MapContinentData;
- const assetUrls=['images/map/backgrounds/world/ocean/base-repeat.svg','images/map/backgrounds/world/ocean/ripples-repeat.svg',continent.grassTexture,...window.MapRegionBackground.assetUrls];
+ const oceanImageUrls=['images/map/backgrounds/world/ocean/base-repeat.svg','images/map/backgrounds/world/ocean/ripples-repeat.svg'];
+ const assetUrls=[continent.grassTexture,...window.MapRegionBackground.assetUrls];
  document.documentElement.style.setProperty('--map-world-width',config.width+'px');
  document.documentElement.style.setProperty('--map-world-height',config.height+'px');
  function getMinZoom(){
@@ -29,6 +30,53 @@
   const x=Math.max(limits.minLeft,Math.min(limits.maxLeft,area.scrollLeft)),y=Math.max(limits.minTop,Math.min(limits.maxTop,area.scrollTop));
   if(Math.abs(x-area.scrollLeft)>.51)area.scrollLeft=x;if(Math.abs(y-area.scrollTop)>.51)area.scrollTop=y;
  }
+ function pointInCoast(x,y){
+  let inside=false;const points=continent.coast;
+  for(let i=0,j=points.length-1;i<points.length;j=i++){
+   const a=points[i],b=points[j];
+   if((a.y>y)!==(b.y>y)&&x<(b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x)inside=!inside;
+  }
+  return inside;
+ }
+ function segmentIntersects(a,b,c,d){
+  const cross=(p,q,r)=>(q.x-p.x)*(r.y-p.y)-(q.y-p.y)*(r.x-p.x);
+  const onSegment=(p,q,r)=>q.x>=Math.min(p.x,r.x)-1e-7&&q.x<=Math.max(p.x,r.x)+1e-7&&q.y>=Math.min(p.y,r.y)-1e-7&&q.y<=Math.max(p.y,r.y)+1e-7;
+  const abC=cross(a,b,c),abD=cross(a,b,d),cdA=cross(c,d,a),cdB=cross(c,d,b);
+  if(((abC>0&&abD<0)||(abC<0&&abD>0))&&((cdA>0&&cdB<0)||(cdA<0&&cdB>0)))return true;
+  return (Math.abs(abC)<1e-7&&onSegment(a,c,b))||(Math.abs(abD)<1e-7&&onSegment(a,d,b))||
+   (Math.abs(cdA)<1e-7&&onSegment(c,a,d))||(Math.abs(cdB)<1e-7&&onSegment(c,b,d));
+ }
+ function viewportShowsOcean(){
+  const area=document.querySelector('.game-screen .map-area'),board=document.getElementById('mapBoard');
+  if(!area||!board)return false;
+  const view=area.getBoundingClientRect(),bounds=board.getBoundingClientRect();
+  const left=(view.left-bounds.left)/activeScale,top=(view.top-bounds.top)/activeScale;
+  const right=left+area.clientWidth/activeScale,bottom=top+area.clientHeight/activeScale;
+  const corners=[{x:left,y:top},{x:right,y:top},{x:right,y:bottom},{x:left,y:bottom}];
+  // Anything outside the continent polygon is ocean, including the camera margin.
+  if(corners.some(point=>!pointInCoast(point.x,point.y)))return true;
+  const rectEdges=corners.map((point,index)=>[point,corners[(index+1)%corners.length]]);
+  for(let i=0;i<continent.coast.length;i++){
+   const a=continent.coast[i],b=continent.coast[(i+1)%continent.coast.length];
+   if(rectEdges.some(([c,d])=>segmentIntersects(a,b,c,d)))return true;
+  }
+  return false;
+ }
+ function updateOceanTexture(){
+  oceanCheckFrame=0;
+  const area=document.querySelector('.game-screen .map-area');if(!area)return;
+  const useTexture=activeScale>.6&&viewportShowsOcean();
+  area.classList.toggle('map-ocean-textured',useTexture);
+  area.classList.toggle('map-ocean-flat',!useTexture);
+  if(useTexture){
+   area.style.setProperty('--ocean-ripple-image',`url("${oceanImageUrls[1]}")`);
+   area.style.setProperty('--ocean-base-image',`url("${oceanImageUrls[0]}")`);
+  }else{
+   area.style.removeProperty('--ocean-ripple-image');
+   area.style.removeProperty('--ocean-base-image');
+  }
+ }
+ function queueOceanCheck(){if(!oceanCheckFrame)oceanCheckFrame=requestAnimationFrame(updateOceanTexture);}
  function setZoom(zoom){
   const area=document.querySelector('.game-screen .map-area');if(!area)return;
   const scale=Math.max(getMinZoom(),Math.min(config.maxZoom,Number(zoom)||1));activeScale=scale;
@@ -37,7 +85,7 @@
   document.documentElement.style.setProperty('--map-boundary-width',1.2/scale+'px');
   area.classList.add('map-ocean');
   area.classList.toggle('map-ocean-flat',scale<=.6);
-  if(!observedAreas.has(area)){observedAreas.add(area);area.addEventListener('scroll',clampScroll,{passive:true});}
+  if(!observedAreas.has(area)){observedAreas.add(area);area.addEventListener('scroll',()=>{clampScroll();queueOceanCheck();},{passive:true});}
   // Center-origin enlargement otherwise pushes the world's left/top into
   // negative, unreachable scroll coordinates. Reserve matching space on both sides.
   const extraX=Math.max(0,config.width*(scale-1)/2),extraY=Math.max(0,config.height*(scale-1)/2);
@@ -53,6 +101,7 @@
   const padding=getComputedStyle(area);
   area.style.backgroundPosition=`calc(${padding.paddingLeft} + ${extraX+config.width*(1-scale)/2}px) calc(${padding.paddingTop} + ${extraY+config.height*(1-scale)/2}px)`;
   clampScroll();
+  queueOceanCheck();
  }
  function createBackground(squares){
   const background=document.createElement('div');background.className='map-background';

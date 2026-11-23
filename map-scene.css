@@ -70,11 +70,14 @@
 .map-background > .map-background-raster:not([src]) { visibility:hidden; }
 .game-screen > .map-area.map-ocean {
     background-color: #178bbb;
-    background-image: url("images/map/backgrounds/world/ocean/ripples-repeat.svg"), url("images/map/backgrounds/world/ocean/base-repeat.svg");
+    background-image: none;
     background-repeat: repeat;
     background-size: var(--ocean-ripple-size, 768px) var(--ocean-ripple-size, 768px), var(--ocean-base-size, 1024px) var(--ocean-base-size, 1024px);
     background-attachment: local;
     background-origin: padding-box;
+}
+.game-screen > .map-area.map-ocean.map-ocean-textured {
+    background-image: var(--ocean-ripple-image), var(--ocean-base-image);
 }
 .game-screen > .map-area.map-ocean.map-ocean-flat {
     background-image: none;
