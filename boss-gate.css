@@ -20,15 +20,14 @@
 
 #monsterChoicePopup .boss-gate-frame {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: min(90vw, 1450px);
-    height: calc(100vh - 104px);
-    transform: translate(-50%, -50%);
+    inset: 3.5% 4%;
+    width: auto;
+    height: auto;
+    transform: none;
     box-sizing: border-box;
     overflow: hidden;
     border: 1px solid #ccae7b;
-    border-radius: 16px;
+    border-radius: 22px;
     background: url("images/backgrounds/scenes/魔王城.webp") center / cover no-repeat;
 }
 
@@ -160,16 +159,4 @@
     }
 
     #monsterChoicePopup #monsterChoiceMessage { padding-right: 72px; }
-}
-
-@media (orientation: landscape) and (max-width: 1000px) and (max-height: 610px) {
-    #monsterChoicePopup .boss-gate-frame {
-        top: 60px;
-        bottom: auto;
-        left: 50%;
-        width: min(90vw, 1450px);
-        height: calc(100vh - 74px);
-        transform: translateX(-50%);
-        border-radius: 16px;
-    }
 }
