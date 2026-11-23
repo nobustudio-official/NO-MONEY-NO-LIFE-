@@ -12,7 +12,9 @@
     const targetTemplate = 'imported-small-0a0014a28f28';
     const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
     const streamImages = Boolean(window.MapDetailLevel?.touchDevice);
-    const objectImageDwellMs = 600;
+    // Match the shared scroll settle window. A longer object-only delay let
+    // the baked low-resolution scenery disappear before its sharp image arrived.
+    const objectImageDwellMs = 160;
     const objectImageMargin = 48;
     function sameViewport(a, b) {
         return Boolean(a && b && ['left', 'right', 'top', 'bottom'].every(key => Math.abs(a[key] - b[key]) < .5));
@@ -180,6 +182,7 @@
                 const keepImage=!overview&&!lowDetail&&extent.left<imageBounds.right&&extent.right>imageBounds.left&&extent.top<imageBounds.bottom&&extent.bottom>imageBounds.top;
                 if(!keepImage){
                     cancelObjectLoad(state,row);
+                    image.classList.remove('is-ready');
                     window.MapDetailLevel?.releaseImage(image);
                 }else if(onScreen&&!zooming&&state.objectImagesReady&&!image.hasAttribute('src')&&!state.pendingObjectImages.has(row)){
                     const centerX=(visibleBounds.left+visibleBounds.right)/2,centerY=(visibleBounds.top+visibleBounds.bottom)/2;
@@ -205,6 +208,7 @@
             if(!row.image)continue;
             row.sharp=false;
             row.image.classList.remove('map-object-sharp');
+            row.image.classList.remove('is-ready');
             window.MapDetailLevel?.releaseImage(row.image);
         }
     }
@@ -230,12 +234,14 @@
                 continue;
             }
             const image=new Image();image.alt=object.name;image.draggable=false;image.dataset.objectId=object.id;
+            if(useStreaming)image.classList.add('map-object-stream');
             if(!useStreaming)image.src=template.asset;
             const {width,height}=objectDimensions(object,image);
             Object.assign(image.style,{position:'absolute',left:object.x+'px',top:object.y+'px',width:width+'px',height:height+'px',maxWidth:'none',transform:'translate(-50%,-100%) rotate('+object.rotation+'deg)',transformOrigin:'50% 100%'});
             const row={image,object,width,height,asset:template.asset,sharp:null};rows.push(row);
             row.extent=objectExtent(row);
             image.addEventListener('load',()=>{
+                image.classList.add('is-ready');
                 if(object.imageHeight!==undefined)return;
                 const height=width*image.naturalHeight/image.naturalWidth;
                 if(row.height===height)return;

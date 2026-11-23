@@ -86,6 +86,8 @@
 /* The overview already contains scenery. Squares and characters remain live above it. */
 #mapBoard.map-overview-active > .map-workshop-objects{display:none}
 #mapBoard .map-workshop-objects img:not([src]){visibility:hidden}
+#mapBoard .map-workshop-objects img.map-object-stream{opacity:0;transition:opacity 100ms ease}
+#mapBoard .map-workshop-objects img.map-object-stream.is-ready{opacity:1}
 
 /* Only near-viewport object images receive their own native-resolution surface.
    Release it in the full-map overview and when scrolling away. */
