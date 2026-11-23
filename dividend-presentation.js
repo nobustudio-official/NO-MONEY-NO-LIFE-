@@ -309,7 +309,7 @@
  window.DividendPresentation.stopMusic = function() {
   if (musicEvent === null) return;
   musicEvent = null;
-  if (dividendMusicStarted) { dividendBGM.pause(); dividendBGM.preload = 'none'; const nextPlayer = window.onlineGame?.isOnline ? window.onlineGame.sync?.state?.players?.[window.onlineGame.sync?.state?.activePlayerIndex] : (Array.isArray(window.players) ? window.players[0] : null); if (nextPlayer?.underground) window.transitionAreaBGM?.('underground', 0); else if (nextPlayer) window.MapAreaAudio?.updateForPlayer(nextPlayer, { immediate:true }); else setupAdventureBGM(); }
+  if (dividendMusicStarted) { pauseBGM(dividendBGM); dividendBGM.preload = 'none'; const nextPlayer = window.onlineGame?.isOnline ? window.onlineGame.sync?.state?.players?.[window.onlineGame.sync?.state?.activePlayerIndex] : (Array.isArray(window.players) ? window.players[0] : null); if (nextPlayer?.underground) window.transitionAreaBGM?.('underground', 0); else if (nextPlayer) window.MapAreaAudio?.updateForPlayer(nextPlayer, { immediate:true }); else setupAdventureBGM(); }
   dividendMusicStarted = false;
  };
 })();

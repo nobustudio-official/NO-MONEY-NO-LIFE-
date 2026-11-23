@@ -38,6 +38,56 @@ let maouFastBGMGain = null;
 let maouFinalBGMGain = null;
 let maouEndBGMGain = null;
 
+let pendingBGMPlayback = null;
+
+function resumeBGMContext() {
+    if (!bgmAudioContext || !["suspended", "interrupted"].includes(bgmAudioContext.state)) return;
+    try {
+        bgmAudioContext.resume().catch(error => console.warn("【BGM】音声処理を再開できません:", error));
+    } catch (error) {
+        console.warn("【BGM】音声処理を再開できません:", error);
+    }
+}
+
+function retryBGMPlayback() {
+    // Both calls must happen within the gesture, without awaiting resume().
+    resumeBGMContext();
+    const request = pendingBGMPlayback;
+    if (!request || request.inFlight) return;
+    request.inFlight = true;
+    const failed = error => {
+        if (pendingBGMPlayback !== request) return;
+        request.inFlight = false;
+        console.warn("【BGM】再生失敗:", error);
+    };
+    try {
+        Promise.resolve(request.audio.play()).then(() => {
+            if (pendingBGMPlayback === request) pendingBGMPlayback = null;
+        }, failed);
+    } catch (error) {
+        failed(error);
+    }
+}
+
+function playBGM(bgm) {
+    pendingBGMPlayback = { audio: bgm, inFlight: false };
+    retryBGMPlayback();
+}
+
+function pauseBGM(bgm) {
+    if (pendingBGMPlayback?.audio === bgm) pendingBGMPlayback = null;
+    bgm.pause();
+}
+
+function recoverBGM() {
+    if (!document.hidden) retryBGMPlayback();
+}
+
+for (const event of ["pointerdown", "touchend", "keydown"]) {
+    document.addEventListener(event, recoverBGM, { capture: true, passive: true });
+}
+document.addEventListener("visibilitychange", recoverBGM);
+
 adventureBGM.loop = true;
 adventureBGM.volume = BGM_VOLUME;
 adventureBGM.preload = "none";
@@ -69,16 +119,7 @@ function setupBGM(
 
         bgm.currentTime = 0;
 
-        bgm.play().catch(
-            function (error) {
-
-                console.warn(
-                    "【BGM】再生失敗：",
-                    error
-                );
-
-            }
-        );
+        playBGM(bgm);
 
         return;
     }
@@ -166,30 +207,7 @@ function setupBGM(
 
     bgm.currentTime = 0;
 
-    bgm.play().catch(
-        function (error) {
-
-            console.warn(
-                "【BGM】再生失敗：",
-                error
-            );
-
-        }
-    );
-
-
-    // =========================
-    // AudioContextを再開
-    // =========================
-
-    if (
-        bgmAudioContext.state ===
-        "suspended"
-    ) {
-
-        bgmAudioContext.resume();
-
-    }
+    playBGM(bgm);
 
 }
 
@@ -237,7 +255,7 @@ function setDividendBGMFade(multiplier) {
 }
 
 function stopDividendBGM() {
-    dividendBGM.pause();
+    pauseBGM(dividendBGM);
     dividendBGM.currentTime = 0;
     dividendBGM.preload = "none";
     setDividendBGMFade(1);
@@ -341,16 +359,7 @@ function setupAdventureBGM() {
 
         adventureBGM.currentTime = 0;
 
-        adventureBGM.play().catch(
-            function (error) {
-
-                console.warn(
-                    "【冒険BGM】再生失敗：",
-                    error
-                );
-
-            }
-        );
+        playBGM(adventureBGM);
 
         return;
     }
@@ -405,26 +414,7 @@ function setupAdventureBGM() {
 
     adventureBGM.currentTime = 0;
 
-    adventureBGM.play().catch(
-        function (error) {
-
-            console.warn(
-                "【冒険BGM】再生失敗：",
-                error
-            );
-
-        }
-    );
-
-
-    if (
-        bgmAudioContext.state ===
-        "suspended"
-    ) {
-
-        bgmAudioContext.resume();
-
-    }
+    playBGM(adventureBGM);
 
 }
 
@@ -591,6 +581,7 @@ maouEndBGM.preload = "none";
 
 function stopAllBGM() {
 
+    pendingBGMPlayback = null;
     areaBGMTransitionId++;
     activeAreaBGMKey = null;
     requestedAreaBGMKey = null;
@@ -598,7 +589,7 @@ function stopAllBGM() {
 
     for (const bgm of [adventureBGM, townBGM, dividendBGM, grasslandBGM, desertBGM, volcanoBGM, forestBGM, snowBGM, ancientRuinsBGM, undergroundBGM,
         nobilityBGM, bossVictoryBGM, bossBattleBGM, maouFastBGM, maouFinalBGM, maouEndBGM]) {
-        bgm.pause();
+        pauseBGM(bgm);
         bgm.preload = "none";
     }
 
@@ -642,7 +633,8 @@ function transitionAreaBGM(key, duration = 1400, {resume = false} = {}) {
         pausedAreaBGM.key = targetKey;
         return;
     }
-    if (!bossBattleBGM.paused) return;
+    resumeBGMContext();
+    if (!bossBattleBGM.paused || pendingBGMPlayback?.audio === bossBattleBGM) return;
     if (targetKey === requestedAreaBGMKey && !AREA_BGM_TRACKS[targetKey].audio.paused) return;
     requestedAreaBGMKey = targetKey;
     const transitionId = ++areaBGMTransitionId;
@@ -684,10 +676,9 @@ function transitionAreaBGM(key, duration = 1400, {resume = false} = {}) {
         }
         target.audio.preload = "auto";
         if (!resume) target.audio.currentTime = 0;
-        target.audio.play().catch(error => console.warn("【エリアBGM】再生失敗:", error));
+        playBGM(target.audio);
     }
 
-    if (!isFile && context?.state === "suspended") context.resume().catch(() => {});
     const startedAt = performance.now();
     const from = new Map(tracks.map(track => {
         const level = isFile || !context ? track.audio.volume : track._gain?.gain.value ?? 0;
@@ -711,7 +702,7 @@ function transitionAreaBGM(key, duration = 1400, {resume = false} = {}) {
         else {
             tracks.forEach(track => {
                 if (track !== target) {
-                    track.audio.pause();
+                    pauseBGM(track.audio);
                     track.audio.currentTime = 0;
                     track.audio.preload = "none";
                 }

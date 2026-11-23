@@ -4355,17 +4355,6 @@ function renderTurn() {
         // 現在プレイヤーの位置へカメラを移動
         // =========================
 
-        if (hudPlayerName) {
-
-            hudPlayerName.onclick =
-                function () {
-
-                    centerPlayerOnMap(currentPlayer, 'smooth', null, true);
-
-                };
-
-        }
-
     }
 
 

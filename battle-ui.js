@@ -96,25 +96,59 @@
         else if (list.lastElementChild !== slot) list.append(slot);
     }
 
+    function beginBattleMagicGesture(event) {
+        const list = document.getElementById("battleNewMagicList");
+        if (!list || event.button !== 0 || battleMagicDrag) return;
+        const button = event.target.closest(".battle-new-magic-item");
+        const rect = button?.getBoundingClientRect();
+        const state = battleMagicDrag = {
+            button, pointerId: event.pointerId, startX: event.clientX, startY: event.clientY,
+            pointerX: event.clientX, pointerY: event.clientY, startScrollLeft: list.scrollLeft,
+            offsetX: rect ? event.clientX - rect.left : 0, offsetY: rect ? event.clientY - rect.top : 0,
+            rect, storageKey: battleMagicOrderStorageKey(), originalNextMagicId: button?.nextElementSibling?.dataset.magicId || null,
+            moved: false, scrolling: false, ghost: null, holdTimer: 0
+        };
+        if (button && !button.disabled) {
+            state.holdTimer = window.setTimeout(() => {
+                state.holdTimer = 0;
+                if (battleMagicDrag !== state || state.scrolling || !button.isConnected || button.disabled) return;
+                startBattleMagicDrag(state, list);
+            }, 600);
+        }
+        (button || list).setPointerCapture?.(event.pointerId);
+    }
+
+    function startBattleMagicDrag(state, list) {
+        state.moved = true;
+        state.ghost = state.button.cloneNode(true);
+        state.ghost.id = "battle-preview-magic-drag-ghost";
+        state.ghost.classList.add("is-dragging"); state.ghost.setAttribute("aria-hidden", "true");
+        state.ghost.style.cssText = `position:fixed;left:${state.pointerX - state.offsetX}px;top:${state.pointerY - state.offsetY}px;width:${state.rect.width}px;height:${state.rect.height}px;margin:0;`;
+        document.body.append(state.ghost);
+        state.slot = document.createElement("div"); state.slot.className = "battle-preview-drop-slot";
+        state.slot.setAttribute("aria-hidden", "true"); state.slot.style.flexBasis = `${state.rect.width}px`;
+        state.slot.style.width = `${state.rect.width}px`; state.slot.style.height = `${state.rect.height}px`;
+        list.setPointerCapture(state.pointerId); state.button.replaceWith(state.slot);
+        document.getElementById("battleMainPopup")?.classList.add("battle-magic-dragging");
+        state.lastFrameTime = performance.now(); battleMagicDragFrame = window.requestAnimationFrame(autoScrollBattleMagicDrag);
+    }
+
     function moveBattleMagicDrag(event) {
         const state = battleMagicDrag, list = document.getElementById("battleNewMagicList");
         if (!state || !list || state.pointerId !== event.pointerId) return;
         state.pointerX = event.clientX; state.pointerY = event.clientY;
-        if (!state.moved && Math.hypot(event.clientX - state.startX, event.clientY - state.startY) >= 8) {
-            state.moved = true;
-            state.ghost = state.button.cloneNode(true);
-            state.ghost.id = "battle-preview-magic-drag-ghost";
-            state.ghost.classList.add("is-dragging"); state.ghost.setAttribute("aria-hidden", "true");
-            state.ghost.style.cssText = `position:fixed;left:0;top:0;width:${state.rect.width}px;height:${state.rect.height}px;margin:0;`;
-            document.body.append(state.ghost);
-            state.slot = document.createElement("div"); state.slot.className = "battle-preview-drop-slot";
-            state.slot.setAttribute("aria-hidden", "true"); state.slot.style.flexBasis = `${state.rect.width}px`;
-            state.slot.style.width = `${state.rect.width}px`; state.slot.style.height = `${state.rect.height}px`;
-            list.setPointerCapture(event.pointerId); state.button.replaceWith(state.slot);
-            document.getElementById("battleMainPopup")?.classList.add("battle-magic-dragging");
-            state.lastFrameTime = event.timeStamp; battleMagicDragFrame = window.requestAnimationFrame(autoScrollBattleMagicDrag);
+        if (!state.moved) {
+            if (!state.scrolling && Math.hypot(event.clientX - state.startX, event.clientY - state.startY) >= 8) {
+                window.clearTimeout(state.holdTimer); state.holdTimer = 0;
+                state.scrolling = true;
+                list.setPointerCapture(event.pointerId);
+            }
+            if (state.scrolling) {
+                event.preventDefault();
+                list.scrollLeft = state.startScrollLeft - (event.clientX - state.startX);
+            }
+            return;
         }
-        if (!state.moved) return;
         event.preventDefault(); state.ghost.style.left = `${event.clientX - state.offsetX}px`;
         state.ghost.style.top = `${event.clientY - state.offsetY}px`; placeBattleMagicAt(event.clientX, state.slot, list);
     }
@@ -137,18 +171,20 @@
     function finishBattleMagicDrag(event, cancelled = false) {
         const state = battleMagicDrag, list = document.getElementById("battleNewMagicList");
         if (!state || !list || (event?.pointerId !== undefined && state.pointerId !== event.pointerId)) return;
+        window.clearTimeout(state.holdTimer);
         if (battleMagicDragFrame) window.cancelAnimationFrame(battleMagicDragFrame); battleMagicDragFrame = 0;
         if (state.ghost) state.ghost.remove();
         if (state.moved) {
             if (cancelled) {
                 const originalNext = state.originalNextMagicId ? list.querySelector(`[data-magic-id="${state.originalNextMagicId}"]`) : null;
                 list.insertBefore(state.button, originalNext || null);
-            } else { list.insertBefore(state.button, state.slot); saveBattleMagicOrder(list, state.storageKey); suppressBattleMagicCastUntil = Date.now() + 180; }
+            } else { list.insertBefore(state.button, state.slot); saveBattleMagicOrder(list, state.storageKey); }
             state.slot.remove();
         }
+        if (state.moved || state.scrolling) suppressBattleMagicCastUntil = Date.now() + 180;
         document.getElementById("battleMainPopup")?.classList.remove("battle-magic-dragging"); battleMagicDrag = null;
         if (list.hasPointerCapture?.(state.pointerId)) list.releasePointerCapture(state.pointerId);
-        if (state.button.hasPointerCapture?.(state.pointerId)) state.button.releasePointerCapture(state.pointerId);
+        if (state.button?.hasPointerCapture?.(state.pointerId)) state.button.releasePointerCapture(state.pointerId);
     }
 
     function initializeBattleMagicInteractions() {
@@ -171,10 +207,14 @@
             button.addEventListener("blur", end);
             button.addEventListener("click", event => { if (event.detail > 0) return; list.scrollLeft += (Number(button.dataset.scrollDirection) || 0) * 220; });
         });
+        list.addEventListener("pointerdown", beginBattleMagicGesture, true);
         list.addEventListener("pointermove", moveBattleMagicDrag);
         list.addEventListener("pointerup", event => finishBattleMagicDrag(event));
         list.addEventListener("pointercancel", event => finishBattleMagicDrag(event, true));
-        list.addEventListener("lostpointercapture", event => finishBattleMagicDrag(event, true));
+        list.addEventListener("lostpointercapture", event => {
+            if (!list.hasPointerCapture?.(event.pointerId)) finishBattleMagicDrag(event, true);
+        });
+        list.addEventListener("dragstart", event => event.preventDefault());
         if (!battleMagicWindowEventsReady) {
             window.addEventListener("blur", () => { stopBattleMagicScroll(); if (battleMagicDrag) finishBattleMagicDrag(null, true); });
             battleMagicWindowEventsReady = true;
@@ -988,20 +1028,6 @@ renderBattleActiveBuffIcons();
 
                     item.appendChild(magicName);
                 }
-
-               item.addEventListener(
-    "pointerdown",
-    function (event) {
-        if (event.button !== 0 || item.disabled) return;
-        const rect = item.getBoundingClientRect();
-        battleMagicDrag = { button: item, pointerId: event.pointerId, startX: event.clientX, startY: event.clientY,
-            storageKey: battleMagicOrderStorageKey(),
-            pointerX: event.clientX, pointerY: event.clientY, offsetX: event.clientX - rect.left,
-            offsetY: event.clientY - rect.top, rect, moved: false, ghost: null,
-            originalNextMagicId: item.nextElementSibling?.dataset.magicId || null };
-        if (item.setPointerCapture) item.setPointerCapture(event.pointerId);
-    }
-);
 
 item.addEventListener(
     "mouseenter",
@@ -2742,7 +2768,7 @@ function enableBattleActions() {
 // ボス戦BGM停止
 // =========================
 
-bossBattleBGM.pause();
+pauseBGM(bossBattleBGM);
 
 bossBattleBGM.currentTime = 0;
 
@@ -3486,7 +3512,7 @@ showBattleMessage(
         else disableBattleActions();
 
         if (snapshot.kind === "boss" && ["waitBossReward", "bossRewards"].includes(snapshot.phase)) {
-            bossBattleBGM.pause();
+            pauseBGM(bossBattleBGM);
             bossBattleBGM.currentTime = 0;
         }
         if (snapshot.phase === "bossRewards") {
@@ -3498,7 +3524,7 @@ showBattleMessage(
             return;
         }
         if (snapshot.phase === 'bossCeremony') {
-            bossBattleBGM.pause();
+            pauseBGM(bossBattleBGM);
             if (!activeBattle.victoryMusicStarted) { setupBGM(bossVictoryBGM, bossVictoryBGMGain, setBossVictoryBGMGain); activeBattle.victoryMusicStarted = true; }
             window.BossAftermath.renderOnline(snapshot, players, async function(action) {
                 const sync = window.onlineGame?.sync;

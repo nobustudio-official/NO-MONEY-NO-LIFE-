@@ -210,8 +210,8 @@
     box-shadow: 0 2px 8px #263d2b28, inset 0 1px 0 #fff; z-index: 4;
 }
 #battleMainPopup.battle-motion-mode .battle-new-magic-list { flex: 1; min-width: 0; height: 100%; align-items: center; gap: 12px; padding: 2px; }
-#battleMainPopup.battle-motion-mode .battle-new-magic-list { scrollbar-width: none; }
-#battleMainPopup.battle-motion-mode .battle-new-magic-list::-webkit-scrollbar { display: none; width: 0; height: 0; }
+#battleMainPopup .battle-new-magic-list { scrollbar-width: none; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+#battleMainPopup .battle-new-magic-list::-webkit-scrollbar { display: none; width: 0; height: 0; }
 #battleMainPopup.battle-motion-mode .battle-new-magic-item,
 #battleMainPopup.battle-motion-mode .battle-new-escape-button {
     display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 10px;
