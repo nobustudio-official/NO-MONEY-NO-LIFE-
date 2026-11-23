@@ -655,18 +655,18 @@
 .title-screen.is-setup .orientation-guide__icon {
     display: grid;
     place-items: center;
-    width: 76px;
-    height: 66px;
+    width: 92px;
+    height: 82px;
 }
 
 .title-screen.is-setup .orientation-guide__phone {
     position: relative;
     display: block;
-    width: 38px;
-    height: 62px;
+    width: 46px;
+    height: 74px;
     box-sizing: border-box;
     border: 3px solid #ffe3a0;
-    border-radius: 10px;
+    border-radius: 12px;
     background: linear-gradient(145deg, #30435a, #18263a);
     box-shadow: inset 0 0 0 4px #9bc9d922, 0 0 12px #f4d28f45;
     transform-origin: center;
@@ -675,9 +675,9 @@
 
 .title-screen.is-setup .orientation-guide__phone::before {
     position: absolute;
-    top: 4px;
+    top: 5px;
     left: 50%;
-    width: 10px;
+    width: 12px;
     height: 2px;
     border-radius: 2px;
     background: #ffe3a0;
@@ -687,10 +687,10 @@
 
 .title-screen.is-setup .orientation-guide__phone::after {
     position: absolute;
-    bottom: 4px;
+    bottom: 5px;
     left: 50%;
-    width: 4px;
-    height: 4px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
     background: #ffe3a0;
     content: "";
