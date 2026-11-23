@@ -4053,7 +4053,12 @@ playerCards.forEach(
                 // =========================
 
                 centerPlayerOnMap(
-                    playerIndex
+                    playerIndex,
+                    "smooth",
+                    null,
+                    false,
+                    0,
+                    MAP_TAP_CAMERA_SPEED
                 );
                 
             }
@@ -10466,6 +10471,66 @@ window.finishTurn =
 window.centerCurrentPlayerOnMap =
     centerCurrentPlayerOnMap;
 
+// Tap-triggered camera pans use a fixed screen-space speed. Longer jumps
+// therefore take proportionally longer instead of feeling abrupt.
+const MAP_TAP_CAMERA_SPEED = 600;
+let activeMapCameraScroll = null;
+
+function animateMapCameraScroll(mapArea, left, top, speed, signal) {
+    activeMapCameraScroll?.cancel();
+    const limits = window.MapScene?.getCameraLimits?.();
+    const maxScrollLeft = Math.max(0, mapArea.scrollWidth - mapArea.clientWidth);
+    const maxScrollTop = Math.max(0, mapArea.scrollHeight - mapArea.clientHeight);
+    left = Math.max(limits?.minLeft ?? 0, Math.min(limits?.maxLeft ?? maxScrollLeft, left));
+    top = Math.max(limits?.minTop ?? 0, Math.min(limits?.maxTop ?? maxScrollTop, top));
+    const controller = new AbortController();
+    const startLeft = mapArea.scrollLeft;
+    const startTop = mapArea.scrollTop;
+    const deltaLeft = left - startLeft;
+    const deltaTop = top - startTop;
+    const distance = Math.hypot(deltaLeft, deltaTop);
+    const duration = speed > 0 ? distance / speed * 1000 : 0;
+    const startedAt = performance.now();
+    let frame = 0;
+    let settled = false;
+    let resolvePromise;
+    const promise = new Promise(resolve => { resolvePromise = resolve; });
+
+    function finish(completed) {
+        if (settled) return;
+        settled = true;
+        cancelAnimationFrame(frame);
+        controller.abort();
+        signal?.removeEventListener('abort', cancel);
+        if (activeMapCameraScroll?.cancel === cancel) activeMapCameraScroll = null;
+        resolvePromise(completed);
+    }
+    function cancel() { finish(false); }
+    function tick(now) {
+        if (signal?.aborted || !mapArea.isConnected) { finish(false); return; }
+        const progress = duration === 0 ? 1 : Math.min(1, (now - startedAt) / duration);
+        mapArea.scrollLeft = startLeft + deltaLeft * progress;
+        mapArea.scrollTop = startTop + deltaTop * progress;
+        if (progress < 1) frame = requestAnimationFrame(tick);
+        else {
+            mapArea.scrollLeft = left;
+            mapArea.scrollTop = top;
+            finish(true);
+        }
+    }
+
+    activeMapCameraScroll = { cancel };
+    for (const event of ['wheel', 'pointerdown', 'touchstart']) {
+        mapArea.addEventListener(event, cancel, { once: true, signal: controller.signal, passive: true });
+    }
+    if (signal) {
+        if (signal.aborted) cancel();
+        else signal.addEventListener('abort', cancel, { once: true });
+    }
+    if (!settled) frame = requestAnimationFrame(tick);
+    return promise;
+}
+
 function focusCurrentPlayerFromAvatar() {
     avatarCameraFocus?.abort();
     const mapArea = document.querySelector('.game-screen .map-area');
@@ -10519,8 +10584,8 @@ function focusCurrentPlayerFromAvatar() {
         return;
     }
 
-    mapArea.addEventListener('scroll', () => { if (hasArrived()) restoreZoom(); }, { ...listenerOptions, passive: true });
-    mapArea.scrollTo({ ...target, behavior: 'smooth' });
+    animateMapCameraScroll(mapArea, target.left, target.top, MAP_TAP_CAMERA_SPEED, focus.signal)
+        .then(completed => { if (completed) restoreZoom(); });
 }
 
 // =========================
@@ -10533,7 +10598,8 @@ function centerPlayerOnMap(
     behavior = "smooth",
     onCentered,
     allowDuringMovement = false,
-    movementWaitFrames = 0
+    movementWaitFrames = 0,
+    cameraSpeed = null
 ) {
 
     avatarCameraFocus?.abort();
@@ -10602,7 +10668,7 @@ function centerPlayerOnMap(
             if (!allowDuringMovement && MapMovementPresentation.isMoving(mapBoard)) {
                 if (playerIndex === currentPlayer && movementWaitFrames < 90) {
                     requestAnimationFrame(() => centerPlayerOnMap(
-                        playerIndex, behavior, onCentered, allowDuringMovement, movementWaitFrames + 1
+                        playerIndex, behavior, onCentered, allowDuringMovement, movementWaitFrames + 1, cameraSpeed
                     ));
                 } else {
                     onCentered?.();
@@ -10630,17 +10696,16 @@ function centerPlayerOnMap(
             // マス中央へ移動
             // =========================
 
+            if (cameraSpeed > 0) {
+                animateMapCameraScroll(mapArea, finalScrollLeft, finalScrollTop, cameraSpeed)
+                    .then(completed => { if (completed) onCentered?.(); });
+                return;
+            }
+
             mapArea.scrollTo({
-
-                left:
-                    finalScrollLeft,
-
-                top:
-                    finalScrollTop,
-
-                behavior:
-                    behavior
-
+                left: finalScrollLeft,
+                top: finalScrollTop,
+                behavior
             });
             if (onCentered) {
                 const reached = () => Math.abs(mapArea.scrollLeft - finalScrollLeft) < 1
@@ -10745,20 +10810,12 @@ if (destinationButton) {
                 bossCenterY -
                 mapCenterY;
 
-            mapArea.scrollTo({
-
-                left:
-                    mapArea.scrollLeft +
-                    scrollAmountX,
-
-                top:
-                    mapArea.scrollTop +
-                    scrollAmountY,
-
-                behavior:
-                    "smooth"
-
-            });
+            animateMapCameraScroll(
+                mapArea,
+                mapArea.scrollLeft + scrollAmountX,
+                mapArea.scrollTop + scrollAmountY,
+                MAP_TAP_CAMERA_SPEED
+            );
 
         }
     );
