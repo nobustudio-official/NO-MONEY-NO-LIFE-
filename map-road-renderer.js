@@ -85,9 +85,9 @@
    const a=points[i-1],b=points[i],dx=b.x-a.x,dy=b.y-a.y,length=Math.hypot(dx,dy);
    if(!Number.isFinite(length)||length<=0)continue;
    const part=add(scene.routeHighlight,'g',{transform:`matrix(${dx/length} ${dy/length} ${-dy/length} ${dx/length} ${a.x} ${a.y})`});
-   if(length>36)add(part,'rect',{x:18,y:-12,width:length-36,height:24,rx:4,fill:'#f873bc40'});
+   if(length>36)add(part,'rect',{x:18,y:-12,width:length-36,height:24,rx:4,fill:'#f873bc70'});
    if(length>50)for(const y of [-16,16]){
-    add(part,'line',{x1:25,y1:y,x2:length-25,y2:y,stroke:'#ff9bce80','stroke-width':6,'stroke-linecap':'round'});
+    add(part,'line',{x1:25,y1:y,x2:length-25,y2:y,stroke:'#ff9bcebb','stroke-width':6,'stroke-linecap':'round'});
     add(part,'line',{x1:25,y1:y,x2:length-25,y2:y,stroke:'#fff','stroke-width':2,'stroke-linecap':'round'});
    }
   }
