@@ -294,11 +294,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 24px;
     min-width: min(320px, 78vw);
     min-height: 62px;
     margin-top: 0;
-    padding: 14px 28px 14px 36px;
+    padding: 14px 32px;
     border: 1px solid #fff0bd;
     border-radius: 4px;
     color: #25182c;
@@ -372,11 +371,6 @@
 .title-screen #startButton:focus-visible {
     outline: 3px solid var(--title-cyan);
     outline-offset: 9px;
-}
-
-.title-screen__button-arrow {
-    color: #70452b;
-    font-size: 13px;
 }
 
 .title-screen__hint {
