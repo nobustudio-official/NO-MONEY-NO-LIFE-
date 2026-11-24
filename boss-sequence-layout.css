@@ -317,7 +317,7 @@
     min-width: 0;
     margin: 0;
     padding: clamp(4px, 1vh, 9px) clamp(6px, 1vw, 12px);
-    column-gap: clamp(4px, .6vw, 10px);
+    column-gap: 0;
     font-size: calc(clamp(10px, 1.7vh, 15px) + 4px);
 }
 
@@ -337,7 +337,7 @@
 /* Keep the first-boss stats typography in step with post-boss status screens.
    The initial scene has a separate mobile rule in boss-opening.css. */
 .boss-opening.boss-opening-start .boss-opening-stats {
-    column-gap: clamp(4px, .6vw, 10px);
+    column-gap: 0;
     font-size: calc(clamp(10px, 1.7vh, 15px) + 4px);
 }
 

@@ -216,12 +216,17 @@
             ? Number(v.config.playerIndex)===Number(config.playerIndex):v.player===config.player;
         const sameOpenScreen=v.root.style.display!=='none'&&samePlayer&&
             v.config?.screenType===config.screenType&&v.config?.saleCategory===config.saleCategory;
-        if(!sameOpenScreen||config.resetOnOpen===true){v.selected=null;v.hovered=null;v.notice=null;v.noticeText=null;v.waits.clear();v.busy.clear();v.scroll.scrollTop=0;}
+        const resetOnOpen=!sameOpenScreen||config.resetOnOpen===true;
+        if(resetOnOpen){v.selected=null;v.hovered=null;v.notice=null;v.noticeText=null;v.waits.clear();v.busy.clear();}
         v.config=config;v.player=config.player;
         v.root.classList.toggle('gp-shop-no-staff',Boolean(config.scene&&['item-list','magic-menu','asset-purchase','sale-list'].includes(config.screenType)));
         if(config.scene){v.background.src=config.scene.backgroundImage;if(v.root.classList.contains('gp-shop-no-staff')){v.staff.removeAttribute('src');v.staff.alt='';if(v.hello)v.hello.textContent='';}else{v.staff.src=config.scene.staffImage;v.staff.alt=config.scene.name+'の店員';}
             if(config.voice&&!v.presentation)v.presentation=ShopPresentation.create(v.root,{voice:config.voice});}
-        v.root.style.display='block';draw(v);anchorOwnedPanel(v);if(config.voice!==false)v.presentation?.present();return v;
+        v.root.style.display='block';
+        // A hidden scroller cannot reliably reset its saved position. Reset after
+        // showing it, before draw captures the position to preserve on refresh.
+        if(resetOnOpen)v.scroll.scrollTop=0;
+        draw(v);anchorOwnedPanel(v);if(config.voice!==false)v.presentation?.present();return v;
     }
     function remote(screenType,data,playerIndex) {
         const v=[...views.values()].find(entry=>entry.config?.screenType===screenType&&entry.root.style.display==='block'&&entry.config.playerIndex===playerIndex);
