@@ -383,7 +383,11 @@
         root.hidden = (!underground && (!flow || stage === 'done')) || Boolean(state.matchPhase && state.matchPhase !== 'playing');
         const game = document.querySelector('.game-container');
         if (game) game.inert = !root.hidden && !underground;
-        if (root.hidden) { window.DiceMovementCounter?.hide(); return; }
+        if (root.hidden) {
+            window.Plane02Layout?.release(root.querySelector('.ug-scene'));
+            window.DiceMovementCounter?.hide();
+            return;
+        }
         const scene = sceneStages.includes(stage);
         if (!playingImmunitySound && !immunityNotice) immunitySound = null;
         const dice = ['duel','playerRolling','playerResult','foremanRolling','duelResult','lostTaunt','lost','interrupt','cheat'].includes(stage);
@@ -414,6 +418,7 @@
             (dice ? '<div class="ug-dice">' + participant('player', portrait(player), escape(player.name)) +
             participant('foreman','images/characters/npc/shops/班長アイコン1.webp','班長') + '</div>' : '') +
             (stage === 'duel' ? button('<img src="images/ui/icons/interface/dice.webp" alt="">サイコロを振る','next','ug-roll') : '') + '</div>' : '';
+        window.Plane02Layout?.release(root.querySelector('.ug-scene'));
         root.innerHTML = (underground && !scene ? map(active) : '') + stageContent + content +
             (['rolling','diceResult'].includes(stage) ? '<div class="ug-normal-dice"><canvas></canvas></div>' : '') +
             (['slot','slotStop'].includes(stage) ? '<div class="ug-slot gold-roulette"><div class="gold-roulette-title">獲得ペニカ</div><div class="gold-roulette-number"></div></div>' : '') +
@@ -426,6 +431,11 @@
         const telop = root.querySelector('.ug-caption');
         window.TelopStandard?.apply(telop, { message: telop?.querySelector('p'), portrait: telop?.querySelector('img'),
             next: telop?.querySelector('.ug-next'), speaker: telop?.querySelector('.ug-speaker') });
+        const sceneFrame = root.querySelector('.ug-scene');
+        if (sceneFrame) {
+            window.Plane02Layout?.apply(sceneFrame, { once: true });
+            window.Plane02Layout?.apply(sceneFrame);
+        }
         if (underground) placeMenu();
         if (underground && ['choose','moving'].includes(stage) && flow.remaining > 0) window.DiceMovementCounter?.show(flow.remaining, !owner);
         else if (underground) window.DiceMovementCounter?.hide();
@@ -552,7 +562,10 @@
         lastMusic = null;
         restoreMenu();
         window.DiceMovementCounter?.hide();
-        if (root) root.hidden = true;
+        if (root) {
+            window.Plane02Layout?.release(root.querySelector('.ug-scene'));
+            root.hidden = true;
+        }
         const game = document.querySelector('.game-container');
         if (game) game.inert = false;
     }

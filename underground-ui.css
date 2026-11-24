@@ -29,22 +29,13 @@ body:has(#undergroundPresentation.ug-underground:not([hidden])) .map-area { visi
 .ug-menu-button:disabled { opacity:.6; }
 .ug-remaining { z-index:2; }
 .ug-memo { position:absolute; inset:45% 20% auto; text-align:center; color:#f2d58d; font-size:16px; }
-.ug-scene { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:min(81vw,1305px); height:calc(90vh - 94px); box-sizing:border-box; border:2px solid rgba(255,218,105,.82); border-radius:16px; overflow:hidden; background:url("images/backgrounds/scenes/強制地下労働.webp") center/cover; }
+.ug-scene { box-sizing:border-box; border:2px solid rgba(255,218,105,.82); border-radius:16px; overflow:hidden; background:url("images/backgrounds/scenes/強制地下労働.webp") center/cover; }
 .ug-gambling { background-image:url("images/backgrounds/scenes/賭場.webp"); }
 .ug-character { position:absolute; inset:8% 0 auto; margin:auto; height:65%; max-width:48%; object-fit:contain; }
-.ug-caption,.ug-sale { box-sizing:border-box; position:absolute; border:1px solid #ccae7b; border-radius:12px; background:linear-gradient(125deg,#18384fe8,#10293cee); }
-.ug-caption { position:fixed; top:auto; left:var(--an02-left,220px); right:var(--an02-right,24px); bottom:var(--an02-bottom,42px); width:auto; max-width:var(--an02-max-width,1560px); min-width:0; height:auto; min-height:var(--an02-min-height,160px); max-height:52vh; margin:0 auto; padding:24px 22px; display:flex; align-items:center; gap:22px; font:600 22px/1.6 "Yu Gothic",Meiryo,sans-serif; }
-.ug-scene-active .ug-caption { position:fixed; left:calc(50% - min(81vw,1305px)*.47); right:auto; width:calc(min(81vw,1305px)*.94); bottom:calc(50% - (90vh - 94px)*.47); height:160px; min-height:0; padding:22px 125px 22px 22px; }
-.ug-caption p { min-width:0; max-height:calc(52vh - 100px); overflow:auto; margin:0; padding-right:115px; }
-.ug-scene-active .ug-caption p { max-height:none; padding-right:0; }
-.ug-caption img { width:80px; height:80px; flex:none; object-fit:contain; }
-.ug-caption strong,.ug-sale strong,.ug-speaker { color:#f2d58d; }
-.ug-speaker { position:absolute; left:22px; top:14px; font-size:15px; }
-.ug-speaker + p { margin-top:12px; }
-.ug-scene-active .ug-speaker + p { margin-top:0; }
+.ug-sale { box-sizing:border-box; position:absolute; border:1px solid #ccae7b; border-radius:12px; background:linear-gradient(125deg,#18384fe8,#10293cee); }
+.ug-sale strong { color:#f2d58d; }
 #undergroundPresentation button:where(:not(.action-menu-button)) { font:inherit; color:#fcfcfc; cursor:pointer; }
 #undergroundPresentation .ug-next { position:absolute; bottom:26px; right:20px; min-width:90px; min-height:27px; padding:2px 10px; border:0; background:transparent; font-size:14px; text-shadow:0 1px 4px #000; }
-.ug-scene-active .ug-caption .ug-next { bottom:8px; right:18px; min-width:0; min-height:0; padding:0; }
 #undergroundPresentation > .ug-next { bottom:6%; right:11%; }
 .ug-roll { position:absolute; bottom:12%; left:50%; transform:translateX(-50%); border:1px solid #ccae7b; border-radius:10px; padding:8px 22px; background:#244866; }
 .ug-scene .ug-roll { bottom:27%; }
