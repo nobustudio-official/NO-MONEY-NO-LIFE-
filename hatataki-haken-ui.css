@@ -134,6 +134,7 @@
         --hatataki-unit: min(1px, calc(96vw / 1480), calc((100dvh - var(--hatataki-hud-clearance) - 10px) / 910.08));
         --hatataki-panel-top: max(var(--hatataki-hud-clearance), calc(50dvh - 455.04 * var(--hatataki-unit)));
     }
+    .hatataki-overlay { --hatataki-content-indent: calc(26px - max(6px, calc(17 * var(--hatataki-unit)))); }
     .hatataki-scene { inset: 0; width: auto; max-width: none; }
     .hatataki-panel {
         inset: var(--hatataki-panel-top) auto auto 50%;
@@ -152,13 +153,15 @@
     .hatataki-player-name { font-size: max(12px, calc(23 * var(--hatataki-unit))); }
     .hatataki-player-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .hatataki-title { margin-bottom: 4px; padding-bottom: 4px; }
-    .hatataki-item-row { padding: 2px 0; }
+    .hatataki-overlay .hatataki-title,
+    .hatataki-overlay .hatataki-item-row { padding-left: var(--hatataki-content-indent); }
+    .hatataki-item-row { padding-top: 2px; padding-right: 0; padding-bottom: 2px; }
     .hatataki-button { min-width: 0; min-height: 24px; padding: 2px 8px; font-size: max(11px, calc(16 * var(--hatataki-unit))); }
     .hatataki-progress { bottom: 5px; }
     .hatataki-progress.item-exit-button { bottom: 15px; }
     .hatataki-progress.hatataki-next-button { bottom: 25px; }
-    .hatataki-summary {
-        left: max(6px, calc(17 * var(--hatataki-unit)));
+    .hatataki-overlay .hatataki-summary {
+        left: 26px;
         right: calc(max(6px, 17 * var(--hatataki-unit)) + var(--player-card-width, 135px) + 30px + 6px);
         bottom: 5px;
     }
