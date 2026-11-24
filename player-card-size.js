@@ -30,11 +30,24 @@
     function refresh() {
         if (frame) cancelAnimationFrame(frame);
         frame = 0;
+        const screen = document.querySelector('.game-screen');
+        const header = screen?.querySelector('.game-hud');
+        const viewport = screen?.getBoundingClientRect();
+        const hud = header?.getBoundingClientRect();
+        if (!viewport?.width || !viewport.height || !hud?.height) return;
+        const availableHeight = viewport.bottom - hud.bottom - 16;
+        if (availableHeight <= 0) return;
         const size = window.BossAftermath?.measureGuidebookCard();
-        if (!size) return;
+        // The reference has a single column capped at 244px. Never retain a
+        // transient measurement larger than its column or the event viewport.
+        const valid = size && Number.isFinite(size.width) && Number.isFinite(size.height) &&
+            size.width > 0 && size.width <= Math.min(244, viewport.width) &&
+            size.height > 0 && size.height <= availableHeight;
+        const width = valid ? size.width : Math.min(135, viewport.width);
+        const height = valid ? size.height : Math.min(260, availableHeight);
         const style = document.documentElement.style;
-        style.setProperty('--player-card-width', `${size.width}px`);
-        style.setProperty('--player-card-height', `${size.height}px`);
+        style.setProperty('--player-card-width', `${width}px`);
+        style.setProperty('--player-card-height', `${height}px`);
         fitItemAmounts();
     }
     function schedule() {
@@ -42,5 +55,6 @@
     }
     // Page-level registration: screen replacement does not add more listeners.
     window.addEventListener('resize', schedule, { passive: true });
+    window.visualViewport?.addEventListener('resize', schedule, { passive: true });
     window.PlayerCardSize = Object.freeze({ refresh, fitItemAmounts });
 })();

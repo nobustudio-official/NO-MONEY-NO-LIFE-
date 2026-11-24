@@ -68,6 +68,7 @@
     font-size: 18px;
 }
 .hatataki-player-card {
+    --player-card-fitted-height: min(var(--player-card-height, 260px), 100%);
     position: relative;
     left: -30px;
     width: 280px;

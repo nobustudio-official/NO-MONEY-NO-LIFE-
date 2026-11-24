@@ -92,6 +92,7 @@
         card.addEventListener('animationend', event => {
             if (event.animationName === 'hatataki-card-hit') card.classList.remove('is-hit');
         });
+        window.PlayerCardSize?.refresh();
         document.body.append(root);
         // Establish the final panel geometry before revealing any text. Register
         // resize tracking only once for this item-use screen.

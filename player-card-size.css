@@ -12,11 +12,11 @@
     .special-reward-card
 ) {
     box-sizing: border-box;
-    width: var(--player-card-width) !important;
-    min-width: var(--player-card-width) !important;
-    max-width: var(--player-card-width) !important;
-    height: var(--player-card-height) !important;
-    min-height: var(--player-card-height) !important;
-    max-height: var(--player-card-height) !important;
+    width: var(--player-card-width, 135px) !important;
+    min-width: var(--player-card-width, 135px) !important;
+    max-width: var(--player-card-width, 135px) !important;
+    height: var(--player-card-fitted-height, var(--player-card-height, 260px)) !important;
+    min-height: var(--player-card-fitted-height, var(--player-card-height, 260px)) !important;
+    max-height: var(--player-card-fitted-height, var(--player-card-height, 260px)) !important;
     flex: 0 0 auto !important;
 }
