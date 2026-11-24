@@ -23,19 +23,19 @@ window.isSquareMovementInProgress = false;
 // mapData 側の icon は画像が読み込めない場合の予備表示として残します。
 
 const MAP_TYPE_ICON_PATHS = {
-    start: "images/map/space-icons/start.webp",
-    money: "images/map/space-icons/gold.webp",
-    job: "images/map/space-icons/job.webp",
-    shop: "images/map/space-icons/shop.webp",
-    worst: "images/map/space-icons/worst.webp",
-    monster: "images/map/space-icons/monster.webp",
-    magic_shop: "images/map/space-icons/magic-shop.webp",
-    asset: "images/map/space-icons/asset.webp",
-    treasure: "images/map/space-icons/treasure.webp"
+    start: "images/map/space-icons/optimized/start-70pct.webp",
+    money: "images/map/space-icons/optimized/gold-70pct.webp",
+    job: "images/map/space-icons/optimized/job-70pct.webp",
+    shop: "images/map/space-icons/optimized/shop-70pct.webp",
+    worst: "images/map/space-icons/optimized/worst-70pct.webp",
+    monster: "images/map/space-icons/optimized/monster-70pct.webp",
+    magic_shop: "images/map/space-icons/optimized/magic-shop-70pct.webp",
+    asset: "images/map/space-icons/optimized/asset-70pct.webp",
+    treasure: "images/map/space-icons/optimized/treasure-70pct.webp"
 };
 
 const BOSS_MAP_ICON_PATH =
-    "images/map/space-icons/boss.webp";
+    "images/map/space-icons/optimized/boss-70pct.webp";
 
 const DICE_MOVEMENT_ARROW_PATH =
     "images/ui/icons/interface/yajirushi.webp";
@@ -1097,19 +1097,19 @@ const GAME_LOADING_MIN_TIME = 1200;
 const GAME_LOADING_ASSETS = [
     "images/characters/npc/jobs/ギルド-店員.webp",
     "images/backgrounds/scenes/王都ロビー.webp",
-    "images/map/space-icons/start.webp",
-    "images/map/space-icons/gold.webp",
-    "images/map/space-icons/job.webp",
-    "images/map/space-icons/shop.webp",
-    "images/map/space-icons/worst.webp",
-    "images/map/space-icons/monster.webp",
-    "images/map/space-icons/magic-shop.webp",
-    "images/map/space-icons/asset.webp",
-    "images/map/space-icons/treasure.webp",
-    "images/map/space-icons/boss.webp",
+    "images/map/space-icons/optimized/start-70pct.webp",
+    "images/map/space-icons/optimized/gold-70pct.webp",
+    "images/map/space-icons/optimized/job-70pct.webp",
+    "images/map/space-icons/optimized/shop-70pct.webp",
+    "images/map/space-icons/optimized/worst-70pct.webp",
+    "images/map/space-icons/optimized/monster-70pct.webp",
+    "images/map/space-icons/optimized/magic-shop-70pct.webp",
+    "images/map/space-icons/optimized/asset-70pct.webp",
+    "images/map/space-icons/optimized/treasure-70pct.webp",
+    "images/map/space-icons/optimized/boss-70pct.webp",
     "images/ui/icons/interface/gold.webp",
     "images/ui/icons/interface/mana.webp",
-    "images/map/space-icons/boss.webp",
+    "images/map/space-icons/optimized/boss-70pct.webp",
     "images/ui/icons/interface/dice.webp",
     "images/ui/icons/interface/item.webp",
     "images/ui/icons/interface/magic.webp",
