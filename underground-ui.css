@@ -95,3 +95,7 @@ body:has(#undergroundPresentation.ug-underground:not([hidden])) #diceMovementPan
 
 .ug-marker { transform:translate(var(--ug-offset, 0%),-22%); }
 .ug-marker-active { z-index:3; }
+
+/* Event scene covers the action menu while leaving the HUD and telop above it. */
+#undergroundPresentation.ug-scene-active > .ug-menu-host { z-index:3; }
+#undergroundPresentation.ug-scene-active > .ug-scene { z-index:4; }
