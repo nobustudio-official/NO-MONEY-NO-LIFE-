@@ -13,8 +13,15 @@
     if (doc.documentElement.hasAttribute('data-game-viewport-host')) {
         const frame = doc.getElementById('gameViewportFrame');
         let active = false;
+        let layoutFrame = 0;
+        const appliedStyles = {};
 
         function layout() {
+            // Startup calls apply immediately and supersede any queued update.
+            if (layoutFrame) {
+                root.cancelAnimationFrame(layoutFrame);
+                layoutFrame = 0;
+            }
             const viewport = root.visualViewport;
             const width = viewport?.width || root.innerWidth;
             const height = viewport?.height || root.innerHeight;
@@ -22,12 +29,26 @@
             const logicalWidth = active ? DESKTOP_WIDTH : width;
             const logicalHeight = active ? DESKTOP_HEIGHT : height;
             const scale = active ? Math.min(width / logicalWidth, height / logicalHeight) : 1;
-            frame.style.width = logicalWidth + 'px';
-            frame.style.height = logicalHeight + 'px';
-            frame.style.left = ((viewport?.offsetLeft || 0) + (width - logicalWidth * scale) / 2) + 'px';
-            frame.style.top = ((viewport?.offsetTop || 0) + (height - logicalHeight * scale) / 2) + 'px';
-            frame.style.transform = `scale(${scale})`;
+            const styles = {
+                width: logicalWidth + 'px',
+                height: logicalHeight + 'px',
+                left: ((viewport?.offsetLeft || 0) + (width - logicalWidth * scale) / 2) + 'px',
+                top: ((viewport?.offsetTop || 0) + (height - logicalHeight * scale) / 2) + 'px',
+                transform: `scale(${scale})`
+            };
+            for (const [property, value] of Object.entries(styles)) {
+                if (appliedStyles[property] === value) continue;
+                frame.style[property] = value;
+                appliedStyles[property] = value;
+            }
+        }
 
+        function scheduleLayout() {
+            if (layoutFrame) return;
+            layoutFrame = root.requestAnimationFrame(() => {
+                layoutFrame = 0;
+                layout();
+            });
         }
 
         root.NMNLGameViewportHost = Object.freeze({
@@ -49,10 +70,10 @@
             }
         });
 
-        root.addEventListener('resize', layout);
-        root.addEventListener('orientationchange', layout);
-        root.visualViewport?.addEventListener('resize', layout);
-        root.visualViewport?.addEventListener('scroll', layout);
+        root.addEventListener('resize', scheduleLayout);
+        root.addEventListener('orientationchange', scheduleLayout);
+        root.visualViewport?.addEventListener('resize', scheduleLayout);
+        root.visualViewport?.addEventListener('scroll', scheduleLayout);
         layout();
 
         const gameURL = new URL('index.html', root.location.href);
