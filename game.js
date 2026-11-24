@@ -1535,7 +1535,7 @@ startButton.addEventListener(
                         const heading =
                             headingTemplate.content.firstElementChild.cloneNode(true);
                         heading.textContent =
-                            "キャラの選択と名前の入力をしてください。";
+                            "キャラ選択と名前の入力をしてください。";
                         playerNames.appendChild(heading);
 
                         Array.from({ length: count }, function (_, index) {
