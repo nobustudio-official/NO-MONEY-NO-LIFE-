@@ -67,7 +67,6 @@
         const results = element('div', 'hatataki-results');
         results.setAttribute('aria-live', 'polite');
         view.destroyedItems.forEach(name => results.append(element('div', 'hatataki-item-row', name)));
-        if (view.status !== 'attack') results.append(element('div', 'hatataki-finished', '以上'));
         body.append(results);
 
         const card = element('article', 'hatataki-player-card');
