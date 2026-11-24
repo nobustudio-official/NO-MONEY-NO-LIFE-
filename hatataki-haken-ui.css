@@ -5,6 +5,8 @@
     pointer-events: auto;
     font-family: "Yu Gothic", "Meiryo", sans-serif;
     color: #fcfcfc;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
 }
 
 .hatataki-overlay * { box-sizing: border-box; }
@@ -62,8 +64,9 @@
     font-weight: 700;
     line-height: 1.45;
     overflow-wrap: anywhere;
+    border-bottom: 1px solid #ccae7b55;
+    font-size: calc(clamp(24px, 1.7vw, 31px) - 8pt);
 }
-.hatataki-item-row { border-bottom: 1px solid #ccae7b55; font-size: calc(clamp(24px, 1.7vw, 31px) - 8pt); }
 .hatataki-player-card {
     position: relative;
     left: -30px;
