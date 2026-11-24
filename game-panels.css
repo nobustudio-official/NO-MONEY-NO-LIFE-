@@ -58,6 +58,9 @@
 .gp-table tr[data-key]{cursor:pointer}
 .gp-table tr[data-key]:hover td,.gp-table tr[data-selected] td{background:#547a9560;border-color:#ccae7b90}
 .gp-name{display:block;font-size:clamp(14px,1.6vw,20px);font-weight:700;white-space:nowrap;color:#fcfcfc}
+.gp-magic-name-cell{display:flex;min-width:0;align-items:center;gap:clamp(8px,1vw,14px)}
+.gp-magic-name-cell .gp-row-icon{flex:none;width:min(40px,calc(var(--gp-row-height) - 8px));height:min(40px,calc(var(--gp-row-height) - 8px));object-fit:contain}
+.gp-magic-name-cell .gp-name{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .gp-price{font-size:clamp(14px,1.7vw,21px);font-weight:700;color:#f2d58d;text-align:right;white-space:nowrap}
 .gp-table td.gp-price{padding-right:24px}
 .gp-yield{font-size:clamp(13px,1.55vw,20px);color:#b7e9d3;font-weight:600;text-align:center;white-space:nowrap}

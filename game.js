@@ -1849,6 +1849,10 @@ function showTurnSelectScreen(
         "click",
         function () {
 
+            // Fullscreen and landscape locking must be requested directly
+            // from this user gesture; unsupported browsers fall back safely.
+            window.GameOrientation?.startLandscapeMode();
+
             let maxTurns =
                 Number(
                     turnCountInput.value

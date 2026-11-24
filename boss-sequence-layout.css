@@ -135,10 +135,15 @@
 }
 
 #boss-aftermath .bf-receipt-card {
+    --player-card-fitted-height: min(var(--player-card-height, 260px), 100%);
     min-height: 0;
+    justify-content: safe center;
     gap: clamp(3px, .8vh, 8px);
     padding: clamp(4px, 1vh, 9px);
+    overflow: auto;
 }
+
+#boss-aftermath .bf-receipt-card > :is(img, strong, button) { flex: none; }
 
 #boss-aftermath .bf-receipt-card > img {
     width: clamp(30px, 12vh, 54px);

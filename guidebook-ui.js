@@ -35,6 +35,7 @@
         return element;
     };
     function close() {
+        window.PlayerCardSize?.release(layer);
         stopHudTracking?.();
         stopHudTracking = null;
         layer?.remove();
@@ -293,7 +294,7 @@
         }
         document.body.append(root);
         if (kind !== 'choice') styleBanner(banner);
-        if (kind === 'offer' || kind === 'offers') window.PlayerCardSize?.fitItemAmounts(root);
+        if (kind === 'offer' || kind === 'offers') window.PlayerCardSize?.watch(root);
         const screen = document.querySelector('.game-screen');
         const hud = screen?.querySelector('.game-hud');
         if (hud && !panel.hidden) stopHudTracking = trackHud(root, hud);
@@ -391,6 +392,7 @@
         root.append(panel, banner);
         document.body.append(root);
         styleBanner(banner);
+        window.PlayerCardSize?.watch(root);
         const screen = document.querySelector('.game-screen');
         if (screen && !screen.inert) { screen.inert = true; gameScreen = screen; }
         if (control) root.focus?.({ preventScroll: true });

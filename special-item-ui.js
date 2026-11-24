@@ -1,10 +1,11 @@
 (function () {
     'use strict';
     let popup;
-    function hide() { if (popup) { window.Plane02Layout?.release(popup.querySelector('.special-item-panel')); popup.hidden = true; } }
+    function hide() { if (popup) { window.PlayerCardSize?.release(popup); window.Plane02Layout?.release(popup.querySelector('.special-item-panel')); popup.hidden = true; } }
     function show(options) {
         const {itemId, stage, destination, players, actorIndex, observer, onBack, onSelect, onExecute} = options;
         if (!popup) { popup = document.createElement('section'); popup.id='specialItemPopup'; popup.className='special-item-popup'; document.body.append(popup); }
+        window.PlayerCardSize?.release(popup);
         window.Plane02Layout?.release(popup.querySelector('.special-item-panel'));
         popup.replaceChildren(); popup.hidden=false;
         popup.dataset.itemSelection = String(stage !== 'result');
@@ -38,7 +39,7 @@
             players.forEach((player,index)=>{if(index===actorIndex || player.underground)return;const el=card(player,index);el.append(makeButton('選ぶ',button=>onSelect?.(index,button)));choices.append(el);});
         }
         panel.append(choices);popup.append(panel);
-        window.PlayerCardSize?.fitItemAmounts(popup);
+        window.PlayerCardSize?.watch(popup);
         if ([24,26].includes(Number(itemId))) window.Plane02Layout?.apply(panel);
         if (stage === 'result') {
             const announcement=document.createElement('div');announcement.className='special-item-announcement';

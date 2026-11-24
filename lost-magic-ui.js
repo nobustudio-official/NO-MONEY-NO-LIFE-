@@ -10,6 +10,7 @@
     };
 
     function hide() {
+        window.PlayerCardSize?.release(root);
         window.Plane02Layout?.release(root?._panel);
         root?.remove();
         root = null;
@@ -90,6 +91,7 @@
             return;
         }
         const container = ensureRoot();
+        window.PlayerCardSize?.release(container);
         container.dataset.stage = view.stage;
         root._telop.hidden = ['targets', 'magic'].includes(view.stage);
         container.onclick = null;
@@ -141,6 +143,7 @@
             });
             root._body.append(grid);
             setBack(handlers.onBack, !view.readOnly);
+            window.PlayerCardSize?.watch(container);
             container.onclick = null;
             return;
         }

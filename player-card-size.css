@@ -3,6 +3,7 @@
 :is(
     .mt-target-card,
     #moneyTransferScreen .mt-person,
+    .guidebook-layer[data-view="offer"] .mt-person,
     .lost-magic-target-card,
     .hatataki-player-card,
     .special-item-card,
@@ -20,3 +21,6 @@
     max-height: var(--player-card-fitted-height, var(--player-card-height, 260px)) !important;
     flex: 0 0 auto !important;
 }
+
+[data-player-card-fit] { justify-content: safe center; overflow: auto; }
+[data-player-card-fit] > * { flex-shrink: 0; }

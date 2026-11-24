@@ -1,9 +1,17 @@
-/* Keep ordinary panning and scrolling available while disabling native
- * browser pinch zoom. The map keeps its own pinch handler in map-area.
- */
+/* Before a game starts, keep the browser's normal zoom behavior. */
 html,
 body,
 .game-container,
 #gameViewportFrame {
+    touch-action: manipulation;
+}
+
+/* During a game, keep ordinary panning and scrolling but disable native
+ * browser pinch zoom. The map keeps its own pinch handler in map-area.
+ */
+html[data-game-zoom-lock],
+html[data-game-zoom-lock] body,
+html[data-game-zoom-lock] .game-container,
+html[data-game-zoom-lock] #gameViewportFrame {
     touch-action: pan-x pan-y;
 }

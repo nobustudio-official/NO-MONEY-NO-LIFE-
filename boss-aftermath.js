@@ -50,8 +50,12 @@
             document.body.append(reference);
             window.Plane02Layout?.apply(reference, { once: true });
             window.BossSequencePanelAlignment?.apply(reference, { once: true });
-            const { width, height } = main.querySelector('.bf-receipt-card').getBoundingClientRect();
-            return width > 0 && height > 0 ? { width, height } : null;
+            const list = main.querySelector('.bf-receipt-list');
+            const listStyle = getComputedStyle(list);
+            const availableHeight = list.clientHeight - parseFloat(listStyle.paddingTop) - parseFloat(listStyle.paddingBottom);
+            const { width, height } = list.firstElementChild.getBoundingClientRect();
+            return width > 0 && height > 0 && availableHeight > 0
+                ? { width, height: Math.min(height, availableHeight) } : null;
         } finally { reference.remove(); }
     }
     function renderPenaltyEquation(equation, { distance, multiplier, die, normalAmount, additionalAmount, amount }, showDeduction) {
@@ -82,11 +86,11 @@
             const sound = (id, options) => { if (window.GameSE) Promise.resolve(window.GameSE.play(id, options)).catch(() => {}); };
             function stopGuide() { if (!guide) return; if (window.GameSE) window.GameSE.stop(guide); else { guide.pause(); guide.currentTime = 0; } guide = null; }
             function playGuide(name) { stopGuide(); guide = new Audio(`sounds/ガイド/${name}.mp3`); const slider = document.getElementById('seVolumeSlider'); guide.volume = slider ? Number(slider.value) / 100 : .7; const playback = window.GameSE ? window.GameSE.playLocal(guide) : guide.play(); Promise.resolve(playback).catch(error => console.warn(`[ボス討伐] 音声を再生できません: ${name}`, error)); }
-            function header(title) { root.classList.remove('bf-reward-announcement'); main.className = 'bf-main'; main.replaceChildren(); const h = document.createElement('h1'); h.textContent = title; main.append(h); }
+            function header(title) { window.PlayerCardSize?.release(root); root.classList.remove('bf-reward-announcement'); main.className = 'bf-main'; main.replaceChildren(); const h = document.createElement('h1'); h.textContent = title; main.append(h); }
             function message(text) { copy.innerHTML = text; }
             window.Plane02Layout?.apply(root);
             window.BossSequencePanelAlignment?.apply(root);
-            function hide() { clearTimeout(timer); cancelAnimationFrame(frame); stopGuide(); if (loop) { loop.pause(); loop = null; } window.BossSequencePanelAlignment?.release(root); window.Plane02Layout?.release(root); root.remove(); battleScreen?.classList.remove('battle-aftermath-active'); battleScreen?.closest('#battleMainPopup')?.classList.remove('boss-aftermath-battle-hidden'); }
+            function hide() { clearTimeout(timer); cancelAnimationFrame(frame); stopGuide(); if (loop) { loop.pause(); loop = null; } window.PlayerCardSize?.release(root); window.BossSequencePanelAlignment?.release(root); window.Plane02Layout?.release(root); root.remove(); battleScreen?.classList.remove('battle-aftermath-active'); battleScreen?.closest('#battleMainPopup')?.classList.remove('boss-aftermath-battle-hidden'); }
             function showReward() {
                 stage = 'reward'; header('討伐報酬'); next.hidden = false;
                 root.classList.add('bf-reward-announcement');
@@ -97,6 +101,7 @@
             }
             function showReceipt() {
                 stopGuide(); stage = 'receipt'; header('報酬受取'); main.classList.add('bf-stage-receipt'); next.hidden = true;
+                window.PlayerCardSize?.refresh();
                 const list = document.createElement('div'); list.className = 'bf-receipt-list'; list.dataset.count = String(claims.length); list.style.setProperty('--recipient-count', claims.length);
                 for (const claim of claims) {
                     const player = players[claim.playerIndex], card = document.createElement('article'); card.className = 'bf-receipt-card';
@@ -118,6 +123,7 @@
                 next.hidden = true;
                 message(guidebookGiftLine);
                 playGuide('特別アイテム贈呈1');
+                window.PlayerCardSize?.refresh();
                 guidebookReceipt(main, players[killerIndex], true, () => {
                     if (stage !== 'guidebook' || !options.onGuidebookClaim()) return;
                     stopGuide();
@@ -138,6 +144,7 @@
                     targetCard.innerHTML = `<img src="${esc(icon(victim))}" alt=""><strong>${esc(victim.name)}</strong><span class="bf-distance">${target.distance}マス</span>`;
                     main.append(targetCard);
                     message(`${esc(victim.name)}は無敵の加護でお仕置きを免れた！`);
+                    window.PlayerCardSize?.watch(root);
                     next.hidden = false;
                     return;
                 }
@@ -147,6 +154,7 @@
                     targetCard.innerHTML = `<img src="${esc(icon(victim))}" alt=""><strong>${esc(victim.name)}</strong><span class="bf-distance">${target.distance}マス</span>`;
                     main.append(targetCard);
                     message(`${esc(victim.name)}は免罪符でお仕置きを免れた！`);
+                    window.PlayerCardSize?.watch(root);
                     next.hidden = false;
                     return;
                 }
@@ -205,7 +213,7 @@
     let onlineTimer, onlineFrame, onlineKey = '', onlineSound;
     function closeOnline() {
         clearTimeout(onlineTimer); cancelAnimationFrame(onlineFrame); if (onlineSound) { if (window.GameSE) window.GameSE.stop(onlineSound); else onlineSound.pause(); } onlineSound = null; onlineKey = '';
-        const root=document.getElementById('boss-aftermath');window.Plane02Layout?.release(root);root?.remove();
+        const root=document.getElementById('boss-aftermath');window.PlayerCardSize?.release(root);window.Plane02Layout?.release(root);root?.remove();
         document.querySelector('#battleMainPopup .battle-main-screen')?.classList.remove('battle-aftermath-active');
         document.getElementById('battleMainPopup')?.classList.remove('boss-aftermath-battle-hidden');
     }
@@ -220,6 +228,7 @@
         if (changedStage && onlineSound) { if (window.GameSE) window.GameSE.stop(onlineSound); else onlineSound.pause(); onlineSound = null; }
         let root = document.getElementById('boss-aftermath');
         if (!root) { root = document.createElement('section'); root.id = 'boss-aftermath'; document.body.append(root); }
+        window.PlayerCardSize?.release(root);
         root.classList.toggle('bf-reward-announcement', stage === 'reward');
         window.Plane02Layout?.apply(root);
         const scene = document.querySelector('#battleMainPopup .battle-main-screen');
@@ -229,6 +238,7 @@
         root.innerHTML = '<div class="bf-background"></div><div class="bf-shade"></div><img class="bf-staff" alt="ギルドのお姉さん"><section class="bf-main"></section><div class="bf-banner"><img class="bf-banner-portrait" alt="" hidden><span class="bf-speaker">ギルドのお姉さん</span><p class="bf-copy"></p><button class="bf-next" type="button">次へ▶</button></div>';
         if (background && background !== 'none') root.querySelector('.bf-background').style.backgroundImage = background;
         const main = root.querySelector('.bf-main'), copy = root.querySelector('.bf-copy'), next = root.querySelector('.bf-next'), staff = root.querySelector('.bf-staff');
+        if (changedStage && (stage === 'receipt' || stage === 'guidebook')) window.PlayerCardSize?.refresh();
         staff.src = 'images/characters/npc/jobs/ギルド-店員' + (['penalty','rolling','formula','surcharge','loss','immune','noTarget'].includes(stage) ? '-悲しみ' : '') + '.webp';
         const header = title => { main.innerHTML = '<h1>' + title + '</h1>'; };
         const sendOnce = action => { if (root.dataset.pending) return; root.dataset.pending = '1'; Promise.resolve(send(action)).catch(error => { console.error('[online boss ceremony]', error); copy.textContent = '通信できませんでした。もう一度操作してください。'; }).finally(() => { if (root.isConnected) delete root.dataset.pending; }); };
@@ -289,6 +299,7 @@
                 const draw=t=>{const done=renderer.draw(diceState,t);if(stage==='rolling'||stage==='formula'&&!done)onlineFrame=requestAnimationFrame(draw)};onlineFrame=requestAnimationFrame(draw);
             }
         }
+        if (stage === 'immune') window.PlayerCardSize?.watch(root);
         next.onclick=()=>sendOnce('next');
         root.onclick=event=>{event.stopPropagation();if(!owner || next.hidden || event.target.closest('button,input,select,textarea'))return;sendOnce('next');};
     }

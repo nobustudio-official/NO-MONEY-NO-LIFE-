@@ -3,7 +3,7 @@
     const limit = player => Math.floor(Math.max(0, Number(player?.money) || 0) / 2000) * 1000;
     const format = n => Math.max(0, Number(n) || 0).toLocaleString('ja-JP');
     const node = (tag, className, text) => { const e = document.createElement(tag); e.className = className; if (text != null) e.textContent = text; return e; };
-    function close() { const root = document.getElementById('moneyTransferScreen'); if (root) { window.Plane02Layout?.release(root.querySelector('.mt-panel')); root.remove(); } }
+    function close() { const root = document.getElementById('moneyTransferScreen'); if (root) { window.PlayerCardSize?.release(root); window.Plane02Layout?.release(root.querySelector('.mt-panel')); root.remove(); } }
     function show(cfg) {
         close();
         const { players, actor, stage, targetIndex, type, remote } = cfg;
@@ -123,7 +123,7 @@
         }
         document.body.append(root);
         if ([13, 19, 21, 22].some(id => ITEM_CONTENTS[id]?.name === itemName)) window.Plane02Layout?.apply(panel);
-        window.PlayerCardSize?.fitItemAmounts(root);
+        window.PlayerCardSize?.watch(root);
         if (!remote) cfg.onSync(stage, targetIndex, type, stage === 'amount' ? Number(root.querySelector('.mt-amount').value) : cfg.amount);
     }
     window.MoneyTransferUI = Object.freeze({ show, close, limit });
