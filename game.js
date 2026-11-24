@@ -1752,7 +1752,7 @@ characterButtons.forEach(
     ),
     inventory: [],
     assets: [],
-    magic: [1],
+    magic: [1,4,5,6,7,8,9],
     undergroundForemanSetCompleted: false,
 
     // バイト関連
@@ -1764,7 +1764,7 @@ characterButtons.forEach(
 // 初期アイテム
 // =========================
 
-players[index].inventory = [1];
+players[index].inventory = [1,7,8,14,17,18,19,20,21,22,23,24,25,26,27,28,29,31,32];
 
 
 // =========================
@@ -1848,10 +1848,6 @@ function showTurnSelectScreen(
     confirmTurnButton.addEventListener(
         "click",
         function () {
-
-            // Fullscreen and landscape locking must be requested directly
-            // from this user gesture; unsupported browsers fall back safely.
-            window.GameOrientation?.startLandscapeMode();
 
             let maxTurns =
                 Number(
