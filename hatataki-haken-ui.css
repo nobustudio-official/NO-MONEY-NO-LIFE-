@@ -113,7 +113,16 @@
 .hatataki-progress { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); }
 .hatataki-progress.item-exit-button { bottom: 26px; }
 .hatataki-progress.hatataki-next-button { bottom: 36px; }
-.hatataki-summary { flex: none; margin: 8px 0 0; color: #f2d58d; font-weight: 700; }
+.hatataki-summary {
+    position: absolute;
+    left: 26px;
+    right: calc(26px + var(--player-card-width, 135px) + 30px + 22px);
+    bottom: 16px;
+    margin: 0;
+    color: #f2d58d;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
 .hatataki-body.hatataki-notice { display: flex; flex-direction: column; justify-content: center; gap: 18px; text-align: center; }
 .hatataki-notice > img { width: 80px; height: 80px; object-fit: contain; }
 .hatataki-notice > p { margin: 0; font-size: 22px; }
@@ -148,4 +157,9 @@
     .hatataki-progress { bottom: 5px; }
     .hatataki-progress.item-exit-button { bottom: 15px; }
     .hatataki-progress.hatataki-next-button { bottom: 25px; }
+    .hatataki-summary {
+        left: max(6px, calc(17 * var(--hatataki-unit)));
+        right: calc(max(6px, 17 * var(--hatataki-unit)) + var(--player-card-width, 135px) + 30px + 6px);
+        bottom: 5px;
+    }
 }
