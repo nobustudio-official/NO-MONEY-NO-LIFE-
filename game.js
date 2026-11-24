@@ -8141,6 +8141,8 @@ function showBossChallengePopup(
     onlineControls = null
 ) {
 
+    setupBossBattleBGM();
+
     if (!onlineControls && window.onlineGame && window.onlineGame.isOnline
         && Number(currentBossId) !== 9999 && typeof window.startOnlineBossEncounter === "function") {
         window.startOnlineBossEncounter(player, isRechallenge);
@@ -8549,23 +8551,6 @@ case "monster":
     player.position ===
     currentBossSquareId
 ) {
-
-   // =========================
-// 初めてボスマスへ到着した時
-// ボスBGMへ切り替える
-// =========================
-
-if (
-    bossBattleBGM.paused
-) {
-
-    setupBGM(
-        bossBattleBGM,
-        bossBattleBGMGain,
-        setBossBattleBGMGain
-    );
-
-}
 
     showBossChallengePopup(
         player

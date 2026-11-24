@@ -3432,8 +3432,8 @@ showBattleMessage(
             window.applyOnlineCanonicalState(envelope.state, "normal-battle", true);
         }
         const challengePopup = document.getElementById("monsterChoicePopup");
-        if (snapshot.kind === "boss" && ["bossChallenge", "battleIntro"].includes(snapshot.phase) && bossBattleBGM.paused) {
-            setupBGM(bossBattleBGM, bossBattleBGMGain, setBossBattleBGMGain);
+        if (snapshot.kind === "boss" && ["bossChallenge", "battleIntro"].includes(snapshot.phase)) {
+            setupBossBattleBGM();
         }
         if (snapshot.phase === "bossChallenge") {
             hideLayer("battleMainPopup");
@@ -3745,17 +3745,7 @@ showBattleMessage(
     // 共通の音量設定を使用
     // =========================
 
-    if (
-        bossBattleBGM.paused
-    ) {
-
-        setupBGM(
-            bossBattleBGM,
-            bossBattleBGMGain,
-            setBossBattleBGMGain
-        );
-
-    }
+    setupBossBattleBGM();
 
     // =========================
     // ボスカウンター開始

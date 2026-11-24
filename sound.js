@@ -419,6 +419,18 @@ bossBattleBGM.loop = true;
 bossBattleBGM.volume = BGM_VOLUME;
 bossBattleBGM.preload = "none";
 
+function setupBossBattleBGM() {
+    const state = bgmStates.get(bossBattleBGM);
+    if (!state.enabled || (bossBattleBGM.paused && pendingBGMPlayback?.audio !== bossBattleBGM)) {
+        setupBGM(bossBattleBGM, bossBattleBGMGain, setBossBattleBGMGain);
+        return;
+    }
+    // Keep the arrival track running through the challenge and encounter screens.
+    resumeBGMContext();
+    setBGMLevel(bossBattleBGM, currentBGMVolume);
+    if (pendingBGMPlayback?.audio === bossBattleBGM) retryBGMPlayback();
+}
+
 //魔王-fast
 const maouFastBGM =
     createBGM("BGM/魔王-fast.mp3");
