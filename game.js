@@ -1255,9 +1255,17 @@ function renderGameTemplate(templateId, target) {
             titleBackdrop.appendChild(setup);
         }
         setup.firstElementChild.querySelector(".player-setup-confirm")?.remove();
+        const setupCard = setup.firstElementChild;
+        const setupFooter = setupCard.querySelector(".title-screen__setup-footer");
+        const isTurnSelect = templateId === "turnSelectTemplate";
+        setupFooter?.classList.toggle("is-turn-select-footer", isTurnSelect);
         const setupContent = setup.firstElementChild.querySelector(".title-screen__setup-content");
         setupContent.replaceChildren(template.content.cloneNode(true));
         setupContent.classList.toggle("is-player-setup-content", templateId === "playerSetupTemplate");
+        if (isTurnSelect) {
+            const turnConfirmButton = setupContent.querySelector("#confirmTurnButton");
+            if (turnConfirmButton) setupFooter?.appendChild(turnConfirmButton);
+        }
         if (templateId === "playerSetupTemplate") {
             const heading = setupContent.querySelector("h2");
             const scrollArea = document.createElement("div");

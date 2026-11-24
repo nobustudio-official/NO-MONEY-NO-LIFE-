@@ -557,6 +557,20 @@
     background: linear-gradient(145deg, #536078, #303b50);
 }
 
+.title-screen.is-setup .title-screen__setup-footer.is-turn-select-footer {
+    justify-content: space-between;
+    gap: 12px;
+    padding-inline: 28px;
+}
+
+.title-screen.is-setup .title-screen__setup-footer.is-turn-select-footer #confirmTurnButton {
+    flex: 0 0 auto;
+    width: min(104px, 100%);
+    min-height: 42px;
+    margin: 0;
+    padding: 8px 16px;
+}
+
 .local-resume-overlay .local-resume-button {
     -webkit-appearance: none;
     appearance: none;
