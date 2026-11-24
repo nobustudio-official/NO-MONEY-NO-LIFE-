@@ -73,7 +73,13 @@
             closeAll(); w.BossAftermath.renderOnline({battleId:'size-'+width,playerIndex:0,ceremony:{stage:'receipt',claims:w.players.map((p,i)=>({playerIndex:i,amount:1000,claimed:false}))}},w.players,()=>{});
             verify('#boss-aftermath .bf-receipt-card','gold receipts');
             closeAll(); w.BossAftermath.renderOnline({battleId:'size-'+width,playerIndex:0,monster:{counterDamage:1000},ceremony:{stage:'penalty',target:{playerIndex:1,distance:9}}},w.players,()=>{});
-            verify('#boss-aftermath .bf-target-card','penalty target');
+            const target = d.querySelector('#boss-aftermath .bf-target-card');
+            check(target, 'penalty target missing');
+            check(w.getComputedStyle(target).maxWidth === 'none', 'penalty target still uses shared card dimensions');
+            const grid = d.querySelector('.bf-punish-grid').getBoundingClientRect();
+            const targetBox = target.getBoundingClientRect();
+            check(Math.abs(targetBox.height - grid.height) < .75, 'penalty target does not fit its dedicated row');
+            cases++;
             closeAll();
             results.push({viewport:[width,height],reference:[box.width,box.height],cases});
         }
