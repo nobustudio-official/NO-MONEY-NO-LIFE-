@@ -317,13 +317,14 @@
     min-width: 0;
     margin: 0;
     padding: clamp(4px, 1vh, 9px) clamp(6px, 1vw, 12px);
-    font-size: clamp(10px, 1.7vh, 15px);
+    column-gap: clamp(4px, .6vw, 10px);
+    font-size: calc(clamp(10px, 1.7vh, 15px) + 4px);
 }
 
 .boss-opening:not(.boss-opening-start) .boss-opening-stats span,
 .boss-opening:not(.boss-opening-start) .boss-opening-stats strong {
     min-width: 0;
-    padding: clamp(2px, .55vh, 5px) 1px;
+    padding: clamp(3px, .65vh, 6px) 1px;
     line-height: 1.2;
 }
 
