@@ -208,7 +208,7 @@
             main.append(mount);
             chartCleanup = window.DividendPresentation.mount(mount, {
                 stage: chartStage, map: 'images/backgrounds/scenes/配当.webp',
-                gold: 'images/map/space-icons/gold.webp',
+                gold: 'images/map/space-icons/optimized/gold-70pct.webp',
                 historyTurns: historyPoints.map(point => point.turn),
                 players: finalPlayers.map(player => ({ name: player.name, characterId: player.characterId, icon: player.icon,
                     color: player.color, cash: player.cash, property: player.assets, income: 0,

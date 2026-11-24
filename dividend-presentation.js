@@ -7,7 +7,7 @@
  window.DividendPresentation = { mount, close() { if (active) { active(); active = null; } } };
  function mount(root, options) {
   const data = options.players.map(p => ({...p, name:escape(p.name),color:p.color || PLAYER_CONTENTS[p.characterId]?.graphColor || colors[p.characterId] || '#b0aacb'}));
-  const assets = {map: options.map || 'images/backgrounds/scenes/配当.webp', gold:options.gold || 'images/map/space-icons/gold.webp'};
+  const assets = {map: options.map || 'images/backgrounds/scenes/配当.webp', gold:options.gold || 'images/map/space-icons/optimized/gold-70pct.webp'};
   const stages = ['振込アナウンス','今回の配当金','現在の総資産','総資産の推移','トップの紹介','最下位の紹介','価格変動のお知らせ','最後の挨拶'];
   const format = n => Number(n).toLocaleString('ja-JP');
   const total = p => p.cash + p.property;
