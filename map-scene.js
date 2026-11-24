@@ -65,7 +65,7 @@
  function updateOceanTexture(){
   oceanCheckFrame=0;
   const area=document.querySelector('.game-screen .map-area');if(!area)return;
-  const useTexture=activeScale>=.5&&viewportShowsOcean();
+  const useTexture=!window.MapSimpleDisplay?.enabled&&activeScale>=.5&&viewportShowsOcean();
   area.classList.toggle('map-ocean-textured',useTexture);
   area.classList.toggle('map-ocean-flat',!useTexture);
   if(useTexture){
@@ -84,7 +84,7 @@
   // width here so it stays thin but visible at the full-continent overview.
   document.documentElement.style.setProperty('--map-boundary-width',1.2/scale+'px');
   area.classList.add('map-ocean');
-  area.classList.toggle('map-ocean-flat',scale<.5);
+  area.classList.toggle('map-ocean-flat',Boolean(window.MapSimpleDisplay?.enabled)||scale<.5);
   if(!observedAreas.has(area)){observedAreas.add(area);area.addEventListener('scroll',()=>{clampScroll();queueOceanCheck();},{passive:true});}
   // Center-origin enlargement otherwise pushes the world's left/top into
   // negative, unreachable scroll coordinates. Reserve matching space on both sides.
@@ -104,6 +104,11 @@
   queueOceanCheck();
  }
  function createBackground(squares){
+  if(window.MapSimpleDisplay?.enabled){
+   const background=window.MapSimpleDisplay.createBackground();
+   setZoom(typeof window.getMapZoomUI==='function'?window.getMapZoomUI():1);
+   return background;
+  }
   const background=document.createElement('div');background.className='map-background';
   // Phones use the same native-resolution raster tiles as desktop, but only
   // tiles in the viewport are loaded. The 25% overview is reserved for zoomed

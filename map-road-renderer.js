@@ -136,6 +136,9 @@
   }
   window.MapRoadCache?.setBridgeCollapse(svg,state);
  }
- window.MapRoadRenderer={draw,setShortestPath,setBridgeCollapse,setSimpleMode,
+ // Keep the detailed draw function unchanged so its raster-cache recipe survives restoration.
+ function displayRenderer(detailed,simple){return(...args)=>window.MapSimpleDisplay?.enabled?window.MapSimpleDisplay[simple](...args):detailed(...args);}
+ window.MapRoadRenderer={draw:displayRenderer(draw,'drawRoads'),setShortestPath:displayRenderer(setShortestPath,'setShortestPath'),
+  setBridgeCollapse:displayRenderer(setBridgeCollapse,'setBridgeCollapse'),setSimpleMode,
   cacheRecipe:JSON.stringify(palette)+pattern.toString()+definitions.toString()+draw.toString()};
 })();

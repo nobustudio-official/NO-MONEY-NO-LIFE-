@@ -1324,7 +1324,7 @@ function waitForGameAssets() {
     // Phones use the existing baked overview and load detail tiles on demand.
     const constrained = window.mobileRuntimeTuning === true;
     const overview = window.MapOverviewRasterData;
-    const mapAssets = constrained ? [overview?.mobileImage || overview?.image] : [
+    const mapAssets = window.MapSimpleDisplay?.enabled ? [] : constrained ? [overview?.mobileImage || overview?.image] : [
         ...MapScene.assetUrls,
         ...(window.MapBackgroundRasterData?.tiles || []).map(tile => tile.image),
         overview?.image
@@ -3458,7 +3458,7 @@ playSharedSE(buttonSound)
         const background = mapBoard.querySelector(':scope > .map-background');
         const existingRoads = mapBoard.querySelector(':scope > .map-lines');
         const existingObjects=mapBoard.querySelector(':scope > .map-workshop-objects');
-        const reuseMobile = window.mobileRuntimeTuning === true && background?.classList.contains('map-static-background') &&
+        const reuseMobile = (window.MapSimpleDisplay?.enabled || window.mobileRuntimeTuning === true && background?.classList.contains('map-static-background')) &&
             renderedMobileMap?.board === mapBoard && renderedMobileMap.squares === mapData && renderedMobileMap.boss === currentBossSquareId;
         const bridgeClosed = Number(window.bridgeCollapseVisualState?.remainingActions) > 0;
         if (existingRoads && (reuseMobile || (window.mobilePerformanceEnabled !== false && movingPlayer !== null && mapBoard.querySelector(".map-node")))) {

@@ -353,7 +353,7 @@
         const state = stateFor(board);
         if (!state) return;
         state.zoom = zoom;
-        if (options.preview !== true || touchDevice) window.MapOverviewCache?.setZoom(board, zoom);
+        if (!window.MapSimpleDisplay?.enabled && (options.preview !== true || touchDevice)) window.MapOverviewCache?.setZoom(board, zoom);
         const lowDetail = touchDevice && zoom < .5;
         if (state.lowDetail !== lowDetail) {
             state.lowDetail = lowDetail;
