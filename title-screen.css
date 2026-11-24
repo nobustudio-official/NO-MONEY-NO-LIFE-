@@ -961,7 +961,19 @@
     .title-screen__mode-button { transition: none; animation: none; }
 }
 
-/* Keep the pre-game navigation actions at the Confirm button's 104 × 42 size. */
+/* Align the pre-game navigation buttons and keep the Confirm button's 104 × 42 size. */
+.title-screen.is-setup[data-setup-stage="players"] .title-screen__setup-footer {
+    justify-content: space-between;
+    gap: 12px;
+    padding-inline: 28px;
+}
+
+.title-screen.is-setup[data-setup-stage="players"] .title-screen__setup-footer .player-setup-confirm {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+}
+
 .title-screen.is-setup .title-screen__setup-back,
 .title-screen.is-setup[data-setup-stage="players"] .title-screen__setup-footer .player-setup-confirm #confirmPlayers,
 .title-screen.is-setup .title-screen__setup-footer.is-turn-select-footer #confirmTurnButton {
