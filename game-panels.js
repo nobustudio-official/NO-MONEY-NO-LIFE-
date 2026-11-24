@@ -108,7 +108,7 @@
     function fit(v) {
         if(v.root.style.display==='none'||!v.config)return;
         const baseRowHeight=Math.max(36,Math.min(62,Math.floor((v.scroll.clientHeight-5)/10)-5));
-        const rowHeight=v.config.kind==='inventory'?Math.max(50,Math.min(86,Math.round(baseRowHeight*1.4))):baseRowHeight;
+        const rowHeight=v.config.kind==='inventory'?Math.round(45+(baseRowHeight-36)*(80-45)/(62-36)):baseRowHeight;
         v.scroll.style.setProperty('--gp-row-height',rowHeight+'px');
         const gutter=v.scroll.offsetWidth-v.scroll.clientWidth;v.columns.style.marginRight=gutter+'px';
         if(['assets','sale-assets'].includes(v.config.kind)){
