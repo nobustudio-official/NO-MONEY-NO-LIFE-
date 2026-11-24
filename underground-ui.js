@@ -245,7 +245,8 @@
             if (!results && rolling !== side) return null;
             const phase = flow.stage === 'cheat' && side === 'foreman' ? 'rolling' : rolling === side ? 'rolling' : stopping === side ? 'stopping' : 'result';
             return { renderer, state:{ phase, results:results || [], count:3, began:started, stopped:started,
-                showIndividualResults:false, centerLanding:true, canvasLanding:true, diceScale:window.DiceAnimation.gameplayScale }, side };
+                showIndividualResults:false, centerLanding:true, canvasLanding:true, cornerLaunch:true,
+                diceScale:window.DiceAnimation.gameplayScale }, side };
         }).filter(Boolean);
         if (stopping) busy = true;
         function animate(now) {
@@ -414,7 +415,7 @@
         const stageContent = scene ? '<div class="ug-scene' + (gambling ? ' ug-gambling' : '') + (stage === 'cheat' ? ' ug-inspection' : '') + '">' +
             (guard ? '<img class="ug-character" alt="" src="images/characters/npc/shops/黒服.webp">' : '') +
             (['foreman','offer','confession'].includes(stage) ? '<img class="ug-character" alt="" src="images/characters/npc/shops/' + (stage === 'confession' ? '班長2.webp' : '班長1.webp') + '">' : '') +
-            (stage === 'offer' ? '<div class="ug-options">' + button(player.underground.memo ? 'メモ帳を所持<br>して挑戦' : '挑戦する','challenge') + button('断る','decline') + '</div>' : '') +
+            (stage === 'offer' ? '<div class="ug-options job-choices">' + button(player.underground.memo ? 'メモ帳を所持<br>して挑戦' : '挑戦する','challenge','job-choice-button job-work-button') + button('断る','decline','job-choice-button') + '</div>' : '') +
             (dice ? '<div class="ug-dice">' + participant('player', portrait(player), escape(player.name)) +
             participant('foreman','images/characters/npc/shops/班長アイコン1.webp','班長') + '</div>' : '') +
             (stage === 'duel' ? button('<img src="images/ui/icons/interface/dice.webp" alt="">サイコロを振る','next','ug-roll') : '') + '</div>' : '';
