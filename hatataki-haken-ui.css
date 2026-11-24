@@ -137,7 +137,7 @@
     .hatataki-player-name { font-size: max(12px, calc(23 * var(--hatataki-unit))); }
     .hatataki-player-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .hatataki-title { margin-bottom: 4px; padding-bottom: 4px; }
-    .hatataki-item-row { padding: 2px 0; font-size: max(11px, calc(24 * var(--hatataki-unit))); }
+    .hatataki-item-row { padding: 2px 0; }
     .hatataki-finished { padding: 2px 0; font-size: max(11px, calc(19 * var(--hatataki-unit))); }
     .hatataki-button { min-width: 0; min-height: 24px; padding: 2px 8px; font-size: max(11px, calc(16 * var(--hatataki-unit))); }
     .hatataki-progress { bottom: 5px; }
