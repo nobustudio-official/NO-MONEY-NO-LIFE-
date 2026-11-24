@@ -176,14 +176,9 @@
 }
 
 #moneyTransferScreen .mt-choice .mt-route {
-    grid-template-columns: var(--player-card-width) 42px var(--player-card-width);
+    grid-template-columns: var(--item-player-icon-size) 42px var(--item-player-icon-size);
     justify-content: center;
     gap: 12px;
-}
-
-#moneyTransferScreen[data-stage="type"] .mt-choice .mt-person > b {
-    white-space: normal;
-    text-align: center;
 }
 
 /* The amount form follows the player cards; its input and button sizes are unchanged. */

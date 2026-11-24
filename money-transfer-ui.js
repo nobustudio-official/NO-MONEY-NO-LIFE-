@@ -62,14 +62,16 @@
             content.append(list);
         } else if (stage === 'type') {
             const choices = node('div', 'mt-choices');
+            const choiceIcon = player => { const image = portrait(player); image.className = 'mt-choice-icon'; image.alt = player.name; return image; };
             for (const direction of ['send', 'steal']) {
                 const from = direction === 'send' ? actor : target, to = direction === 'send' ? target : actor;
                 const card = btn('', () => go(isAssetTransfer ? 'assets' : isItemTransfer ? 'items' : 'amount', targetIndex, direction), `mt-choice is-${direction}`);
                 card.disabled = Boolean(remote) || (!isItemTransfer && !limit(from));
                 const routeSlot = node('div', 'mt-choice-route');
-                routeSlot.append(route(from, to, false, false));
+                const icons = node('div', 'mt-route');
+                icons.append(choiceIcon(from), arrow(), choiceIcon(to));
+                routeSlot.append(icons);
                 card.append(node('b', 'mt-choice-title', direction === 'send' ? (isItemTransfer ? '贈与' : sendLabel) : '強奪'), routeSlot);
-                if (!isItemTransfer) card.append(node('small', '', `上限 ${format(limit(from))}G${limit(from) ? '' : '（選択できる金額がありません）'}`));
                 choices.append(card);
             }
             content.append(choices);

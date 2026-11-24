@@ -81,10 +81,10 @@
         if (!scope?.isConnected) return;
         const rows = layouts.flatMap(([selector, regionSelector]) =>
             [...scope.querySelectorAll(selector)].map(card => ({ card, region: card.closest(regionSelector) }))
-                .filter(row => row.region && !row.card.closest('.mt-choice-route')));
+                .filter(row => row.region));
         const choiceRoutes = [...scope.querySelectorAll('#moneyTransferScreen .mt-choice-route')];
         if (!rows.length && !choiceRoutes.length) return;
-        refresh();
+        if (rows.length) refresh();
         let pending = 0, disposed = false;
         const observed = new Set();
         const observe = node => {
@@ -124,8 +124,7 @@
                     card.style.setProperty('--player-card-fitted-height', height);
                 }
             }
-            // Operation choices retain standard card dimensions. Scale the
-            // whole player/arrow group only when its allotted cell is smaller.
+            // Icon-only operation choices fit their allotted cell as one group.
             for (const slot of choiceRoutes) {
                 const route = slot.firstElementChild;
                 observe(slot);
