@@ -66,43 +66,64 @@ const PLAYER_DIRECTIONS = {
     right: { row: 1, column: 1 }
 };
 
-// Keep the four direction images for the player currently taking a turn
-// decoded before movement starts, so changing direction does not trigger a
-// first-use image decode during a camera move.
-let activePlayerDirectionPreloadKey = '';
-let activePlayerDirectionPreloadImages = [];
-let activePlayerDirectionPreloadPromise = Promise.resolve();
+// Retain only the active player's direction images. Load them one at a time
+// during handoff, before destination map requests are allowed to start.
+let activePlayerDirectionPreload = null;
+
+function releasePlayerDirectionSprites() {
+    const previous = activePlayerDirectionPreload;
+    activePlayerDirectionPreload = null;
+    previous?.controller.abort();
+    previous?.images.forEach(image => image.removeAttribute('src'));
+}
+window.releasePlayerDirectionSprites = releasePlayerDirectionSprites;
 
 function preloadPlayerDirectionSprites(player) {
     const character = PLAYER_CONTENTS[player?.characterId];
-    if (!character) return Promise.resolve();
+    if (!character || player.underground) return Promise.resolve();
     const directions = character.spriteDirections || {};
-    const sources = [...new Set(['down', 'up', 'left', 'right']
+    const sources = [...new Set([getPlayerDirection(player), 'down', 'up', 'left', 'right']
         .map(direction => directions[direction] || character.sprite)
         .filter(Boolean))];
-    const key = sources.join('|');
-    if (!key || key === activePlayerDirectionPreloadKey) return activePlayerDirectionPreloadPromise;
-
-    activePlayerDirectionPreloadKey = key;
-    activePlayerDirectionPreloadImages = [];
-    activePlayerDirectionPreloadPromise = Promise.all(sources.map(source => {
-        const image = new Image();
-        image.decoding = 'async';
-        image.src = source;
-        if (typeof image.decode === 'function') {
-            return image.decode().then(() => image, () => null);
+    const key = [...sources].sort().join('|');
+    if (!key) return Promise.resolve();
+    if (key === activePlayerDirectionPreload?.key) return activePlayerDirectionPreload.promise;
+    releasePlayerDirectionSprites();
+    const session = { key, images: [], controller: new AbortController(), promise: null };
+    activePlayerDirectionPreload = session;
+    session.promise = (async () => {
+        const deadline = performance.now() + 2500;
+        for (const source of sources) {
+            const remaining = deadline - performance.now();
+            if (session.controller.signal.aborted || remaining <= 0) break;
+            const image = new Image();
+            image.decoding = 'async';
+            session.images.push(image);
+            await new Promise(resolve => {
+                const signal = session.controller.signal;
+                let settled = false;
+                const finish = success => {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timer);
+                    signal.removeEventListener('abort', cancel);
+                    image.onload = image.onerror = null;
+                    if (!success) image.removeAttribute('src');
+                    resolve();
+                };
+                const cancel = () => finish(false);
+                const timer = setTimeout(cancel, Math.min(1500, remaining));
+                signal.addEventListener('abort', cancel, { once: true });
+                image.onerror = cancel;
+                if (typeof image.decode !== 'function') image.onload = () => finish(image.naturalWidth > 0);
+                image.src = source;
+                if (typeof image.decode === 'function') image.decode().then(() => finish(true), cancel);
+                else if (image.complete) finish(image.naturalWidth > 0);
+            });
         }
-        return new Promise(resolve => {
-            image.onload = () => resolve(image);
-            image.onerror = () => resolve(null);
-            if (image.complete) resolve(image.naturalWidth ? image : null);
-        });
-    })).then(images => {
-        if (key === activePlayerDirectionPreloadKey) {
-            activePlayerDirectionPreloadImages = images.filter(Boolean);
-        }
-    });
-    return activePlayerDirectionPreloadPromise;
+    })();
+    window.TurnHandoff?.waitFor(session.promise);
+    return session.promise;
 }
 
 
@@ -9351,7 +9372,7 @@ function updateNextPlayerView() {
     // 同じ手番中の購入処理ではこの関数を通らないため、スクロール位置は維持される。
     window.GamePanels?.resetScroll('assetPurchasePopup');
     const activePlayer = players[currentPlayer];
-    if (activePlayer) preloadPlayerDirectionSprites(activePlayer);
+    const spritesReady = activePlayer ? preloadPlayerDirectionSprites(activePlayer) : Promise.resolve();
 
     // ターン表示を更新
     renderTurn();
@@ -9366,7 +9387,7 @@ function updateNextPlayerView() {
     const requestId = ++nextPlayerCameraRequest;
     const waitForCamera = window.TurnHandoff?.isBlack?.() === true;
     if (waitForCamera) {
-        const cameraReady = new Promise(resolve => {
+        const cameraReady = spritesReady.then(() => new Promise(resolve => {
             requestAnimationFrame(() => requestAnimationFrame(() => {
                 if (requestId !== nextPlayerCameraRequest || focusIndex !== currentPlayer) {
                     resolve();
@@ -9374,7 +9395,7 @@ function updateNextPlayerView() {
                 }
                 centerPlayerOnMap(focusIndex, 'instant', resolve, true);
             }));
-        });
+        }));
         window.TurnHandoff.waitFor(cameraReady);
     } else {
         requestAnimationFrame(() => requestAnimationFrame(() => {

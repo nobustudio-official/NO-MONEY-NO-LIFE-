@@ -12,14 +12,13 @@
     const activeRequests = new Map();
     const maxMobileImageLoads = 2;
     let pumpScheduled = false;
-    const imageLoadPauses = new Set();
     // Each map releases only its own pause, including during screen replacement.
     const scrollPauses = new Set();
     const cameraJumps = new Set();
 
     function pumpImageLoads() {
         pumpScheduled = false;
-        if (imageLoadPauses.size || scrollPauses.size || cameraJumps.size) return;
+        if (scrollPauses.size || cameraJumps.size) return;
         while (activeImages.size < maxMobileImageLoads && pendingImages.size) {
             const [element, request] = [...pendingImages.entries()].sort((a, b) =>
                 a[1].priority - b[1].priority || a[1].distance - b[1].distance)[0];
@@ -62,29 +61,6 @@
         if (pumpScheduled) return;
         pumpScheduled = true;
         setTimeout(pumpImageLoads, 32);
-    }
-
-    function pauseImageLoads(reason = 'external') {
-        const key = String(reason);
-        if (imageLoadPauses.has(key)) return;
-        imageLoadPauses.add(key);
-
-        // Stop in-flight tile requests as well as queued ones. Keep their
-        // promises and enqueue entries so the same viewport can resume later.
-        for (const [element, request] of [...activeRequests]) {
-            if (!request.board) continue;
-            element.dataset.mapLoadToken = String(Number(element.dataset.mapLoadToken || 0) + 1);
-            request.cleanup?.();
-            activeRequests.delete(element);
-            activeImages.delete(element);
-            element.removeAttribute('src');
-            pendingImages.set(element, request);
-        }
-    }
-
-    function resumeImageLoads(reason = 'external') {
-        imageLoadPauses.delete(String(reason));
-        if (!imageLoadPauses.size) scheduleImagePump();
     }
 
     function releaseImage(element) {
@@ -255,7 +231,7 @@
         const near = state.visibleOnly ? visible : { left, right, top, bottom };
         window.MapBackgroundCache?.setViewport(board, near, visible);
         window.MapRoadCache?.setViewport(board, near, visible);
-        window.MapWorkshopScene?.setViewport(board, near, visible);
+        window.MapWorkshopScene?.setViewport(board, near, visible, { immediateImages: state.visibleOnly });
         for (const row of state.nodes) {
             const outside = row.x < left || row.x > right || row.y < top || row.y > bottom;
             if (row.outside === outside) continue;
@@ -265,7 +241,7 @@
         return visible;
     }
 
-    function beginCameraJump(board) {
+    function beginCameraJump(board, { releasePrevious = false } = {}) {
         const state = stateFor(board);
         if (!state) return null;
         const token = {};
@@ -276,6 +252,12 @@
         scrollPauses.delete(state);
         if (state.frame) cancelAnimationFrame(state.frame);
         state.frame = 0;
+        if (releasePrevious) {
+            window.MapOverviewCache?.releaseDetail(board);
+            for (const [image, request] of [...pendingImages, ...activeRequests]) {
+                if (request.board === board && !image.matches('.map-static-raster, .map-overview-raster')) releaseImage(image);
+            }
+        }
         let finishing;
         return { finish() {
             if (finishing) return finishing;
@@ -382,7 +364,6 @@
     }
     window.MapDetailLevel = Object.freeze({ refresh, refreshPieces, setZoom, dispose, touchDevice, setTileSources,
         loadImage, requestImage: enqueueImage, releaseImage, beginCameraJump,
-        pauseImageLoads, resumeImageLoads,
         isCameraJumping: board => Boolean(states.get(board)?.cameraJumps.size),
         scheduleViewport: board => stateFor(board)?.schedule() });
 })();

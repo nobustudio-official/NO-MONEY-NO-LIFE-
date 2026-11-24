@@ -4,10 +4,11 @@
     let phase = 'idle', element = null, queued = null, blackCallbacks = [], waits = new Set();
     function waitFor(promise) {
         if (phase !== 'black') return false;
-        let tracked;
-        tracked = Promise.resolve(promise)
-            .catch(error => console.error('[turn-handoff] 待機処理に失敗:', error))
-            .finally(() => waits.delete(tracked));
+        let tracked, timer;
+        tracked = Promise.race([
+            Promise.resolve(promise).catch(error => console.error('[turn-handoff] 待機処理に失敗:', error)),
+            new Promise(resolve => { timer = setTimeout(resolve, 4000); })
+        ]).finally(() => { clearTimeout(timer); waits.delete(tracked); });
         waits.add(tracked);
         return true;
     }
@@ -34,11 +35,16 @@
             if (!element) return;
             phase = 'fading-out';
             element.classList.add('is-dark');
-            setTimeout(() => {
+            setTimeout(async () => {
                 if (!element) return;
                 phase = 'black';
-                let mapJump = window.MapDetailLevel?.beginCameraJump?.(document.getElementById('mapBoard'));
+                let mapJump = window.MapDetailLevel?.beginCameraJump?.(document.getElementById('mapBoard'), { releasePrevious: true });
                 window.cancelMapCameraScroll?.();
+                window.releasePlayerDirectionSprites?.();
+                // Allow cancelled image callbacks and rendering work to settle.
+                // This yields to the browser; it does not assume GC has finished.
+                await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 120))));
+                if (!element) return;
                 const callbacks = blackCallbacks; blackCallbacks = [];
                 for (const callback of callbacks) { try { callback(); } catch (error) { console.error('[turn-handoff]', error); } }
                 try { apply(); } catch (error) { console.error('[turn-handoff]', error); }

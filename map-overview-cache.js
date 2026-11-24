@@ -273,5 +273,6 @@
         board.classList.remove('map-zoom-preview-active');
         return false;
     }
-    window.MapOverviewCache = Object.freeze({ prepare, setZoom, setPreview, signature, mountAsBase, setMobileViewport });
+    window.MapOverviewCache = Object.freeze({ prepare, setZoom, setPreview, signature, mountAsBase, setMobileViewport,
+        releaseDetail: releaseTouchDetails });
 })();

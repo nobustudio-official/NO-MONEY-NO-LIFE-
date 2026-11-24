@@ -147,17 +147,17 @@
         }
         if(hasVisibleEffect)state.effectTimer=window.setTimeout(()=>updateMagicEffects(board,state),50);
     }
-    function setViewport(board,bounds,visibleBounds=bounds) {
+    function setViewport(board,bounds,visibleBounds=bounds,{immediateImages=false}={}) {
         if(window.MapDetailLevel?.isCameraJumping?.(board))return;
         const state=boards.get(board);if(!state)return;
         const viewportChanged=!sameViewport(state.visibleBounds,visibleBounds);
         state.bounds=bounds;
         state.visibleBounds=visibleBounds;
-        if(state.streamImages&&viewportChanged){
-            state.objectImagesReady=false;
+        if(state.streamImages&&(viewportChanged||immediateImages&&!state.objectImagesReady)){
+            state.objectImagesReady=immediateImages;
             clearTimeout(state.objectImageTimer);
             for(const row of [...state.pendingObjectImages.keys()])cancelObjectLoad(state,row);
-            state.objectImageTimer=window.setTimeout(()=>{
+            state.objectImageTimer=immediateImages?0:window.setTimeout(()=>{
                 state.objectImageTimer=0;
                 if(!board.isConnected||!state.bounds||!state.visibleBounds)return;
                 state.objectImagesReady=true;

@@ -12,35 +12,13 @@
 
     if (doc.documentElement.hasAttribute('data-game-viewport-host')) {
         const frame = doc.getElementById('gameViewportFrame');
-        const orientationGuard = doc.getElementById('orientationGuard');
         let active = false;
-        let mapLoadingPaused = false;
-        let landscapeResumeTimer = 0;
-
-        function portraitOrientation() {
-            return root.matchMedia?.('(orientation: portrait)').matches ?? root.innerHeight > root.innerWidth;
-        }
-
-        function pauseMapLoading(paused) {
-            if (mapLoadingPaused === paused) return;
-            mapLoadingPaused = paused;
-            const mapDetail = frame.contentWindow?.MapDetailLevel;
-            if (paused) mapDetail?.pauseImageLoads?.('portrait-orientation');
-            else mapDetail?.resumeImageLoads?.('portrait-orientation');
-        }
 
         function layout() {
             const viewport = root.visualViewport;
             const width = viewport?.width || root.innerWidth;
             const height = viewport?.height || root.innerHeight;
             if (!(width > 0 && height > 0)) return;
-            if (active && portraitOrientation()) {
-                clearTimeout(landscapeResumeTimer);
-                landscapeResumeTimer = 0;
-                pauseMapLoading(true);
-                orientationGuard.hidden = false;
-                return;
-            }
             const logicalWidth = active ? DESKTOP_WIDTH : width;
             const logicalHeight = active ? DESKTOP_HEIGHT : height;
             const scale = active ? Math.min(width / logicalWidth, height / logicalHeight) : 1;
@@ -50,18 +28,6 @@
             frame.style.top = ((viewport?.offsetTop || 0) + (height - logicalHeight * scale) / 2) + 'px';
             frame.style.transform = `scale(${scale})`;
 
-            if (active && mapLoadingPaused && !landscapeResumeTimer) {
-                landscapeResumeTimer = root.setTimeout(() => {
-                    landscapeResumeTimer = 0;
-                    if (!active || portraitOrientation()) {
-                        layout();
-                        return;
-                    }
-                    pauseMapLoading(false);
-                    orientationGuard.hidden = true;
-                    layout();
-                }, 600);
-            }
         }
 
         root.NMNLGameViewportHost = Object.freeze({
