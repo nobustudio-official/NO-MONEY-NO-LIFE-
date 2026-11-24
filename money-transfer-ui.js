@@ -18,13 +18,14 @@
         };
         const target = players[targetIndex];
         const root = node('section', stage === 'result' ? 'mt-result' : ''); root.id = 'moneyTransferScreen';
+        root.dataset.stage = stage;
         const panel = node('div', `mt-panel${cfg.description ? ' has-description' : ''}`), content = node('div', 'mt-content');
         const sendLabel = isAssetTransfer ? '贈与' : isItemTransfer ? '渡す' : '送金';
         const stealLabel = isAssetTransfer ? '強奪' : isItemTransfer ? '奪う' : '強奪';
         let title;
         if (stage === 'target') title = `${itemName}の対象を選んでください`;
         else if (stage === 'type') title = isItemTransfer
-            ? `${target.name}に対し、${sendLabel}／${stealLabel}を選んでください`
+            ? `${target.name}に対し、贈与／強奪を選んでください`
             : `${target.name}に対し、送金または強奪を選んでください`;
         else if (stage === 'items') title = type === 'send' ? '渡すアイテムを選んでください' : `${target.name}から奪うアイテムを選んでください`;
         else if (stage === 'assets') title = type === 'send' ? '贈与する資産を選んでください' : `${target.name}から強奪する資産を選んでください`;
@@ -65,7 +66,9 @@
                 const from = direction === 'send' ? actor : target, to = direction === 'send' ? target : actor;
                 const card = btn('', () => go(isAssetTransfer ? 'assets' : isItemTransfer ? 'items' : 'amount', targetIndex, direction), `mt-choice is-${direction}`);
                 card.disabled = Boolean(remote) || (!isItemTransfer && !limit(from));
-                card.append(node('b', 'mt-choice-title', direction === 'send' ? sendLabel : stealLabel), route(from, to, false, false));
+                const routeSlot = node('div', 'mt-choice-route');
+                routeSlot.append(route(from, to, false, false));
+                card.append(node('b', 'mt-choice-title', direction === 'send' ? (isItemTransfer ? '贈与' : sendLabel) : '強奪'), routeSlot);
                 if (!isItemTransfer) card.append(node('small', '', `上限 ${format(limit(from))}G${limit(from) ? '' : '（選択できる金額がありません）'}`));
                 choices.append(card);
             }
@@ -122,7 +125,10 @@
             }
         }
         document.body.append(root);
-        if ([13, 19, 21, 22].some(id => ITEM_CONTENTS[id]?.name === itemName)) window.Plane02Layout?.apply(panel);
+        if ([13, 19, 21, 22].some(id => ITEM_CONTENTS[id]?.name === itemName)) {
+            if (stage === 'type') window.Plane02Layout?.apply(panel, { once: true });
+            window.Plane02Layout?.apply(panel);
+        }
         window.PlayerCardSize?.watch(root);
         if (!remote) cfg.onSync(stage, targetIndex, type, stage === 'amount' ? Number(root.querySelector('.mt-amount').value) : cfg.amount);
     }

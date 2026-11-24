@@ -81,8 +81,9 @@
         if (!scope?.isConnected) return;
         const rows = layouts.flatMap(([selector, regionSelector]) =>
             [...scope.querySelectorAll(selector)].map(card => ({ card, region: card.closest(regionSelector) }))
-                .filter(row => row.region));
-        if (!rows.length) return;
+                .filter(row => row.region && !row.card.closest('.mt-choice-route')));
+        const choiceRoutes = [...scope.querySelectorAll('#moneyTransferScreen .mt-choice-route')];
+        if (!rows.length && !choiceRoutes.length) return;
         refresh();
         let pending = 0, disposed = false;
         const observed = new Set();
@@ -123,6 +124,17 @@
                     card.style.setProperty('--player-card-fitted-height', height);
                 }
             }
+            // Operation choices retain standard card dimensions. Scale the
+            // whole player/arrow group only when its allotted cell is smaller.
+            for (const slot of choiceRoutes) {
+                const route = slot.firstElementChild;
+                observe(slot);
+                observe(route);
+                if (!slot.clientWidth || !slot.clientHeight || !route.offsetWidth || !route.offsetHeight) continue;
+                const scale = Math.min(1, slot.clientWidth / route.offsetWidth, slot.clientHeight / route.offsetHeight);
+                const value = String(scale);
+                if (slot.style.getPropertyValue('--mt-choice-scale') !== value) slot.style.setProperty('--mt-choice-scale', value);
+            }
             fitItemAmounts(scope);
         };
         const scheduleFit = () => {
@@ -138,6 +150,7 @@
                 delete card.dataset.playerCardFit;
                 card.style.removeProperty('--player-card-fitted-height');
             }
+            choiceRoutes.forEach(slot => slot.style.removeProperty('--mt-choice-scale'));
         });
     }
     // Page-level registration: screen replacement does not add more listeners.

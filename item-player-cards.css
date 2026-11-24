@@ -164,7 +164,7 @@
     overflow: auto;
 }
 
-#moneyTransferScreen .mt-content:has(:is(.mt-target-card, .mt-person)) {
+#moneyTransferScreen:not([data-stage="type"]) .mt-content:has(:is(.mt-target-card, .mt-person)) {
     align-items: safe center;
     justify-content: safe center;
     overflow: auto;
@@ -175,15 +175,15 @@
     justify-content: safe center;
 }
 
-#moneyTransferScreen .mt-choices {
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(2 * var(--player-card-width) + 96px)), 1fr));
-    align-items: start;
-}
-
 #moneyTransferScreen .mt-choice .mt-route {
     grid-template-columns: var(--player-card-width) 42px var(--player-card-width);
     justify-content: center;
     gap: 12px;
+}
+
+#moneyTransferScreen[data-stage="type"] .mt-choice .mt-person > b {
+    white-space: normal;
+    text-align: center;
 }
 
 /* The amount form follows the player cards; its input and button sizes are unchanged. */
