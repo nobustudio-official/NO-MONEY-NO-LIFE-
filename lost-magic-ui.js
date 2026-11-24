@@ -10,6 +10,7 @@
     };
 
     function hide() {
+        window.Plane02Layout?.release(root?._panel);
         root?.remove();
         root = null;
     }
@@ -89,6 +90,10 @@
             return;
         }
         const container = ensureRoot();
+        if (container.dataset.stage === 'targets' && view.stage !== 'targets') {
+            window.Plane02Layout?.release(root._panel);
+            root._panel.removeAttribute('style');
+        }
         container.dataset.stage = view.stage;
         root._telop.hidden = ['targets', 'magic'].includes(view.stage);
         container.onclick = null;
@@ -139,6 +144,7 @@
             });
             root._body.append(grid);
             setBack(handlers.onBack, !view.readOnly);
+            window.Plane02Layout?.apply(root._panel);
             container.onclick = null;
             return;
         }

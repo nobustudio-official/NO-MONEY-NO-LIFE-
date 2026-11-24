@@ -48,6 +48,39 @@
 
 .lost-magic-panel[hidden] { display: none; }
 
+/* Use the same target-selection frame as 闇ヤマト. */
+.lost-magic-overlay[data-stage="targets"] .lost-magic-scene {
+    position: fixed;
+    inset: var(--transfer-stage-top) var(--transfer-stage-right) var(--transfer-stage-bottom) var(--transfer-stage-left);
+    width: auto;
+    height: auto;
+    max-width: var(--transfer-stage-width);
+    margin: auto;
+    transform: none;
+}
+
+.lost-magic-overlay[data-stage="targets"] .lost-magic-panel {
+    inset: var(--transfer-panel-top) var(--transfer-panel-side) var(--transfer-panel-bottom);
+    width: auto;
+    padding: 22px 26px 65px;
+    transform: none;
+}
+
+.lost-magic-overlay[data-stage="targets"] .lost-magic-body {
+    position: absolute;
+    inset: 86px 26px 65px;
+}
+
+.lost-magic-overlay[data-stage="targets"] .lost-magic-back {
+    left: 26px;
+    padding: 9px 18px;
+    font-size: 16px;
+}
+
+@media (max-width: 1550px) {
+    .lost-magic-overlay[data-stage="targets"] .lost-magic-title { font-size: 24px; }
+}
+
 .lost-magic-title {
     flex: none;
     margin: 0;
@@ -69,25 +102,25 @@
 .lost-magic-target-grid {
     display: grid;
     width: 100%;
-    grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 230px));
-    align-content: center;
+    grid-template-columns: repeat(auto-fit, var(--player-card-width, 135px));
+    align-content: safe center;
     align-items: center;
     justify-content: center;
-    gap: 16px;
+    gap: 12px;
     overflow: auto;
-    padding: 14px 4px;
+    padding: 0;
 }
 
 .lost-magic-target-card {
     display: flex;
-    width: 230px;
-    height: 260px;
-    min-height: 260px;
+    width: var(--player-card-width, 135px);
+    height: var(--player-card-height, 260px);
+    min-height: 0;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 14px;
-    padding: 20px 12px;
+    gap: clamp(3px, .8vh, 8px);
+    padding: clamp(4px, 1vh, 9px);
     border: 1px solid #d8ba71;
     border-radius: 13px;
     background: linear-gradient(155deg, #344b5fef, #172b40f7);
@@ -96,13 +129,14 @@
 }
 
 .lost-magic-target-icon {
-    width: 76px;
-    height: 76px;
+    flex: none;
+    width: clamp(30px, 12vh, 54px);
+    height: clamp(30px, 12vh, 54px);
     object-fit: contain;
     filter: drop-shadow(0 0 7px #ffdc8370);
 }
 
-.lost-magic-target-name { max-width: 100%; font-size: 19px; overflow-wrap: anywhere; }
+.lost-magic-target-name { max-width: 100%; font-size: clamp(12px, 2.8vh, 17px); line-height: 1.25; overflow-wrap: anywhere; }
 
 .lost-magic-target-button,
 .lost-magic-button,
@@ -125,7 +159,16 @@
 .lost-magic-target-button:disabled,
 .lost-magic-button:disabled { opacity: 1; color: #fcfcfc; cursor: pointer; }
 
-.lost-magic-no-magic { color: #d6dfe5; font-size: 12px; }
+.lost-magic-target-card .lost-magic-target-button {
+    flex: none;
+    min-width: 0;
+    min-height: 0;
+    padding: clamp(4px, .8vh, 8px) clamp(6px, 1vw, 12px);
+    font-size: clamp(12px, 2.8vh, 15px);
+    line-height: 1.35;
+}
+
+.lost-magic-no-magic { color: #d6dfe5; font-size: clamp(10px, 2.5vh, 12px); line-height: 1.2; }
 
 .lost-magic-list {
     display: flex;
