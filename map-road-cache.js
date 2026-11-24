@@ -30,9 +30,9 @@
         }
         if (state.streaming) {
             const overview = board.classList.contains('map-overview-active') ||
-                (MapDetailLevel.touchDevice && getMapZoomUI() < .6);
+                (MapDetailLevel.touchDevice && getMapZoomUI() < .5);
             const ready = MapDetailLevel.setTileSources(state.tiles, overview ? null : bounds, visibleBounds);
-            MapDetailLevel.setTileSources(state.bridges, overview ? null : bounds);
+            MapDetailLevel.setTileSources(state.bridges, overview ? null : bounds, visibleBounds);
             if (state.layer) {
                 state.vector.style.display = ready ? '' : 'inline';
                 // The vector fills missing tiles without hiding roads already loaded.
@@ -134,8 +134,7 @@
                 // Desktop keeps the existing fully prepared road layer.
                 await Promise.all(data.tiles.map(async tile => {
                     const image = new Image();
-                    image.src = tile.image;
-                    await image.decode();
+                    await MapDetailLevel.loadImage(image, tile.image, 1);
                 }));
             }
             if (pending.get(svg) !== token || !svg.isConnected) return;
@@ -154,7 +153,7 @@
                 Object.assign(element.style, { position: 'absolute', left: tile.x + 'px', top: tile.y + 'px',
                     width: tile.width + 'px', height: tile.height + 'px', maxWidth: 'none' });
                 if (streaming) element.addEventListener('load', () => MapDetailLevel.scheduleViewport(board));
-                else element.src = tile.image;
+                else MapDetailLevel.loadImage(element, tile.image, 1).catch(() => {});
                 layer.append(element);
                 return { ...tile, element, visible: null };
             });
@@ -172,7 +171,7 @@
                 for (const key of ['x', 'y', 'width', 'height']) element.setAttribute(key, bridge[key]);
                 Object.assign(element.style, { position:'absolute', left:bridge.x+'px', top:bridge.y+'px',
                     width:bridge.width+'px', height:bridge.height+'px', maxWidth:'none' });
-                if (!streaming) element.src = bridge.image;
+                if (!streaming) MapDetailLevel.loadImage(element, bridge.image, 1).catch(() => {});
                 bridgeLayer.append(element);
                 return { ...bridge, element, visible:null, collapsed:false };
             });

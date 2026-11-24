@@ -21,9 +21,9 @@
         image.className = 'map-static-raster';
         const baseImage = data.mobileImage || data.image;
         image.dataset.mapBaseImage = baseImage;
-        image.src = baseImage;
         background.classList.add('map-static-background');
         background.append(image);
+        window.MapDetailLevel.loadImage(image, baseImage, 0).catch(() => {});
         if (window.MapDetailLevel?.touchDevice) {
             const flatLayer = window.MapRegionBackground?.createFlatLayer();
             if (flatLayer) {
@@ -53,9 +53,7 @@
                 entry.ready = true;
                 if (entry.image.isConnected) entry.image.classList.add('is-ready');
             };
-            const loading = window.MapDetailLevel?.touchDevice
-                ? window.MapDetailLevel.loadImage(entry.image, entry.src, entry.priority)
-                : (entry.image.src = entry.src, entry.image.decode());
+            const loading = window.MapDetailLevel.loadImage(entry.image, entry.src, entry.priority);
             Promise.resolve(loading).then(reveal, () => {
                 if (entry.image.naturalWidth > 0) reveal();
             }).finally(() => {
@@ -105,7 +103,7 @@
                 level.opacity = opacity;
                 background.style.setProperty(`--map-${level.name}-opacity`, String(opacity));
             }
-            // Release outgoing detail promptly while zooming out to cap Safari memory use.
+            // Zooming out reuses loaded detail without starting unnecessary loads.
             if (pixelZoom < level.preload && zooming && !zoomingOut) continue;
             const candidates = pixelZoom < level.preload ? [] : near.filter(({ tile }) => tile[level.source]);
             // Zooming out exposes more map area, but its shrinking detail is not worth new image decodes.
@@ -115,6 +113,10 @@
             const needed = new Set(wanted.map(({ tile }) => tile));
             for (const [tile, entry] of level.images) {
                 if (needed.has(tile)) continue;
+                if (entry.ready) {
+                    entry.image.style.visibility = 'hidden';
+                    continue;
+                }
                 if (!visibleOnly && !zoomingOut && state.tuned && entry.started && pixelZoom >= level.preload && needed.size < levelLimit && intersects(tile, 128 / zoom)) {
                     needed.add(tile);
                     continue;
@@ -143,6 +145,8 @@
                     background.append(image);
                 }
                 entry.priority = visible ? 0 : 1;
+                entry.image.style.visibility = '';
+                window.MapDetailLevel.updateImagePriority(entry.image, entry.priority, distance(tile));
                 if (visibleOnly && visible && opacity > 0) visibleLoads.push(entry.readyPromise);
                 if (!entry.started) pending.push({ entry, visible, opaque: opacity === 1, resolution: level.resolution });
             }
@@ -159,12 +163,14 @@
         if(!state)return;
         state.pending.length=0;
         for(const level of state.levels){
-            for(const entry of level.images.values()){
+            for(const [tile,entry] of level.images){
+                entry.image.style.visibility='hidden';
+                if(entry.ready)continue;
                 window.MapDetailLevel.releaseImage(entry.image);
                 entry.resolveReady();
                 entry.image.remove();
+                level.images.delete(tile);
             }
-            level.images.clear();
             level.opacity=0;
         }
         background.style.setProperty('--map-medium-opacity','0');
@@ -179,12 +185,13 @@
     }
     function releaseMobileBase(board) {
         const image = board.querySelector('.map-static-background > .map-static-raster');
-        if (image?.hasAttribute('src')) window.MapDetailLevel?.releaseImage(image);
+        if (image) image.style.visibility = 'hidden';
     }
     function restoreMobileBase(board) {
         const image = board.querySelector('.map-static-background > .map-static-raster');
         const source = image?.dataset.mapBaseImage;
-        if (source && image.getAttribute('src') !== source) {
+        if (image) image.style.visibility = '';
+        if (source && !image.hasAttribute('src')) {
             window.MapDetailLevel?.loadImage(image, source, 0).catch(() => {});
         }
     }
@@ -218,8 +225,7 @@
             Object.assign(image.style, { position: 'absolute', left: '0', top: '0',
                 width: data.width + 'px', height: data.height + 'px', maxWidth: 'none',
                 pointerEvents: 'none', zIndex: '3' });
-            if (window.MapDetailLevel?.touchDevice) await window.MapDetailLevel.loadImage(image, data.image, 0);
-            else { image.src = data.image; await image.decode(); }
+            await window.MapDetailLevel.loadImage(image, data.image, 0);
             if (!background.isConnected) return;
             background.append(image);
             state.ready = true;
@@ -232,7 +238,7 @@
     function setZoom(board, zoom) {
         const background = board.querySelector('.map-background');
         const state = states.get(background);
-        const lowDetail=Boolean(window.MapDetailLevel?.touchDevice&&zoom<.6);
+        const lowDetail=Boolean(window.MapDetailLevel?.touchDevice&&zoom<.5);
         const wasLowDetail=board.classList.contains('map-low-detail-active');
         const flatLayerReady = Boolean(background?.querySelector('.map-flat-region-layer.is-ready'));
         const useLowDetail = lowDetail && flatLayerReady;
@@ -242,7 +248,7 @@
         window.MapRoadCache?.setSimpleMode(board, useLowDetail);
         if(useLowDetail&&!wasLowDetail)releaseTouchDetails(board);
         if (!state?.ready) return;
-        // Mobile swaps at the same 0.6 threshold as its road/object detail.
+        // Mobile swaps at the same 0.5 threshold as its road/object detail.
         // Desktop keeps its existing hysteresis around the overview range.
         const limit = MapScene.getMinZoom() * (state.active ? 1.8 : 1.45);
         const roadState = board.querySelector('.map-stone-roads')?.dataset.roadCache;
@@ -260,8 +266,7 @@
         background.classList.toggle('map-overview-active', active);
         board.classList.toggle('map-overview-active', active);
         if(active&&window.MapDetailLevel?.touchDevice){
-            // Flat region vectors replace the overview. Release decoded detail
-            // layers as soon as they take over, rather than retaining them through the pinch.
+            // Flat region vectors replace detail without discarding decoded images.
             releaseTouchDetails(board);
         }
     }

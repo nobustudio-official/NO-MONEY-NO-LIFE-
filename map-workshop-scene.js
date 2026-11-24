@@ -24,7 +24,7 @@
         if (token === undefined) return;
         state.pendingObjectImages.delete(row);
         if (row.objectImageToken === token) row.objectImageToken++;
-        window.MapDetailLevel?.releaseImage(row.image);
+        if (!(row.image.complete && row.image.naturalWidth)) window.MapDetailLevel?.releaseImage(row.image);
     }
     function prepareRoads() {
         return Promise.all([MapCapitalRoads.prepare(), MapBridgeRoads.prepare(), MapRegionRoads.prepare()]);
@@ -54,8 +54,7 @@
                 const template=templates.get(id);
                 if (!template?.asset) throw Error('オブジェクト画像がありません: '+id);
                 const image=new Image();
-                if(window.MapDetailLevel?.touchDevice) await window.MapDetailLevel.loadImage(image,template.asset,2);
-                else { image.src=template.asset; await image.decode(); }
+                await window.MapDetailLevel.loadImage(image,template.asset,2);
                 if(image.naturalWidth) images.set(id,image);
             })
         ]);
@@ -156,7 +155,6 @@
         if(state.streamImages&&(viewportChanged||immediateImages&&!state.objectImagesReady)){
             state.objectImagesReady=immediateImages;
             clearTimeout(state.objectImageTimer);
-            for(const row of [...state.pendingObjectImages.keys()])cancelObjectLoad(state,row);
             state.objectImageTimer=immediateImages?0:window.setTimeout(()=>{
                 state.objectImageTimer=0;
                 if(!board.isConnected||!state.bounds||!state.visibleBounds)return;
@@ -165,7 +163,7 @@
             },objectImageDwellMs);
         }
         const overview=board.classList.contains('map-overview-active');
-        const lowDetail=window.MapDetailLevel?.touchDevice&&getMapZoomUI()<.6;
+        const lowDetail=window.MapDetailLevel?.touchDevice&&getMapZoomUI()<.5;
         const zooming=board.classList.contains('map-zoom-interacting');
         const objectMargin=objectImageMargin/Math.max(.01,getMapZoomUI()||1);
         const imageBounds={left:visibleBounds.left-objectMargin,right:visibleBounds.right+objectMargin,
@@ -184,8 +182,10 @@
                 if(!keepImage){
                     cancelObjectLoad(state,row);
                     image.classList.remove('is-ready');
-                    window.MapDetailLevel?.releaseImage(image);
-                }else if(onScreen&&!zooming&&state.objectImagesReady&&!image.hasAttribute('src')&&!state.pendingObjectImages.has(row)){
+                    if (!(image.complete && image.naturalWidth)) window.MapDetailLevel?.releaseImage(image);
+                }else if(image.complete&&image.naturalWidth){
+                    image.classList.add('is-ready');
+                }else if(onScreen&&!zooming&&state.objectImagesReady&&!state.pendingObjectImages.has(row)){
                     const centerX=(visibleBounds.left+visibleBounds.right)/2,centerY=(visibleBounds.top+visibleBounds.bottom)/2;
                     const distance=(row.object.x-centerX)**2+(row.object.y-centerY)**2;
                     const token=(row.objectImageToken||0)+1;
@@ -210,7 +210,7 @@
             row.sharp=false;
             row.image.classList.remove('map-object-sharp');
             row.image.classList.remove('is-ready');
-            window.MapDetailLevel?.releaseImage(row.image);
+            if (!(row.image.complete && row.image.naturalWidth)) window.MapDetailLevel?.releaseImage(row.image);
         }
     }
     function objectExtent({object,width,height}) {
@@ -236,7 +236,6 @@
             }
             const image=new Image();image.alt=object.name;image.draggable=false;image.dataset.objectId=object.id;
             if(useStreaming)image.classList.add('map-object-stream');
-            if(!useStreaming)image.src=template.asset;
             const {width,height}=objectDimensions(object,image);
             Object.assign(image.style,{position:'absolute',left:object.x+'px',top:object.y+'px',width:width+'px',height:height+'px',maxWidth:'none',transform:'translate(-50%,-100%) rotate('+object.rotation+'deg)',transformOrigin:'50% 100%'});
             const row={image,object,width,height,asset:template.asset,sharp:null};rows.push(row);
@@ -262,6 +261,9 @@
             board.append(layer);
             boards.set(board,{rows,bounds:null,visibleBounds:null,pairs:effects.pairs,effectTimer:0,streamImages:useStreaming,
                 objectImageTimer:0,objectImagesReady:false,pendingObjectImages:new Map()});
+            if(!useStreaming)for(const row of rows){
+                if(row.image)window.MapDetailLevel.loadImage(row.image,row.asset,1).catch(()=>{});
+            }
             window.MapDetailLevel?.setZoom(board,getMapZoomUI());
         });
     }

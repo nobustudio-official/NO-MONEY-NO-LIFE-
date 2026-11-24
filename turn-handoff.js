@@ -35,16 +35,11 @@
             if (!element) return;
             phase = 'fading-out';
             element.classList.add('is-dark');
-            setTimeout(async () => {
+            setTimeout(() => {
                 if (!element) return;
                 phase = 'black';
-                let mapJump = window.MapDetailLevel?.beginCameraJump?.(document.getElementById('mapBoard'), { releasePrevious: true });
+                let mapJump = window.MapDetailLevel?.beginCameraJump?.(document.getElementById('mapBoard'));
                 window.cancelMapCameraScroll?.();
-                window.releasePlayerDirectionSprites?.();
-                // Allow cancelled image callbacks and rendering work to settle.
-                // This yields to the browser; it does not assume GC has finished.
-                await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 120))));
-                if (!element) return;
                 const callbacks = blackCallbacks; blackCallbacks = [];
                 for (const callback of callbacks) { try { callback(); } catch (error) { console.error('[turn-handoff]', error); } }
                 try { apply(); } catch (error) { console.error('[turn-handoff]', error); }

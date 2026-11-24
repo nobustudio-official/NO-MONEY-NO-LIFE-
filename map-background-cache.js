@@ -4,7 +4,7 @@
  const tileSize=2048;
  const windows=new WeakMap();
  function dataUrl(blob){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);});}
- function decode(url){return new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=reject;image.src=url;});}
+ function decode(url){return window.MapDetailLevel.loadImage(new Image(),url,0);}
  function blob(canvas){return new Promise((resolve,reject)=>canvas.toBlob(value=>value?resolve(value):reject(new Error('Background tile failed')),'image/webp',.92));}
  async function bake(background,svg){
   background.dataset.rasterState='preparing';
@@ -81,7 +81,7 @@
   if(!state)return;
   const overview=board.classList.contains('map-overview-active');
   const zoom=typeof getMapZoomUI==='function'?getMapZoomUI():1;
-  const lowDetail=window.MapDetailLevel?.touchDevice&&zoom<.6;
+  const lowDetail=window.MapDetailLevel?.touchDevice&&zoom<.5;
   // Below the mobile detail threshold, never request native-resolution tiles.
   if(lowDetail){
    MapDetailLevel.setTileSources(state.tiles,null,visible);
@@ -101,7 +101,7 @@
   const state=windows.get(board);
   if(!state)return;
   MapDetailLevel.setTileSources(state.tiles,null,null);
-  const lowDetail=window.MapDetailLevel?.touchDevice&&getMapZoomUI()<.6;
+  const lowDetail=window.MapDetailLevel?.touchDevice&&getMapZoomUI()<.5;
   state.svg.style.display=lowDetail?'none':'';
   const fallback=state.svg.querySelector('image[href],image[data-fallback-image]');
   if(fallback){

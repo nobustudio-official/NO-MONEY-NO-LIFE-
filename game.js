@@ -66,15 +66,15 @@ const PLAYER_DIRECTIONS = {
     right: { row: 1, column: 1 }
 };
 
-// Retain only the active player's direction images. Load them one at a time
-// during handoff, before destination map requests are allowed to start.
+// Direction images share the map's URL cache and loading queue across players.
+// Preload the facing direction first, then the remaining directions in order.
 let activePlayerDirectionPreload = null;
 
 function releasePlayerDirectionSprites() {
     const previous = activePlayerDirectionPreload;
     activePlayerDirectionPreload = null;
     previous?.controller.abort();
-    previous?.images.forEach(image => image.removeAttribute('src'));
+    previous?.images.forEach(image => window.MapDetailLevel.releaseImage(image));
 }
 window.releasePlayerDirectionSprites = releasePlayerDirectionSprites;
 
@@ -107,18 +107,14 @@ function preloadPlayerDirectionSprites(player) {
                     settled = true;
                     clearTimeout(timer);
                     signal.removeEventListener('abort', cancel);
-                    image.onload = image.onerror = null;
-                    if (!success) image.removeAttribute('src');
+                    if (!success) window.MapDetailLevel.releaseImage(image);
                     resolve();
                 };
                 const cancel = () => finish(false);
                 const timer = setTimeout(cancel, Math.min(1500, remaining));
                 signal.addEventListener('abort', cancel, { once: true });
-                image.onerror = cancel;
-                if (typeof image.decode !== 'function') image.onload = () => finish(image.naturalWidth > 0);
-                image.src = source;
-                if (typeof image.decode === 'function') image.decode().then(() => finish(true), cancel);
-                else if (image.complete) finish(image.naturalWidth > 0);
+                window.MapDetailLevel.loadImage(image, source, source === sources[0] ? 0 : 2)
+                    .then(loaded => finish(Boolean(loaded)), cancel);
             });
         }
     })();

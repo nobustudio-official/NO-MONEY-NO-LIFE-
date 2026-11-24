@@ -15,7 +15,7 @@
   if(!loading)loading=Promise.all(Object.entries(styles).flatMap(([id,style])=>['horizontal','vertical'].map(async direction=>{
    const image=new Image();const source=assetRoot+style.file+'-bridge-'+direction+'-v'+(style[direction].version??1)+'.webp';
    try{
-    if(root.MapDetailLevel?.touchDevice)await root.MapDetailLevel.loadImage(image,source,2);
+    if(root.MapDetailLevel?.loadImage)await root.MapDetailLevel.loadImage(image,source,2);
     else{image.src=source;await image.decode();}
     if(image.naturalWidth)images.set(id+':'+direction,image);
    }catch{/* Draw a visible fallback and report missing assets. */}

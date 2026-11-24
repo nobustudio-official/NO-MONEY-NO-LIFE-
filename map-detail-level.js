@@ -8,52 +8,101 @@
     const touchDevice = Boolean(window.matchMedia?.('(pointer: coarse)').matches);
     const overscan = touchDevice ? 96 : 220;
     const pendingImages = new Map();
-    const activeImages = new Set();
+    const imageCache = new Map();
+    const activeLoads = new Set();
     const activeRequests = new Map();
-    const maxMobileImageLoads = 2;
+    const maxConcurrentImageLoads = 2;
     let pumpScheduled = false;
     // Each map releases only its own pause, including during screen replacement.
     const scrollPauses = new Set();
     const cameraJumps = new Set();
 
+    function settleRequest(request, image = null, error = null) {
+        if (request.settled) return;
+        request.settled = true;
+        request.cleanup?.();
+        if (pendingImages.get(request.element) === request) pendingImages.delete(request.element);
+        if (activeRequests.get(request.element) === request) activeRequests.delete(request.element);
+        request.entry.requests.delete(request);
+        if (error) request.reject(error); else request.resolve(image);
+    }
+
+    function attachImage(request) {
+        if (request.settled) return;
+        const { element, entry } = request;
+        pendingImages.delete(element);
+        activeRequests.set(element, request);
+        const finish = () => settleRequest(request, element.naturalWidth ? element : null);
+        const fail = () => settleRequest(request, null, new Error(`画像を表示できません: ${entry.url}`));
+        const timer = setTimeout(fail, 4000);
+        request.cleanup = () => {
+            clearTimeout(timer);
+            element.removeEventListener('load', finish);
+            element.removeEventListener('error', fail);
+        };
+        element.addEventListener('load', finish, { once: true });
+        element.addEventListener('error', fail, { once: true });
+        element.decoding = 'async';
+        if (element.getAttribute('src') !== entry.url) element.src = entry.url;
+        if (element.complete && element.naturalWidth) finish();
+    }
+
+    function startImageLoad(entry, priority) {
+        entry.loading = true;
+        activeLoads.add(entry);
+        const image = entry.image;
+        image.decoding = 'async';
+        if ('fetchPriority' in image) image.fetchPriority = priority === 0 ? 'high' : 'low';
+        const cleanup = () => {
+            clearTimeout(timer);
+            image.onload = image.onerror = null;
+            entry.loading = false;
+            activeLoads.delete(entry);
+            entry.cancel = null;
+        };
+        const finish = error => {
+            if (!entry.loading) return;
+            cleanup();
+            if (error) {
+                imageCache.delete(entry.url);
+                image.removeAttribute('src');
+                for (const request of [...entry.requests]) settleRequest(request, null, error);
+            } else {
+                entry.ready = true;
+                entry.width = image.naturalWidth;
+                entry.height = image.naturalHeight;
+                for (const request of [...entry.requests]) attachImage(request);
+            }
+            scheduleImagePump();
+        };
+        const timer = setTimeout(() => finish(new Error(`画像読み込みがタイムアウトしました: ${entry.url}`)), 6000);
+        entry.cancel = () => {
+            cleanup();
+            image.removeAttribute('src');
+            imageCache.delete(entry.url);
+            scheduleImagePump();
+        };
+        image.onload = async () => {
+            try {
+                if (typeof image.decode === 'function') await image.decode();
+                finish();
+            } catch (error) { finish(error); }
+        };
+        image.onerror = () => finish(new Error(`画像を読み込めません: ${entry.url}`));
+        image.src = entry.url;
+    }
+
     function pumpImageLoads() {
         pumpScheduled = false;
-        if (scrollPauses.size || cameraJumps.size) return;
-        while (activeImages.size < maxMobileImageLoads && pendingImages.size) {
-            const [element, request] = [...pendingImages.entries()].sort((a, b) =>
-                a[1].priority - b[1].priority || a[1].distance - b[1].distance)[0];
-            pendingImages.delete(element);
-            const token = Number(element.dataset.mapLoadToken || 0) + 1;
-            element.dataset.mapLoadToken = String(token);
-            activeImages.add(element);
-            element.decoding = 'async';
-            if ('fetchPriority' in element) element.fetchPriority = request.priority === 0 ? 'high' : 'low';
-            const finish = () => {
-                cleanup();
-                if (Number(element.dataset.mapLoadToken) !== token) return;
-                activeImages.delete(element);
-                activeRequests.delete(element);
-                if (request.resolve) request.resolve(element.naturalWidth ? element : null);
-                scheduleImagePump();
-            };
-            const fail = () => {
-                cleanup();
-                if (Number(element.dataset.mapLoadToken) !== token) return;
-                activeImages.delete(element);
-                activeRequests.delete(element);
-                request.reject?.(new Error(`画像を読み込めません: ${request.image}`));
-                scheduleImagePump();
-            };
-            const cleanup = () => {
-                element.removeEventListener('load', finish);
-                element.removeEventListener('error', fail);
-                request.cleanup = null;
-            };
-            request.cleanup = cleanup;
-            activeRequests.set(element, request);
-            element.addEventListener('load', finish, { once: true });
-            element.addEventListener('error', fail, { once: true });
-            element.src = request.image;
+        while (activeLoads.size < maxConcurrentImageLoads) {
+            const request = [...pendingImages.values()].filter(request => {
+                if (request.entry.loading) return false;
+                if (!request.board) return true;
+                if (cameraJumps.size || scrollPauses.size) return false;
+                return !states.get(request.board)?.scrolling || request.priority === 0;
+            }).sort((a, b) => a.priority - b.priority || a.distance - b.distance)[0];
+            if (!request) break;
+            startImageLoad(request.entry, request.priority);
         }
     }
 
@@ -64,50 +113,54 @@
     }
 
     function releaseImage(element) {
-        const pending = pendingImages.get(element);
-        pendingImages.delete(element);
-        pending?.resolve?.(null);
-        const active = activeRequests.get(element);
-        if (!active && !element.hasAttribute('src')) return;
-        element.dataset.mapLoadToken = String(Number(element.dataset.mapLoadToken || 0) + 1);
-        active?.cleanup?.();
-        activeImages.delete(element);
-        active?.resolve?.(null);
-        activeRequests.delete(element);
+        const request = pendingImages.get(element) || activeRequests.get(element);
+        if (request) {
+            settleRequest(request);
+            const entry = request.entry;
+            if (!entry.ready && !entry.requests.size) {
+                if (entry.cancel) entry.cancel(); else imageCache.delete(entry.url);
+            }
+        }
+        // Decoded cache owners are independent of display elements and players.
         element.removeAttribute('src');
         scheduleImagePump();
     }
 
     function enqueueImage(element, image, priority = 1, distance = 0) {
         const board = element.closest?.('#mapBoard');
-        if (disposedImages.has(element) || (board && disposedBoards.has(board))) return Promise.resolve(null);
-        const pending = pendingImages.get(element);
-        if (pending?.image === image) {
-            pending.priority = priority;
-            pending.distance = distance;
-            return pending.promise;
+        if (!image || disposedImages.has(element) || (board && disposedBoards.has(board))) return Promise.resolve(null);
+        const url = new URL(image, document.baseURI).href;
+        const current = pendingImages.get(element) || activeRequests.get(element);
+        if (current?.entry.url === url) {
+            current.priority = priority;
+            current.distance = distance;
+            return current.promise;
         }
-        if (element.getAttribute('src') === image) {
-            const active = activeRequests.get(element);
-            if (active) return active.promise || Promise.resolve(null);
-            if (element.complete) return Promise.resolve(element.naturalWidth ? element : null);
-            return Promise.resolve(null);
+        if (imageCache.get(url)?.ready && element.src === url && element.complete && element.naturalWidth) {
+            return Promise.resolve(element);
         }
         releaseImage(element);
+        let entry = imageCache.get(url);
+        if (!entry) {
+            entry = { url, image: new Image(), ready: false, loading: false, requests: new Set() };
+            imageCache.set(url, entry);
+        }
         let resolve, reject;
         const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
-        pendingImages.set(element, { board, image, priority, distance, promise, resolve, reject });
-        scheduleImagePump();
+        const request = { element, board, image: url, entry, priority, distance, promise, resolve, reject, settled: false };
+        pendingImages.set(element, request);
+        entry.requests.add(request);
+        if (entry.ready) attachImage(request); else scheduleImagePump();
         return promise;
     }
 
     function loadImage(element, image, priority = 1) {
-        if (!touchDevice) {
-            if (disposedImages.has(element) || disposedBoards.has(element.closest?.('#mapBoard'))) return Promise.resolve(null);
-            if (element.getAttribute('src') !== image) element.src = image;
-            return typeof element.decode === 'function' ? element.decode().then(() => element) : Promise.resolve(element);
-        }
         return enqueueImage(element, image, priority, 0);
+    }
+
+    function updateImagePriority(element, priority, distance = 0) {
+        const request = pendingImages.get(element) || activeRequests.get(element);
+        if (request) { request.priority = priority; request.distance = distance; }
     }
 
     function imagePriority(tile, visible) {
@@ -130,19 +183,20 @@
             const element = tile.element;
             if (disposedImages.has(element) || disposedBoards.has(element.closest?.('#mapBoard'))) continue;
             if (!bounds || !intersects(tile, bounds)) {
-                if (touchDevice) releaseImage(element);
-                else if (element.hasAttribute('src')) element.removeAttribute('src');
+                element.style.visibility = 'hidden';
+                if (!(element.complete && element.naturalWidth)) releaseImage(element);
                 continue;
             }
-            if (!element.hasAttribute('src')) {
-                if (touchDevice) {
-                    const rank = imagePriority(tile, visible);
-                    enqueueImage(element, tile.image, rank.priority, rank.distance).catch(() => {});
-                } else element.src = tile.image;
+            element.style.visibility = '';
+            const rank = imagePriority(tile, visible);
+            if (!element.hasAttribute('src') || (element.complete && !element.naturalWidth)) {
+                enqueueImage(element, tile.image, rank.priority, rank.distance).catch(() => {});
+            } else {
+                updateImagePriority(element, rank.priority, rank.distance);
             }
             if (visible && intersects(tile, visible) && !(element.complete && element.naturalWidth)) ready = false;
         }
-        if (touchDevice && pendingImages.size) scheduleImagePump();
+        if (pendingImages.size) scheduleImagePump();
         return ready;
     }
 
@@ -152,7 +206,7 @@
         if (state) return state;
         const area = board.closest('.map-area');
         state = { area, nodes: [], important: [], bossPieces: [], zoom: 1, frame: 0, scrollSettleTimer: 0, lowDetail: null,
-            cameraJumps: new Set(), waits: new Set(), disposed: false, visibleOnly: false };
+            cameraJumps: new Set(), waits: new Set(), disposed: false, visibleOnly: false, scrolling: false };
         states.set(board, state);
         const schedule = () => {
             if (state.disposed || !board.isConnected || state.frame || state.cameraJumps.size) return;
@@ -168,22 +222,19 @@
         state.onScroll = () => {
             if (state.disposed || state.cameraJumps.size) return;
             if (state.visibleOnly) { schedule(); return; }
-            if (touchDevice && state.zoom < .6) {
-                scrollPauses.add(state);
-                clearTimeout(state.scrollSettleTimer);
-                state.scrollSettleTimer = setTimeout(() => {
-                    state.scrollSettleTimer = 0;
-                    if (state.disposed) return;
-                    scrollPauses.delete(state);
-                    scheduleImagePump();
-                    schedule();
-                }, 160);
-            } else if (touchDevice) {
-                clearTimeout(state.scrollSettleTimer);
+            state.scrolling = true;
+            if (touchDevice && state.zoom < .5) scrollPauses.add(state);
+            else scrollPauses.delete(state);
+            clearTimeout(state.scrollSettleTimer);
+            state.scrollSettleTimer = setTimeout(() => {
                 state.scrollSettleTimer = 0;
+                if (state.disposed) return;
+                state.scrolling = false;
                 scrollPauses.delete(state);
                 scheduleImagePump();
-            }
+                schedule();
+            }, 160);
+            scheduleImagePump();
             schedule();
         };
         area?.addEventListener('scroll', state.onScroll, { passive: true });
@@ -246,7 +297,7 @@
         return visible;
     }
 
-    function beginCameraJump(board, { releasePrevious = false } = {}) {
+    function beginCameraJump(board) {
         const state = stateFor(board);
         if (!state) return null;
         const token = {};
@@ -254,15 +305,10 @@
         state.cameraJumps.add(token);
         clearTimeout(state.scrollSettleTimer);
         state.scrollSettleTimer = 0;
+        state.scrolling = false;
         scrollPauses.delete(state);
         if (state.frame) cancelAnimationFrame(state.frame);
         state.frame = 0;
-        if (releasePrevious) {
-            window.MapOverviewCache?.releaseDetail(board);
-            for (const [image, request] of [...pendingImages, ...activeRequests]) {
-                if (request.board === board && !image.matches('.map-static-raster, .map-overview-raster')) releaseImage(image);
-            }
-        }
         let finishing;
         return { finish() {
             if (finishing) return finishing;
@@ -275,7 +321,7 @@
                 state.visibleOnly = true;
                 try {
                     // Rebuild requests only after the destination camera coordinates are final.
-                    // Culling releases the old region's queued and active image sources first.
+                    // Reuse decoded images; cancel only unfinished requests outside the new view.
                     const visible = board.isConnected && cull(board, state);
                     const overviewReady = visible && window.MapOverviewCache?.setMobileViewport?.(board, visible, state.zoom, { visibleOnly: true });
                     scheduleImagePump();
@@ -308,15 +354,15 @@
         if (!state) return;
         state.zoom = zoom;
         if (options.preview !== true || touchDevice) window.MapOverviewCache?.setZoom(board, zoom);
-        const lowDetail = touchDevice && zoom < .6;
+        const lowDetail = touchDevice && zoom < .5;
         if (state.lowDetail !== lowDetail) {
             state.lowDetail = lowDetail;
             setSquareIconDetail(board, lowDetail);
         }
         // Avoid invalidating inherited styles on every road, SVG and icon.
-        // Keep pieces at their normal map-relative size above 0.6. Below that
-        // point, counter-scale from 0.6 so they stay legible without a jump.
-        const emphasis = zoom < .6 ? .6 / zoom : 1;
+        // Keep pieces at their normal map-relative size from 0.5 upwards.
+        // Counter-scale below that point so they stay legible without a jump.
+        const emphasis = zoom < .5 ? .5 / zoom : 1;
         const value = String(emphasis);
         for (const element of state.important) {
             if (element.style.getPropertyValue('--map-important-scale') !== value) {
@@ -368,7 +414,7 @@
         cull(board, state);
     }
     window.MapDetailLevel = Object.freeze({ refresh, refreshPieces, setZoom, dispose, touchDevice, setTileSources,
-        loadImage, requestImage: enqueueImage, releaseImage, beginCameraJump,
+        loadImage, requestImage: enqueueImage, updateImagePriority, releaseImage, beginCameraJump,
         isCameraJumping: board => Boolean(states.get(board)?.cameraJumps.size),
         scheduleViewport: board => stateFor(board)?.schedule() });
 })();

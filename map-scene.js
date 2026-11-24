@@ -65,7 +65,7 @@
  function updateOceanTexture(){
   oceanCheckFrame=0;
   const area=document.querySelector('.game-screen .map-area');if(!area)return;
-  const useTexture=activeScale>.6&&viewportShowsOcean();
+  const useTexture=activeScale>=.5&&viewportShowsOcean();
   area.classList.toggle('map-ocean-textured',useTexture);
   area.classList.toggle('map-ocean-flat',!useTexture);
   if(useTexture){
@@ -84,7 +84,7 @@
   // width here so it stays thin but visible at the full-continent overview.
   document.documentElement.style.setProperty('--map-boundary-width',1.2/scale+'px');
   area.classList.add('map-ocean');
-  area.classList.toggle('map-ocean-flat',scale<=.6);
+  area.classList.toggle('map-ocean-flat',scale<.5);
   if(!observedAreas.has(area)){observedAreas.add(area);area.addEventListener('scroll',()=>{clampScroll();queueOceanCheck();},{passive:true});}
   // Center-origin enlargement otherwise pushes the world's left/top into
   // negative, unreachable scroll coordinates. Reserve matching space on both sides.
