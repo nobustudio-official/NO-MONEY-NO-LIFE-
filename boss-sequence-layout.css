@@ -334,6 +334,19 @@
     white-space: nowrap;
 }
 
+/* Keep the first-boss stats typography in step with post-boss status screens.
+   The initial scene has a separate mobile rule in boss-opening.css. */
+.boss-opening.boss-opening-start .boss-opening-stats {
+    column-gap: clamp(4px, .6vw, 10px);
+    font-size: calc(clamp(10px, 1.7vh, 15px) + 4px);
+}
+
+.boss-opening.boss-opening-start .boss-opening-stats span,
+.boss-opening.boss-opening-start .boss-opening-stats strong {
+    padding: clamp(3px, .65vh, 6px) 1px;
+    line-height: 1.2;
+}
+
 @media (max-width: 700px), (pointer: coarse) and (max-height: 500px) {
     .boss-opening:not(.boss-opening-start) .boss-opening-copy {
         padding-right: 76px;
