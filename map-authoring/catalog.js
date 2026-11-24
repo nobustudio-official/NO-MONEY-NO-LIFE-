@@ -14,8 +14,8 @@
   ['volcano','噴火口','🌋','黒い火山岩','🪨','蒸気の割れ目','♨️']
  ];
  const objects=rows.flatMap(([region,...values])=>[0,1,2].map(i=>({id:region+'-'+i,region,name:values[i*2],symbol:values[i*2+1],kind:i?'small':'landmark',width:i?150:460,height:i?110:350,asset:null})));
- objects.find(o=>o.id==='capital-0').asset='images/map/objects/capital/royal-castle-v2.webp';
- const images={'town-0':['ギルドの建物','town/guild-v1.png'],'grassland-0':['丘の上の風車小屋','grassland/windmill-v1.png'],'forest-0':['巨大な古木','optimized/forest/ancient-tree-v2-70pct.png'],'desert-0':['ヤシの木に囲まれたオアシス','desert/oasis-v1.png'],'snow-0':['青く光る氷の洞窟','snow/ice-cave-v1.png'],'ruins-0':['崩れかけた巨大な石の門','ruins/ruined-gate-v1.png'],'volcano-0':['火山','volcano/mini-volcano-v1.png']};
+ objects.find(o=>o.id==='capital-0').asset='images/map/objects/optimized/capital/royal-castle-v2-70pct.webp';
+ const images={'town-0':['ギルドの建物','optimized/town/guild-v1-70pct.png'],'grassland-0':['丘の上の風車小屋','optimized/grassland/windmill-v1-70pct.png'],'forest-0':['巨大な古木','optimized/forest/ancient-tree-v2-70pct.png'],'desert-0':['ヤシの木に囲まれたオアシス','desert/oasis-v1.png'],'snow-0':['青く光る氷の洞窟','optimized/snow/ice-cave-v1-70pct.png'],'ruins-0':['崩れかけた巨大な石の門','optimized/ruins/ruined-gate-v1-70pct.png'],'volcano-0':['火山','volcano/mini-volcano-v1.png']};
  for(const [id,[name,path]]of Object.entries(images))Object.assign(objects.find(o=>o.id===id),{name,asset:'images/map/objects/'+path.replace(/\.png$/i,'.webp')});
  objects.find(o=>o.id==='town-0').symbol='🏛️';
  objects.push({id:'grassland-tree-cluster',region:'grassland',name:'木と岩の茂み',symbol:'🌳',kind:'small',width:240,height:210,asset:'images/map/objects/optimized/grassland/tree-rock-cluster-70pct.webp'});

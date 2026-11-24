@@ -12,7 +12,7 @@ Use case: stylized-concept. Asset: one reusable transparent background scenery c
 
 ## 継続編集
 
-- grassland/tree-rock-cluster.webp：ゲーム用の静止背景素材。透過余白を除き、縮小・形式変換のみ実施。
+- images/map/objects/optimized/grassland/tree-rock-cluster-70pct.webp：ゲーム内オブジェと草原背景で共有する軽量版素材。
 - layout.json とプロジェクト直下の map-region-data.js：同一の配置データ。
 - demos/map-lab/build-region-backgrounds.py：承認済みの9エリア位置を世界座標へ変換し、隣接地域が同じ曲線を共有する境界を生成。配置の乱数は固定。
 - 表示240×210以内、9か所。元画像の縦横比を保ち、地面の余白を優先して疎らに配置。

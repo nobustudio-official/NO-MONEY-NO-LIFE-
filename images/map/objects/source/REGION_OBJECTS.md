@@ -6,12 +6,12 @@
 | --- | --- | --- |
 | 街 | ギルドの建物 | `town/guild-v1.png` |
 | 草原 | 丘の上の風車小屋 | `grassland/windmill-v1.png` |
-| 森林 | 巨大な古木 | `forest/ancient-tree-v2.png` |
+| 森林 | 巨大な古木 | `../optimized/forest/ancient-tree-v2-70pct.webp` |
 | 砂漠 | ヤシの木に囲まれたオアシス | `desert/oasis-v1.png` |
 | 雪山 | 青く光る氷の洞窟 | `snow/ice-cave-v1.png` |
 | 遺跡 | 崩れかけた巨大な石の門 | `ruins/ruined-gate-v1.png` |
 | 火山 | 既存の火山を再利用 | `volcano/mini-volcano-v1.png` |
-| 草原の小物 | 既存の木と岩の茂み | `../map-background/regions/grassland/tree-rock-cluster.webp` |
+| 草原の小物 | 既存の木と岩の茂み | `../optimized/grassland/tree-rock-cluster-70pct.webp` |
 | 湖 | 保留 | 新規生成なし |
 
 火山は `demos/map-lab/assets/mini-volcano1.png` の同一内容のコピー。木と岩は既存ファイルを直接参照。元のイラストは変更せず、工房で位置・サイズを調整できる。火山の噴火モーションは今回は移植せず画像を登録した。

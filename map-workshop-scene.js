@@ -2,19 +2,7 @@
 (function () {
     'use strict';
     const objects = window.MapWorkshopData?.objectLayout || [];
-    const placedTemplateIds = new Set(objects.map(object => object.templateId));
-    const optimizedObjectAsset = asset => {
-        const objectRoot = 'images/map/objects/';
-        const optimizedRoot = `${objectRoot}optimized/`;
-        if (!asset?.startsWith(objectRoot) || asset.startsWith(optimizedRoot)) return asset;
-        return asset.replace(objectRoot, optimizedRoot).replace(/\.webp$/i, '-70pct.webp');
-    };
-    // The map uses half-memory copies for placed props. Keep catalog and other
-    // screens on their original images; backgrounds shared with props stay intact.
-    const templates = new Map(MapObjectCatalog.objects.map(row => {
-        const asset = placedTemplateIds.has(row.id) ? optimizedObjectAsset(row.asset) : row.asset;
-        return [row.id, asset === row.asset ? row : { ...row, asset }];
-    }));
+    const templates = new Map(MapObjectCatalog.objects.map(row => [row.id, row]));
     const styles = new Map((window.MapWorkshopData?.roadStyles || []).map(row => [[row.from, row.to].sort((a,b)=>a-b).join(':'), row.style]));
     const paths = new Map((window.MapWorkshopData?.roadStyles || []).map(row => [[row.from, row.to].sort((a,b)=>a-b).join(':'), row]));
     const images = new Map();

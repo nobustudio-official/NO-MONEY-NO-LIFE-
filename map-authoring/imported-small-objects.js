@@ -8,7 +8,7 @@
     "kind": "small",
     "width": 140,
     "height": 140,
-    "asset": "images/map/objects/small-objects/てんとう虫.webp"
+    "asset": "images/map/objects/optimized/small-objects/てんとう虫-70pct.webp"
   },
   {
     "id": "imported-small-8dabf33c34b6",
@@ -18,7 +18,7 @@
     "kind": "small",
     "width": 260,
     "height": 170,
-    "asset": "images/map/objects/small-objects/ゴーレム.webp"
+    "asset": "images/map/objects/optimized/small-objects/ゴーレム-70pct.webp"
   },
   {
     "id": "imported-small-5f9ec07541e3",
@@ -28,7 +28,7 @@
     "kind": "small",
     "width": 180,
     "height": 170,
-    "asset": "images/map/objects/small-objects/ラクダ.webp"
+    "asset": "images/map/objects/optimized/small-objects/ラクダ-70pct.webp"
   },
   {
     "id": "imported-small-6f6c1af86d27",
@@ -48,7 +48,7 @@
     "kind": "small",
     "width": 180,
     "height": 180,
-    "asset": "images/map/objects/small-objects/古代遺跡の守護面.webp"
+    "asset": "images/map/objects/optimized/small-objects/古代遺跡の守護面-70pct.webp"
   },
   {
     "id": "imported-small-3a2acc9e06e0",
@@ -58,7 +58,7 @@
     "kind": "small",
     "width": 150,
     "height": 210,
-    "asset": "images/map/objects/small-objects/古代遺跡の石柱.webp"
+    "asset": "images/map/objects/optimized/small-objects/古代遺跡の石柱-70pct.webp"
   },
   {
     "id": "imported-small-0d3950eca676",
@@ -68,7 +68,7 @@
     "kind": "small",
     "width": 160,
     "height": 210,
-    "asset": "images/map/objects/small-objects/古代遺跡の石碑.webp"
+    "asset": "images/map/objects/optimized/small-objects/古代遺跡の石碑-70pct.webp"
   },
   {
     "id": "imported-small-925a9108e1cb",
@@ -78,7 +78,7 @@
     "kind": "small",
     "width": 220,
     "height": 160,
-    "asset": "images/map/objects/small-objects/噴水.webp"
+    "asset": "images/map/objects/optimized/small-objects/噴水-70pct.webp"
   },
   {
     "id": "imported-small-a687b11b9dc8",
@@ -88,7 +88,7 @@
     "kind": "small",
     "width": 220,
     "height": 180,
-    "asset": "images/map/objects/small-objects/帆船.webp"
+    "asset": "images/map/objects/optimized/small-objects/帆船-70pct.webp"
   },
   {
     "id": "imported-small-f285cc5f6bfb",
@@ -98,7 +98,7 @@
     "kind": "small",
     "width": 250,
     "height": 170,
-    "asset": "images/map/objects/small-objects/木造の家.webp"
+    "asset": "images/map/objects/optimized/small-objects/木造の家-70pct.webp"
   },
   {
     "id": "imported-small-323d46b520a9",
@@ -108,7 +108,7 @@
     "kind": "small",
     "width": 220,
     "height": 160,
-    "asset": "images/map/objects/small-objects/未来型塔.webp"
+    "asset": "images/map/objects/optimized/small-objects/未来型塔-70pct.webp"
   },
   {
     "id": "imported-small-f3cf02243102",
@@ -118,7 +118,7 @@
     "kind": "small",
     "width": 180,
     "height": 180,
-    "asset": "images/map/objects/small-objects/森林のうろ切り株.webp"
+    "asset": "images/map/objects/optimized/small-objects/森林のうろ切り株-70pct.webp"
   },
   {
     "id": "imported-small-045c180e47d7",
@@ -128,7 +128,7 @@
     "kind": "small",
     "width": 210,
     "height": 140,
-    "asset": "images/map/objects/small-objects/森林の倒木ベンチ.webp"
+    "asset": "images/map/objects/optimized/small-objects/森林の倒木ベンチ-70pct.webp"
   },
   {
     "id": "imported-small-17200e750867",
@@ -138,7 +138,7 @@
     "kind": "small",
     "width": 150,
     "height": 220,
-    "asset": "images/map/objects/small-objects/森林の木彫り道標.webp"
+    "asset": "images/map/objects/optimized/small-objects/森林の木彫り道標-70pct.webp"
   },
   {
     "id": "imported-small-53b649f545f3",
@@ -148,7 +148,7 @@
     "kind": "small",
     "width": 190,
     "height": 160,
-    "asset": "images/map/objects/small-objects/森林の赤キノコ.webp"
+    "asset": "images/map/objects/optimized/small-objects/森林の赤キノコ-70pct.webp"
   },
   {
     "id": "imported-small-235bd8ed1cf4",
@@ -158,7 +158,7 @@
     "kind": "small",
     "width": 170,
     "height": 180,
-    "asset": "images/map/objects/small-objects/火山の溶岩口.webp"
+    "asset": "images/map/objects/optimized/small-objects/火山の溶岩口-70pct.webp"
   },
   {
     "id": "imported-small-9d38e68cc7fe",
@@ -168,7 +168,7 @@
     "kind": "small",
     "width": 180,
     "height": 170,
-    "asset": "images/map/objects/small-objects/火山の炭化切り株.webp"
+    "asset": "images/map/objects/optimized/small-objects/火山の炭化切り株-70pct.webp"
   },
   {
     "id": "imported-small-52eac183fb6f",
@@ -178,7 +178,7 @@
     "kind": "small",
     "width": 190,
     "height": 150,
-    "asset": "images/map/objects/small-objects/火山の黒岩群.webp"
+    "asset": "images/map/objects/optimized/small-objects/火山の黒岩群-70pct.webp"
   },
   {
     "id": "imported-small-b33ea4ede87b",
@@ -188,7 +188,7 @@
     "kind": "small",
     "width": 170,
     "height": 190,
-    "asset": "images/map/objects/small-objects/火山の黒曜石結晶.webp"
+    "asset": "images/map/objects/optimized/small-objects/火山の黒曜石結晶-70pct.webp"
   },
   {
     "id": "imported-small-4f8c267c6442",
@@ -198,7 +198,7 @@
     "kind": "small",
     "width": 460,
     "height": 420,
-    "asset": "images/map/objects/small-objects/火山ランドマーク.webp"
+    "asset": "images/map/objects/optimized/small-objects/火山ランドマーク-70pct.webp"
   },
   {
     "id": "imported-small-b2e4ff81a78c",
@@ -208,7 +208,7 @@
     "kind": "small",
     "width": 180,
     "height": 200,
-    "asset": "images/map/objects/small-objects/王都の王家紋章碑.webp"
+    "asset": "images/map/objects/optimized/small-objects/王都の王家紋章碑-70pct.webp"
   },
   {
     "id": "imported-small-6dd1f6bef1bd",
@@ -218,7 +218,7 @@
     "kind": "small",
     "width": 140,
     "height": 220,
-    "asset": "images/map/objects/small-objects/王都の祝祭旗.webp"
+    "asset": "images/map/objects/optimized/small-objects/王都の祝祭旗-70pct.webp"
   },
   {
     "id": "imported-small-b343a1664e07",
@@ -228,7 +228,7 @@
     "kind": "small",
     "width": 180,
     "height": 220,
-    "asset": "images/map/objects/small-objects/王都の街灯.webp"
+    "asset": "images/map/objects/optimized/small-objects/王都の街灯-70pct.webp"
   },
   {
     "id": "imported-small-384c54c041f7",
@@ -238,7 +238,7 @@
     "kind": "small",
     "width": 180,
     "height": 220,
-    "asset": "images/map/objects/small-objects/王都の見習いエルフ.webp"
+    "asset": "images/map/objects/optimized/small-objects/王都の見習いエルフ-70pct.webp"
   },
   {
     "id": "imported-small-730930d299d2",
@@ -248,7 +248,7 @@
     "kind": "small",
     "width": 180,
     "height": 220,
-    "asset": "images/map/objects/small-objects/王都の見習い戦士.webp"
+    "asset": "images/map/objects/optimized/small-objects/王都の見習い戦士-70pct.webp"
   },
   {
     "id": "imported-small-e3547c31c077",
@@ -258,7 +258,7 @@
     "kind": "small",
     "width": 180,
     "height": 220,
-    "asset": "images/map/objects/small-objects/王都の見習い聖職者.webp"
+    "asset": "images/map/objects/optimized/small-objects/王都の見習い聖職者-70pct.webp"
   },
   {
     "id": "imported-small-43b37985fb0e",
@@ -268,7 +268,7 @@
     "kind": "small",
     "width": 180,
     "height": 230,
-    "asset": "images/map/objects/small-objects/王都の見習い魔術師.webp"
+    "asset": "images/map/objects/optimized/small-objects/王都の見習い魔術師-70pct.webp"
   },
   {
     "id": "imported-small-75d759f2cf0a",
@@ -278,7 +278,7 @@
     "kind": "small",
     "width": 180,
     "height": 210,
-    "asset": "images/map/objects/small-objects/王都の道標.webp"
+    "asset": "images/map/objects/optimized/small-objects/王都の道標-70pct.webp"
   },
   {
     "id": "imported-small-b60c783dac47",
@@ -288,7 +288,7 @@
     "kind": "small",
     "width": 160,
     "height": 200,
-    "asset": "images/map/objects/small-objects/王都の郵便箱.webp"
+    "asset": "images/map/objects/optimized/small-objects/王都の郵便箱-70pct.webp"
   },
   {
     "id": "imported-small-0a0014a28f28",
@@ -298,7 +298,7 @@
     "kind": "small",
     "width": 220,
     "height": 200,
-    "asset": "images/map/objects/small-objects/王都の魔法練習用モンスター的.webp"
+    "asset": "images/map/objects/optimized/small-objects/王都の魔法練習用モンスター的-70pct.webp"
   },
   {
     "id": "imported-small-2923ccb5aaa9",
@@ -308,7 +308,7 @@
     "kind": "ground",
     "width": 1080,
     "height": 772,
-    "asset": "images/map/objects/small-objects/王都の魔法訓練場.webp"
+    "asset": "images/map/objects/optimized/small-objects/王都の魔法訓練場-70pct.webp"
   },
   {
     "id": "imported-small-204412540525",
@@ -318,7 +318,7 @@
     "kind": "small",
     "width": 180,
     "height": 200,
-    "asset": "images/map/objects/small-objects/砂漠のサボテン.webp"
+    "asset": "images/map/objects/optimized/small-objects/砂漠のサボテン-70pct.webp"
   },
   {
     "id": "imported-small-eed53936b4a3",
@@ -328,7 +328,7 @@
     "kind": "small",
     "width": 210,
     "height": 160,
-    "asset": "images/map/objects/small-objects/砂漠の日よけ布.webp"
+    "asset": "images/map/objects/optimized/small-objects/砂漠の日よけ布-70pct.webp"
   },
   {
     "id": "imported-small-987d8efb1c85",
@@ -338,7 +338,7 @@
     "kind": "small",
     "width": 160,
     "height": 190,
-    "asset": "images/map/objects/small-objects/砂漠の水差し.webp"
+    "asset": "images/map/objects/optimized/small-objects/砂漠の水差し-70pct.webp"
   },
   {
     "id": "imported-small-1e6e713d50b9",
@@ -348,7 +348,7 @@
     "kind": "small",
     "width": 150,
     "height": 200,
-    "asset": "images/map/objects/small-objects/砂漠の砂岩標柱.webp"
+    "asset": "images/map/objects/optimized/small-objects/砂漠の砂岩標柱-70pct.webp"
   },
   {
     "id": "imported-small-6a62e143bf23",
@@ -358,7 +358,7 @@
     "kind": "small",
     "width": 180,
     "height": 140,
-    "asset": "images/map/objects/small-objects/花壇.webp"
+    "asset": "images/map/objects/optimized/small-objects/花壇-70pct.webp"
   },
   {
     "id": "imported-small-0be1ef8def24",
@@ -368,7 +368,7 @@
     "kind": "small",
     "width": 140,
     "height": 200,
-    "asset": "images/map/objects/small-objects/草原のかかし.webp"
+    "asset": "images/map/objects/optimized/small-objects/草原のかかし-70pct.webp"
   },
   {
     "id": "imported-small-2b2120f215a0",
@@ -378,7 +378,7 @@
     "kind": "small",
     "width": 170,
     "height": 220,
-    "asset": "images/map/objects/small-objects/草原の小さな風車.webp"
+    "asset": "images/map/objects/optimized/small-objects/草原の小さな風車-70pct.webp"
   },
   {
     "id": "imported-small-1da0f4c1b541",
@@ -388,7 +388,7 @@
     "kind": "small",
     "width": 190,
     "height": 150,
-    "asset": "images/map/objects/small-objects/草原の干し草俵.webp"
+    "asset": "images/map/objects/optimized/small-objects/草原の干し草俵-70pct.webp"
   },
   {
     "id": "imported-small-62f36c072614",
@@ -398,7 +398,7 @@
     "kind": "small",
     "width": 180,
     "height": 130,
-    "asset": "images/map/objects/small-objects/草原の木桶水飲み場.webp"
+    "asset": "images/map/objects/optimized/small-objects/草原の木桶水飲み場-70pct.webp"
   },
   {
     "id": "imported-small-29f813d68907",
@@ -408,7 +408,7 @@
     "kind": "small",
     "width": 200,
     "height": 160,
-    "asset": "images/map/objects/small-objects/街の手押し荷車.webp"
+    "asset": "images/map/objects/optimized/small-objects/街の手押し荷車-70pct.webp"
   },
   {
     "id": "imported-small-20cdebc1ab2b",
@@ -418,7 +418,7 @@
     "kind": "small",
     "width": 200,
     "height": 140,
-    "asset": "images/map/objects/small-objects/街の石造りベンチ.webp"
+    "asset": "images/map/objects/optimized/small-objects/街の石造りベンチ-70pct.webp"
   },
   {
     "id": "imported-small-41f20ca36c1b",
@@ -428,7 +428,7 @@
     "kind": "small",
     "width": 190,
     "height": 210,
-    "asset": "images/map/objects/small-objects/街の石造り井戸.webp"
+    "asset": "images/map/objects/optimized/small-objects/街の石造り井戸-70pct.webp"
   },
   {
     "id": "imported-small-dac8212d90e1",
@@ -438,7 +438,7 @@
     "kind": "small",
     "width": 210,
     "height": 175,
-    "asset": "images/map/objects/small-objects/街の青果屋台.webp"
+    "asset": "images/map/objects/optimized/small-objects/街の青果屋台-70pct.webp"
   },
   {
     "id": "imported-small-66f40f5a0e84",
@@ -448,7 +448,7 @@
     "kind": "small",
     "width": 170,
     "height": 200,
-    "asset": "images/map/objects/small-objects/雪山の氷晶.webp"
+    "asset": "images/map/objects/optimized/small-objects/雪山の氷晶-70pct.webp"
   },
   {
     "id": "imported-small-6903ed14920f",
@@ -458,7 +458,7 @@
     "kind": "small",
     "width": 200,
     "height": 130,
-    "asset": "images/map/objects/small-objects/雪山の赤いそり.webp"
+    "asset": "images/map/objects/optimized/small-objects/雪山の赤いそり-70pct.webp"
   },
   {
     "id": "imported-small-914c353ee103",
@@ -468,7 +468,7 @@
     "kind": "small",
     "width": 150,
     "height": 200,
-    "asset": "images/map/objects/small-objects/雪山の雪だるま.webp"
+    "asset": "images/map/objects/optimized/small-objects/雪山の雪だるま-70pct.webp"
   },
   {
     "id": "imported-small-a5cc58ca2caf",
@@ -478,7 +478,7 @@
     "kind": "small",
     "width": 170,
     "height": 180,
-    "asset": "images/map/objects/small-objects/雪山の雪靴立て.webp"
+    "asset": "images/map/objects/optimized/small-objects/雪山の雪靴立て-70pct.webp"
   },
   {
     "id": "imported-small-7ac5cbd6a7d5",
@@ -488,7 +488,7 @@
     "kind": "small",
     "width": 250,
     "height": 170,
-    "asset": "images/map/objects/small-objects/青い屋根の家.webp"
+    "asset": "images/map/objects/optimized/small-objects/青い屋根の家-70pct.webp"
   },
   {
     "id": "imported-small-03dec3d06a04",
@@ -498,7 +498,7 @@
     "kind": "small",
     "width": 300,
     "height": 240,
-    "asset": "images/map/objects/small-objects/青空授業.webp"
+    "asset": "images/map/objects/optimized/small-objects/青空授業-70pct.webp"
   },
   {
     "id": "imported-small-c805bd63453c",
@@ -508,7 +508,7 @@
     "kind": "small",
     "width": 250,
     "height": 170,
-    "asset": "images/map/objects/small-objects/オレンジ屋根の家.webp"
+    "asset": "images/map/objects/optimized/small-objects/オレンジ屋根の家-70pct.webp"
   },
   {
     "id": "imported-small-302c75c49697",
@@ -518,7 +518,7 @@
     "kind": "small",
     "width": 250,
     "height": 170,
-    "asset": "images/map/objects/small-objects/エメラルド屋根の家.webp"
+    "asset": "images/map/objects/optimized/small-objects/エメラルド屋根の家-70pct.webp"
   },
   {
     "id": "imported-small-e97e06aec47a",
@@ -528,7 +528,7 @@
     "kind": "small",
     "width": 200,
     "height": 220,
-    "asset": "images/map/objects/lake/湖の水車.webp"
+    "asset": "images/map/objects/optimized/lake/湖の水車-70pct.webp"
   },
   {
     "id": "imported-small-3a8484f9b812",
@@ -538,7 +538,7 @@
     "kind": "small",
     "width": 220,
     "height": 220,
-    "asset": "images/map/objects/lake/湖の漁網.webp"
+    "asset": "images/map/objects/optimized/lake/湖の漁網-70pct.webp"
   },
   {
     "id": "imported-small-e4fdaafceb5c",
@@ -548,7 +548,7 @@
     "kind": "small",
     "width": 220,
     "height": 180,
-    "asset": "images/map/objects/lake/湖の白鳥.webp"
+    "asset": "images/map/objects/optimized/lake/湖の白鳥-70pct.webp"
   },
   {
     "id": "imported-small-c42a45e2c049",
@@ -558,7 +558,7 @@
     "kind": "small",
     "width": 190,
     "height": 170,
-    "asset": "images/map/objects/lake/湖の真珠貝.webp"
+    "asset": "images/map/objects/optimized/lake/湖の真珠貝-70pct.webp"
   },
   {
     "id": "imported-small-6c9859fd14c8",
@@ -568,7 +568,7 @@
     "kind": "small",
     "width": 220,
     "height": 180,
-    "asset": "images/map/objects/lake/湖の黒鳥.webp"
+    "asset": "images/map/objects/optimized/lake/湖の黒鳥-70pct.webp"
   },
   {
     "id": "imported-small-a5be6e260401",
@@ -588,7 +588,7 @@
     "kind": "small",
     "width": 220,
     "height": 160,
-    "asset": "images/map/objects/small-objects/街の白猫.webp"
+    "asset": "images/map/objects/optimized/small-objects/街の白猫-70pct.webp"
   },
   {
     "id": "imported-small-045addd1adc5",
@@ -598,7 +598,7 @@
     "kind": "small",
     "width": 220,
     "height": 170,
-    "asset": "images/map/objects/small-objects/街の手回しオルガン.webp"
+    "asset": "images/map/objects/optimized/small-objects/街の手回しオルガン-70pct.webp"
   },
   {
     "id": "imported-small-b2c1f99667ca",
@@ -608,7 +608,7 @@
     "kind": "small",
     "width": 230,
     "height": 170,
-    "asset": "images/map/objects/small-objects/遺跡の石トカゲ.webp"
+    "asset": "images/map/objects/optimized/small-objects/遺跡の石トカゲ-70pct.webp"
   },
   {
     "id": "imported-small-cf19020d9aa9",
@@ -618,6 +618,6 @@
     "kind": "small",
     "width": 230,
     "height": 170,
-    "asset": "images/map/objects/small-objects/火山のマグマトカゲ.webp"
+    "asset": "images/map/objects/optimized/small-objects/火山のマグマトカゲ-70pct.webp"
   }
 ];if(typeof module!=="undefined"&&module.exports)module.exports=objects;else root.MapImportedSmallObjects=objects;})(typeof window!=="undefined"?window:globalThis);

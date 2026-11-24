@@ -565,7 +565,7 @@ const mapRegionData = Object.freeze({
     ]
   },
   "grassland": {
-    "clusterImage": "images/map/backgrounds/world/regions/grassland/tree-rock-cluster.webp",
+    "clusterImage": "images/map/objects/optimized/grassland/tree-rock-cluster-70pct.webp",
     "width": 240,
     "height": 210,
     "clusters": [
