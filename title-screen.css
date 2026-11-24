@@ -966,3 +966,17 @@
     .title-screen__mode-menu,
     .title-screen__mode-button { transition: none; animation: none; }
 }
+
+/* Keep the pre-game navigation actions at the Confirm button's 104 × 42 size. */
+.title-screen.is-setup .title-screen__setup-back,
+.title-screen.is-setup[data-setup-stage="players"] .title-screen__setup-footer .player-setup-confirm #confirmPlayers,
+.title-screen.is-setup .title-screen__setup-footer.is-turn-select-footer #confirmTurnButton {
+    box-sizing: border-box;
+    flex: 0 0 104px;
+    width: 104px;
+    min-width: 104px;
+    height: 42px;
+    min-height: 42px;
+    margin: 0;
+    padding: 8px 12px;
+}
