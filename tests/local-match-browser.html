@@ -46,7 +46,7 @@
         await w.loadMapData(); await w.selectBossSquare();
         w.players = [name, 'B'].map((name, index) => ({ name, money: 500000, magicPower: 1000,
             bossDamage: 0, position: 139, characterId: index + 1, inventory: [1], assets: [], magic: [1], jobTurnsRemaining: 0, jobReward: 0 }));
-        w.OfflineDividends.reset(w.players); w.gameOpeningComplete = true; w.GameViewport?.activate();
+        w.OfflineDividends.reset(w.players); w.gameOpeningComplete = true;
         w.showGameScreen(w.players, 30);
         await w.localMatchSession.flush(); await delay(50);
     }

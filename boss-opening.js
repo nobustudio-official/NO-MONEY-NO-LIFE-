@@ -60,8 +60,7 @@
             const sequenceKey = String(options.syncKey || '');
             const onlineSync = sequenceKey && window.onlineGame?.isOnline ? window.onlineGame.sync : null;
             let expectedStep = 0, requestPending = false, stopRemoteAdvance = null;
-            const simpleMap = window.MapSimpleDisplay?.enabled === true;
-            const useBakedRoads = simpleMap || options.lightweight === true || window.mobileRuntimeTuning === true;
+            const useBakedRoads = options.lightweight === true || window.mobileRuntimeTuning === true;
             const overviewSource = overview.image;
             const overviewPreload = new Image();
             if (!useBakedRoads) overviewPreload.src = overviewSource;
@@ -136,14 +135,10 @@
                 const map = element('div', 'boss-opening-map');
                 const w = regionData.world.width, h = regionData.world.height;
                 const svg = svgElement('svg', { viewBox: `0 0 ${w} ${h}`, preserveAspectRatio: 'xMidYMid meet', 'aria-label': 'マップ全体' });
-                if (simpleMap) {
-                    svg.append(window.MapSimpleDisplay.createOverview(squares));
-                } else {
-                    if (!overviewPreload.hasAttribute('src')) overviewPreload.src = overviewSource;
-                    try { await overviewPreload.decode(); } catch (error) { console.warn('[開始演出] 全体図の読み込みに失敗:', error); }
-                    if (!root.isConnected) return;
-                    svg.append(svgElement('image', { href: overviewSource, width: w, height: h }));
-                }
+                if (!overviewPreload.hasAttribute('src')) overviewPreload.src = overviewSource;
+                try { await overviewPreload.decode(); } catch (error) { console.warn('[開始演出] 全体図の読み込みに失敗:', error); }
+                if (!root.isConnected) return;
+                svg.append(svgElement('image', { href: overviewSource, width: w, height: h }));
                 // Region paths are presentation approximations and may extend
                 // slightly past the coastline. Clip the highlight to the actual
                 // continent silhouette so no lottery glow appears over the sea.
@@ -187,7 +182,7 @@
                 // The overview artwork contains terrain and regular roads,
                 // while bridges are stored in a separate lightweight layer.
                 // Reuse those exact map-coordinate overlays in the lottery view.
-                for (const bridge of simpleMap ? [] : window.MapRoadRasterData?.bridges || []) {
+                for (const bridge of window.MapRoadRasterData?.bridges || []) {
                     if (window.BridgeCollapseRules?.isClosed(window.bridgeCollapseVisualState, bridge.from, bridge.to)) continue;
                     svg.append(svgElement('image', {
                         href:bridge.image,

@@ -3,7 +3,7 @@
  'use strict';
  function attach(area,board,getZoom,setZoom){
   let frame=0,target=null,from=1,elapsed=0,lastTick=0,duration=160,anchor=null,translateX=0,translateY=0;
-  let finishFocus,pinch=null,pinchFrame=0,detailPreview=false;
+  let finishFocus,pinch=null,pinchFrame=0;
   const clamp=value=>Math.max(MapScene.getMinZoom(),Math.min(MapScene.config.maxZoom,value));
   function captureAnchor(clientX,clientY,center=false){
    const zoom=getZoom(),bounds=board.getBoundingClientRect(),view=area.getBoundingClientRect();
@@ -31,7 +31,6 @@
   function end(){
    frame=0;target=null;translateX=translateY=0;
    board.classList.remove('map-zoom-interacting');
-   if(detailPreview){window.MapOverviewCache?.setPreview(board,false);detailPreview=false;}
    const finish=finishFocus;
    finishFocus=null;
    finish?.();
@@ -64,7 +63,6 @@
    from=current;elapsed=0;lastTick=performance.now();duration=center?360:160;
    anchor=captureAnchor(clientX,clientY,center);
    board.classList.add('map-zoom-interacting');
-   if(!detailPreview)detailPreview=window.MapOverviewCache?.setPreview(board,true)===true;
    if(!frame)frame=requestAnimationFrame(tick);
   }
   area.addEventListener('wheel',event=>{
@@ -94,7 +92,6 @@
    if(preserveView&&board.isConnected)commit(pinchZoom(gesture),gesture.anchor,gesture.input.x,gesture.input.y);
    translateX=translateY=0;
    board.classList.remove('map-zoom-interacting');
-   if(detailPreview){window.MapOverviewCache?.setPreview(board,false);detailPreview=false;}
   }
   area.addEventListener('touchstart',event=>{
    if(event.touches.length>2)finishPinch(true);
@@ -105,7 +102,6 @@
    cancel(true);
    pinch={input,initialDistance:input.distance,initialZoom:getZoom(),anchor:captureAnchor(input.x,input.y)};
    board.classList.add('map-zoom-interacting');
-   if(!detailPreview)detailPreview=window.MapOverviewCache?.setPreview(board,true)===true;
   },{passive:false});
   area.addEventListener('touchmove',event=>{
    if(!pinch||event.touches.length!==2)return;

@@ -33,7 +33,6 @@ let forestBGMGain = null;
 let snowBGMGain = null;
 let ancientRuinsBGMGain = null;
 let undergroundBGMGain = null;
-let nobilityBGMGain = null;
 let bossVictoryBGMGain = null;
 let bossBattleBGMGain = null;
 let maouFastBGMGain = null;
@@ -172,15 +171,6 @@ function setAdventureBGMGain(
 }
 
 
-function setTownBGMGain(
-    gain
-) {
-
-    townBGMGain =
-        gain;
-
-}
-
 function setDividendBGMGain(gain) {
     dividendBGMGain = gain;
 }
@@ -209,26 +199,8 @@ window.DividendBGMController = Object.freeze({
     stop: stopDividendBGM
 });
 
-function setForestBGMGain(gain) {
-    forestBGMGain = gain;
-}
-
-function setSnowBGMGain(gain) {
-    snowBGMGain = gain;
-}
-
 function setAncientRuinsBGMGain(gain) {
     ancientRuinsBGMGain = gain;
-}
-
-
-function setNobilityBGMGain(
-    gain
-) {
-
-    nobilityBGMGain =
-        gain;
-
 }
 
 
@@ -395,14 +367,6 @@ const undergroundBGM = createBGM("BGM/地下.mp3");
 undergroundBGM.loop = true;
 undergroundBGM.volume = BGM_VOLUME;
 undergroundBGM.preload = "none";
-
-//貴族
-const nobilityBGM =
-    createBGM("BGM/貴族.mp3");
-
-nobilityBGM.loop = true;
-nobilityBGM.volume = BGM_VOLUME;
-nobilityBGM.preload = "none";
 
 //凱旋
 const bossVictoryBGM =

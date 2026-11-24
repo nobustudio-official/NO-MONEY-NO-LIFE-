@@ -203,7 +203,7 @@ function mapContext() {
         },
         MapContinentData: { grassTexture: 'grass.webp' }, MapRegionBackground: { assetUrls: [] },
         addEventListener() {}, getMapZoomUI: () => 1,
-        MapWorkshopScene: { mount() {} }, mobileRuntimeTuning: true, mobileMapDetailEnabled: true
+        MapWorkshopScene: { mount() {} }, mobileRuntimeTuning: true
     };
     context.window = context; vm.createContext(context);
     const files = ['map-background-raster-data.js', 'map-road-raster-data.js', 'map-overview-raster-data.js',

@@ -665,31 +665,6 @@ window.publishOnlineGameState = function () {
     return task;
 };
 
-// オンライン購入は商品IDだけを送り、価格と残高・所持状態はサーバーで確定する。
-function submitOnlineShopPurchase(category, contentId, button, onSuccess) {
-    const sync = window.onlineGame && window.onlineGame.isOnline && window.onlineGame.sync
-        ? window.onlineGame.sync
-        : null;
-    if (!sync) return false;
-
-    button.disabled = true;
-    sync.requestShopPurchase(category, Number(contentId)).then(function (response) {
-        if (!response || !response.ok) {
-            button.disabled = false;
-            showEventPopup("購入できません", response && response.error || "サーバーで購入を確認できませんでした。", function () {});
-            return;
-        }
-
-        if (response.state) applyOnlineCanonicalState(response.state, "shop-purchase");
-        if (typeof onSuccess === "function") onSuccess();
-    }).catch(function (error) {
-        button.disabled = false;
-        console.error("[online] 購入要求に失敗しました:", error);
-        showEventPopup("通信エラー", "購入結果を確認できませんでした。画面を更新して状態を確認してください。", function () {});
-    });
-    return true;
-}
-
 function submitOnlineTargetedItem(itemId, details, button, onSuccess) {
     const sync = window.onlineGame && window.onlineGame.isOnline && window.onlineGame.sync
         ? window.onlineGame.sync
@@ -1324,7 +1299,7 @@ function waitForGameAssets() {
     // Phones use the existing baked overview and load detail tiles on demand.
     const constrained = window.mobileRuntimeTuning === true;
     const overview = window.MapOverviewRasterData;
-    const mapAssets = window.MapSimpleDisplay?.enabled ? [] : constrained ? [overview?.mobileImage || overview?.image] : [
+    const mapAssets = constrained ? [overview?.mobileImage || overview?.image] : [
         ...MapScene.assetUrls,
         ...(window.MapBackgroundRasterData?.tiles || []).map(tile => tile.image),
         overview?.image
@@ -1977,9 +1952,6 @@ Promise.resolve(!window.onlineGame?.isOnline ? window.LocalMatchRecovery?.discar
 
     .then(function () {
         // Map assets are ready before the game screen and opening scene are shown.
-        // Keep setup on the phone's native portrait layout, then scale the
-        // complete playable UI from the desktop layout on mobile devices.
-        window.GameViewport?.activate();
         window.gameOpeningComplete = false;
         showGameScreen(players, maxTurns);
         const isOnline = Boolean(window.onlineGame && window.onlineGame.isOnline);
@@ -3458,7 +3430,7 @@ playSharedSE(buttonSound)
         const background = mapBoard.querySelector(':scope > .map-background');
         const existingRoads = mapBoard.querySelector(':scope > .map-lines');
         const existingObjects=mapBoard.querySelector(':scope > .map-workshop-objects');
-        const reuseMobile = (window.MapSimpleDisplay?.enabled || window.mobileRuntimeTuning === true && background?.classList.contains('map-static-background')) &&
+        const reuseMobile = window.mobileRuntimeTuning === true && background?.classList.contains('map-static-background') &&
             renderedMobileMap?.board === mapBoard && renderedMobileMap.squares === mapData && renderedMobileMap.boss === currentBossSquareId;
         const bridgeClosed = Number(window.bridgeCollapseVisualState?.remainingActions) > 0;
         if (existingRoads && (reuseMobile || (window.mobilePerformanceEnabled !== false && movingPlayer !== null && mapBoard.querySelector(".map-node")))) {
@@ -8883,8 +8855,6 @@ if (randomTreasure.category === "magic") {
 // ショップ
 // =========================
 
-function showShopPopup(player) { ApprovedCommerce.showStore(player,'item'); }
-
 // オンライン共有ショップの表示状態。購入処理は操作プレイヤーだけが実行する。
 let applyingRemoteScreenView = false;
 let activeAssetPurchaseView = null;
@@ -9069,8 +9039,6 @@ function renderRemoteOnlineScene(data) {
 // =========================
 
 function showMagicShopMainMenu(player) { ApprovedCommerce.showStore(player,'magic'); }
-function showMagicShopPopup(player) { showMagicShopMainMenu(player); }
-function showPowerShopPopup(player) { showMagicShopMainMenu(player); }
 function showItemShopPopup(player) { ApprovedCommerce.showStore(player,'item'); }
 
 // =========================
@@ -13690,7 +13658,6 @@ async function resumeSavedLocalMatch(saved) {
     window.players = window.LocalMatchSave.copy(saved.state.players);
     gameStarted = true;
     window.gameOpeningComplete = true;
-    window.GameViewport?.activate();
     await showGameScreen(window.players, saved.state.maxTurns, saved);
 }
 window.addEventListener('DOMContentLoaded', () => {

@@ -1,6 +1,5 @@
 (function () {
     'use strict';
-    const sceneOrder = ['thanks', 'announce', 'race', 'winner', 'assets', 'history', 'ranking', 'closing'];
     const sceneNames = ['newEnding1', 'newEnding3', 'newEnding4', 'newEnding5', 'newEnding6', 'newEnding7', 'newEnding8', 'newEnding9'];
     const speech = {
         thanks: 'sounds/ガイド/終了アナウンス1.mp3',

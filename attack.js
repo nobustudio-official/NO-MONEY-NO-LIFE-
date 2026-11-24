@@ -78,62 +78,6 @@ function calculateMagicCost(
 }
 
 // =========================
-// モンスターHPへのダメージ適用
-// =========================
-
-function applyMonsterDamage(
-    monsterHP,
-    damage
-) {
-
-    return Math.max(
-        0,
-        Number(monsterHP || 0) -
-        Number(damage || 0)
-    );
-
-}
-
-// =========================
-// ボスへの実ダメージ計算
-// =========================
-
-function calculateActualDamage(
-    damage,
-    bossHP
-) {
-
-    return Math.min(
-        Math.max(
-            0,
-            Number(damage || 0)
-        ),
-        Math.max(
-            0,
-            Number(bossHP || 0)
-        )
-    );
-
-}
-
-// =========================
-// ボスHPへのダメージ適用
-// =========================
-
-function applyBossDamage(
-    bossHP,
-    damage
-) {
-
-    return Math.max(
-        0,
-        Number(bossHP || 0) -
-        Number(damage || 0)
-    );
-
-}
-
-// =========================
 // モンスターから受けるダメージ
 // =========================
 

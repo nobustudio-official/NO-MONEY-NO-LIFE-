@@ -270,14 +270,6 @@
             releaseTouchDetails(board);
         }
     }
-    function setPreview(board, enabled) {
-        if (!window.MapDetailLevel?.touchDevice) return false;
-        // Keep the loaded map scene visible throughout wheel and pinch zoom.
-        // The former preview removed the roads, squares, objects and detail
-        // tiles on every gesture, leaving no matching preview layer on mobile.
-        board.classList.remove('map-zoom-preview-active');
-        return false;
-    }
-    window.MapOverviewCache = Object.freeze({ prepare, setZoom, setPreview, signature, mountAsBase, setMobileViewport,
+    window.MapOverviewCache = Object.freeze({ prepare, setZoom, signature, mountAsBase, setMobileViewport,
         releaseDetail: releaseTouchDetails });
 })();

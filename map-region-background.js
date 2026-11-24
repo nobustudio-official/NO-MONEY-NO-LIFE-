@@ -28,38 +28,6 @@
         }
         // Trees are editable objects now; never bake them into terrain.
     }
-    function drawPaintedJoins(svg, defs) {
-        const layer = add(svg, 'g', { class: 'map-painted-joins', 'clip-path': 'url(#map-continent-clip)', 'pointer-events': 'none' });
-        for (const patch of data.paintedJoins || []) {
-            let target = layer;
-            // Preserve the painted snow shapes. Feather only the outside
-            // rectangular crop edges where the new illustration meets its source.
-            for (const axis of ['x', 'y']) {
-                const id = `map-painted-${patch.id}-${axis}`;
-                const gradient = add(defs, 'linearGradient', { id: `${id}-gradient`, x1: 0, y1: 0, x2: axis === 'x' ? 1 : 0, y2: axis === 'y' ? 1 : 0 });
-                const fade = patch.edgeFade / (axis === 'x' ? patch.width : patch.height);
-                for (const [offset, opacity] of [[0, 0], [fade, 1], [1 - fade, 1], [1, 0]]) add(gradient, 'stop', { offset, 'stop-color': 'white', 'stop-opacity': opacity });
-                const mask = add(defs, 'mask', { id, maskUnits: 'userSpaceOnUse', x: patch.x, y: patch.y, width: patch.width, height: patch.height, style: 'mask-type: alpha' });
-                add(mask, 'rect', { x: patch.x, y: patch.y, width: patch.width, height: patch.height, fill: `url(#${id}-gradient)` });
-                target = add(target, 'g', { mask: `url(#${id})` });
-            }
-            add(target, 'image', {
-                'data-join': patch.id, href: patch.image, x: patch.x, y: patch.y,
-                width: patch.width, height: patch.height, preserveAspectRatio: 'none'
-            });
-        }
-    }
-    function drawGuides(svg) {
-        if (!data.boundaryGuides.visible) return;
-        const guides = add(svg, 'g', { class: 'map-region-boundaries', 'clip-path': 'url(#map-continent-clip)', 'pointer-events': 'none' });
-        for (const path of data.boundaryGuides.paths) {
-            if (data.boundaryStrips?.enabled && data.boundaryLinks.some(link => link.path === path)) continue;
-            add(guides, 'path', {
-                d: path, fill: 'none', stroke: '#254657', 'stroke-opacity': .45,
-                style: 'stroke-width: var(--map-boundary-width, 1.2px)'
-            });
-        }
-    }
     function createIslandMask(defs, width, height) {
         // Transparent channels expose the existing viewport ocean underneath.
         // Use world units so the water stays the same physical width as roads.
