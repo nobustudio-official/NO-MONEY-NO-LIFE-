@@ -4,7 +4,7 @@
  */
 (function () {
     'use strict';
-    const enabled = true;
+    const enabled = false;
     const scenes = new WeakMap();
     const colors = { capital: '#b1c6d8', town: '#ead1a1', forest: '#52812c',
         desert: '#f6d47a', snow: '#edf4f5', ruins: '#c7b28a', volcano: '#615866' };
