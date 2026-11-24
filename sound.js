@@ -6,11 +6,14 @@
 const BGM_VOLUME = 0.10;
 let currentBGMVolume = BGM_VOLUME;
 const SE_VOLUME = 0.50;
+const bgmStates = new Map();
 
 function createBGM(path) {
     const audio = new Audio();
+    audio.muted = true;
     audio.preload = "none";
     audio.src = path;
+    bgmStates.set(audio, { gain: null, enabled: false, version: 0 });
     return audio;
 }
 
@@ -54,6 +57,8 @@ function retryBGMPlayback() {
     resumeBGMContext();
     const request = pendingBGMPlayback;
     if (!request || request.inFlight) return;
+    const state = bgmStates.get(request.audio);
+    if (!state.enabled || state.version !== request.version) return;
     request.inFlight = true;
     const failed = error => {
         if (pendingBGMPlayback !== request) return;
@@ -62,6 +67,13 @@ function retryBGMPlayback() {
     };
     try {
         Promise.resolve(request.audio.play()).then(() => {
+            // A late completion must never revive a track that was stopped.
+            if (!state.enabled) {
+                silenceBGM(request.audio);
+                request.audio.pause();
+                return;
+            }
+            if (state.version !== request.version) return;
             if (pendingBGMPlayback === request) pendingBGMPlayback = null;
         }, failed);
     } catch (error) {
@@ -70,13 +82,44 @@ function retryBGMPlayback() {
 }
 
 function playBGM(bgm) {
-    pendingBGMPlayback = { audio: bgm, inFlight: false };
+    const state = bgmStates.get(bgm);
+    state.enabled = true;
+    pendingBGMPlayback = { audio: bgm, inFlight: false, version: ++state.version };
+    bgm.muted = false;
     retryBGMPlayback();
 }
 
-function pauseBGM(bgm) {
+function silenceBGM(bgm) {
+    // Mute the media element as well as its Web Audio output before pausing.
+    bgm.muted = true;
+    bgm.volume = 0;
+    const gain = bgmStates.get(bgm).gain;
+    if (gain) {
+        gain.gain.cancelScheduledValues(0);
+        gain.gain.value = 0;
+    }
+}
+
+function deactivateBGM(bgm) {
+    const state = bgmStates.get(bgm);
+    state.enabled = false;
+    state.version++;
     if (pendingBGMPlayback?.audio === bgm) pendingBGMPlayback = null;
+    silenceBGM(bgm);
+}
+
+function pauseBGM(bgm) {
+    deactivateBGM(bgm);
     bgm.pause();
+}
+
+function setBGMLevel(bgm, volume) {
+    const state = bgmStates.get(bgm);
+    const level = state.enabled ? Math.max(0, Math.min(1, volume)) : 0;
+    if (state.gain) {
+        state.gain.gain.value = level;
+        bgm.volume = 1;
+    } else bgm.volume = level;
 }
 
 function recoverBGM() {
@@ -103,112 +146,17 @@ function setupBGM(
     gainNode,
     gainSetter
 ) {
-
-    // =========================
-    // ローカル環境
-    // =========================
-
-    if (location.protocol === "file:") {
-
-        stopAllBGM();
-
-        bgm.preload = "auto";
-
-        bgm.volume =
-            currentBGMVolume;
-
-        bgm.currentTime = 0;
-
-        playBGM(bgm);
-
-        return;
-    }
-
-
-    // =========================
-    // Web環境
-    // =========================
-
-    if (!bgmAudioContext) {
-
-        const AudioContext =
-            window.AudioContext ||
-            window.webkitAudioContext;
-
-        bgmAudioContext =
-            new AudioContext();
-
-    }
-
-
-    // =========================
-    // Web環境ではGainNodeに音量調整を統一
-    // =========================
-
-    bgm.volume = 1.0;
-
-
-    // =========================
-    // GainNode作成
-    // =========================
-
-    if (!gainNode) {
-
-        gainNode =
-            bgmAudioContext.createGain();
-
-        const source =
-            bgmAudioContext.createMediaElementSource(
-                bgm
-            );
-
-        source.connect(
-            gainNode
-        );
-
-        gainNode.connect(
-            bgmAudioContext.destination
-        );
-
-        gainSetter(
-            gainNode
-        );
-
-    }
-
-
-    // =========================
-    // 現在のスライダー値を取得
-    // =========================
-
-    const currentVolume = currentBGMVolume;
-
-
-    // =========================
-    // GainNodeに音量を反映
-    // =========================
-
-    gainNode.gain.value =
-        currentVolume;
-
-
-    // =========================
-    // 現在のBGMを停止
-    // =========================
-
+    // Silence outgoing tracks before any context/source preparation can stall.
     stopAllBGM();
-
     bgm.preload = "auto";
-
-
-    // =========================
-    // BGMを最初から再生
-    // =========================
-
+    const gain = setupBGMGain(bgm, gainNode);
+    if (gain) {
+        gainSetter(gain);
+        gain.gain.value = currentBGMVolume;
+        bgm.volume = 1;
+    } else bgm.volume = currentBGMVolume;
     bgm.currentTime = 0;
-
     playBGM(bgm);
-
 }
 
 // =========================
@@ -246,12 +194,7 @@ function startDividendBGM() {
 
 function setDividendBGMFade(multiplier) {
     dividendBGMFadeMultiplier = Math.max(0, Math.min(1, Number(multiplier) || 0));
-    const volume = currentBGMVolume * dividendBGMFadeMultiplier;
-    if (location.protocol === "file:" || !bgmAudioContext || !dividendBGMGain) {
-        dividendBGM.volume = volume;
-    } else {
-        dividendBGMGain.gain.value = volume;
-    }
+    setBGMLevel(dividendBGM, currentBGMVolume * dividendBGMFadeMultiplier);
 }
 
 function stopDividendBGM() {
@@ -343,79 +286,7 @@ function setMaouEndBGMGain(
 // =========================
 
 function setupAdventureBGM() {
-
-    // =========================
-    // ローカル環境
-    // =========================
-
-    if (location.protocol === "file:") {
-
-        stopAllBGM();
-
-        adventureBGM.preload = "auto";
-
-        adventureBGM.volume =
-            currentBGMVolume;
-
-        adventureBGM.currentTime = 0;
-
-        playBGM(adventureBGM);
-
-        return;
-    }
-
-
-    // =========================
-    // Web環境
-    // =========================
-
-    if (!bgmAudioContext) {
-
-        const AudioContext =
-            window.AudioContext ||
-            window.webkitAudioContext;
-
-        bgmAudioContext =
-            new AudioContext();
-
-    }
-
-
-    // Web playback uses the gain as its only volume control.
-    adventureBGM.volume = 1;
-    if (!adventureBGMGain) {
-
-        adventureBGMGain =
-            bgmAudioContext.createGain();
-
-        const source =
-            bgmAudioContext.createMediaElementSource(
-                adventureBGM
-            );
-
-        source.connect(
-            adventureBGMGain
-        );
-
-        adventureBGMGain.connect(
-            bgmAudioContext.destination
-        );
-
-        adventureBGMGain.gain.value =
-            BGM_VOLUME;
-
-    }
-
-
-    adventureBGMGain.gain.value = currentBGMVolume;
-    stopAllBGM();
-
-    adventureBGM.preload = "auto";
-
-    adventureBGM.currentTime = 0;
-
-    playBGM(adventureBGM);
-
+    setupBGM(adventureBGM, adventureBGMGain, setAdventureBGMGain);
 }
 
 // =========================
@@ -433,6 +304,12 @@ function setupBGMGain(
 
     }
 
+    const state = bgmStates.get(bgm);
+    if (gainNode || state.gain) {
+        state.gain = gainNode || state.gain;
+        return state.gain;
+    }
+
 
     if (!bgmAudioContext) {
 
@@ -442,13 +319,6 @@ function setupBGMGain(
 
         bgmAudioContext =
             new AudioContext();
-
-    }
-
-
-    if (gainNode) {
-
-        return gainNode;
 
     }
 
@@ -469,8 +339,8 @@ function setupBGMGain(
         bgmAudioContext.destination
     );
 
-    newGain.gain.value =
-        BGM_VOLUME;
+    newGain.gain.value = state.enabled ? currentBGMVolume : 0;
+    state.gain = newGain;
 
     return newGain;
 
@@ -587,9 +457,10 @@ function stopAllBGM() {
     requestedAreaBGMKey = null;
     applyAreaBGMMix = null;
 
-    for (const bgm of [adventureBGM, townBGM, dividendBGM, grasslandBGM, desertBGM, volcanoBGM, forestBGM, snowBGM, ancientRuinsBGM, undergroundBGM,
-        nobilityBGM, bossVictoryBGM, bossBattleBGM, maouFastBGM, maouFinalBGM, maouEndBGM]) {
-        pauseBGM(bgm);
+    // Mute every track first, then pause; a slow pause must not leave another audible.
+    for (const bgm of bgmStates.keys()) deactivateBGM(bgm);
+    for (const bgm of bgmStates.keys()) {
+        bgm.pause();
         bgm.preload = "none";
     }
 
@@ -659,7 +530,7 @@ function transitionAreaBGM(key, duration = 1400, {resume = false} = {}) {
         }
     });
 
-    if (target.audio.paused) {
+    if (target.audio.paused || !bgmStates.get(target.audio).enabled) {
         if (isFile || !context) target.audio.volume = 0;
         else {
             let gain = target.getGain();
@@ -690,8 +561,7 @@ function transitionAreaBGM(key, duration = 1400, {resume = false} = {}) {
         tracks.forEach(track => {
             const weight = from.get(track) * (1 - eased) + (track === target ? eased : 0);
             const value = Math.min(1, weight * currentBGMVolume);
-            if (isFile || !context) track.audio.volume = value;
-            else if (track._gain) track._gain.gain.value = value;
+            setBGMLevel(track.audio, value);
         });
     };
     const tick = now => {
@@ -721,158 +591,11 @@ function transitionAreaBGM(key, duration = 1400, {resume = false} = {}) {
 
 function setBGMVolume(volume) {
     currentBGMVolume = Math.max(0, Math.min(1, Number(volume) || 0));
-    volume = currentBGMVolume;
-
-    // =========================
-    // 冒険BGM
-    // =========================
-
-    if (adventureBGMGain) {
-
-        adventureBGMGain.gain.value =
-            volume;
-
-    } else {
-
-        adventureBGM.volume =
-            volume;
-
+    for (const bgm of bgmStates.keys()) {
+        const multiplier = bgm === dividendBGM ? dividendBGMFadeMultiplier : 1;
+        setBGMLevel(bgm, currentBGMVolume * multiplier);
     }
-
-
-    // =========================
-    // 街BGM
-    // =========================
-
-    if (townBGMGain) {
-
-        townBGMGain.gain.value =
-            volume;
-
-    } else {
-
-        townBGM.volume =
-            volume;
-
-    }
-
-    if (dividendBGMGain) dividendBGMGain.gain.value = volume * dividendBGMFadeMultiplier;
-    else dividendBGM.volume = volume * dividendBGMFadeMultiplier;
-
-    for (const [track, gain] of [[forestBGM, forestBGMGain], [snowBGM, snowBGMGain], [ancientRuinsBGM, ancientRuinsBGMGain]]) {
-        if (gain) gain.gain.value = volume;
-        else track.volume = volume;
-    }
-
-    for (const track of [grasslandBGM, desertBGM, volcanoBGM]) {
-        const gain = track === grasslandBGM ? grasslandBGMGain : track === desertBGM ? desertBGMGain : volcanoBGMGain;
-        if (gain) gain.gain.value = volume;
-        else track.volume = volume;
-    }
-    if (undergroundBGMGain) undergroundBGMGain.gain.value = volume;
-    else undergroundBGM.volume = volume;
-
-
-    // =========================
-    // 貴族BGM
-    // =========================
-
-    if (nobilityBGMGain) {
-
-        nobilityBGMGain.gain.value =
-            volume;
-
-    } else {
-
-        nobilityBGM.volume =
-            volume;
-
-    }
-
-
-    // =========================
-    // 凱旋BGM
-    // =========================
-
-    if (bossVictoryBGMGain) {
-
-        bossVictoryBGMGain.gain.value =
-            volume;
-
-    } else {
-
-        bossVictoryBGM.volume =
-            volume;
-
-    }
-
-
-    // =========================
-    // ボス戦BGM
-    // =========================
-
-    if (bossBattleBGMGain) {
-
-        bossBattleBGMGain.gain.value =
-            volume;
-
-    } else {
-
-        bossBattleBGM.volume =
-            volume;
-
-    }
-
-    // =========================
-// 魔王-fast BGM
-// =========================
-
-if (maouFastBGMGain) {
-
-    maouFastBGMGain.gain.value =
-        volume;
-
-} else {
-
-    maouFastBGM.volume =
-        volume;
-
-}
-
-// =========================
-// 魔王-final BGM
-// =========================
-
-if (maouFinalBGMGain) {
-
-    maouFinalBGMGain.gain.value =
-        volume;
-
-} else {
-
-    maouFinalBGM.volume =
-        volume;
-
-}
-
-
-// =========================
-// 魔王-end BGM
-// =========================
-
-if (maouEndBGMGain) {
-
-    maouEndBGMGain.gain.value =
-        volume;
-
-} else {
-
-    maouEndBGM.volume =
-        volume;
-
-}
-
-applyAreaBGMMix?.();
+    applyAreaBGMMix?.();
 }
 
 window.transitionAreaBGM = transitionAreaBGM;

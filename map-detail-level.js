@@ -12,13 +12,14 @@
     const activeRequests = new Map();
     const maxMobileImageLoads = 2;
     let pumpScheduled = false;
+    const imageLoadPauses = new Set();
     // Each map releases only its own pause, including during screen replacement.
     const scrollPauses = new Set();
     const cameraJumps = new Set();
 
     function pumpImageLoads() {
         pumpScheduled = false;
-        if (scrollPauses.size || cameraJumps.size) return;
+        if (imageLoadPauses.size || scrollPauses.size || cameraJumps.size) return;
         while (activeImages.size < maxMobileImageLoads && pendingImages.size) {
             const [element, request] = [...pendingImages.entries()].sort((a, b) =>
                 a[1].priority - b[1].priority || a[1].distance - b[1].distance)[0];
@@ -61,6 +62,29 @@
         if (pumpScheduled) return;
         pumpScheduled = true;
         setTimeout(pumpImageLoads, 32);
+    }
+
+    function pauseImageLoads(reason = 'external') {
+        const key = String(reason);
+        if (imageLoadPauses.has(key)) return;
+        imageLoadPauses.add(key);
+
+        // Stop in-flight tile requests as well as queued ones. Keep their
+        // promises and enqueue entries so the same viewport can resume later.
+        for (const [element, request] of [...activeRequests]) {
+            if (!request.board) continue;
+            element.dataset.mapLoadToken = String(Number(element.dataset.mapLoadToken || 0) + 1);
+            request.cleanup?.();
+            activeRequests.delete(element);
+            activeImages.delete(element);
+            element.removeAttribute('src');
+            pendingImages.set(element, request);
+        }
+    }
+
+    function resumeImageLoads(reason = 'external') {
+        imageLoadPauses.delete(String(reason));
+        if (!imageLoadPauses.size) scheduleImagePump();
     }
 
     function releaseImage(element) {
@@ -358,6 +382,7 @@
     }
     window.MapDetailLevel = Object.freeze({ refresh, refreshPieces, setZoom, dispose, touchDevice, setTileSources,
         loadImage, requestImage: enqueueImage, releaseImage, beginCameraJump,
+        pauseImageLoads, resumeImageLoads,
         isCameraJumping: board => Boolean(states.get(board)?.cameraJumps.size),
         scheduleViewport: board => stateFor(board)?.schedule() });
 })();

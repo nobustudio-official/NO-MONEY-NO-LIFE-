@@ -9,10 +9,24 @@
     <style>
         html, body { width:100%; height:100%; min-height:0; margin:0; padding:0; overflow:hidden; background:#071b3f; }
         #gameViewportFrame { position:absolute; top:0; left:0; display:block; width:100%; height:100%; max-width:none; border:0; transform-origin:top left; }
+        .orientation-guard { position:fixed; inset:0; z-index:2147483647; display:grid; place-items:center; overflow:hidden; padding:24px; box-sizing:border-box; background:radial-gradient(ellipse at center,#20283f 0%,#11182b 72%,#0a1020 100%); color:#fff2ce; font:700 clamp(20px,4vw,30px)/1.5 "Yu Gothic","Meiryo",sans-serif; text-align:center; }
+        .orientation-guard[hidden] { display:none; }
+        .orientation-guard__card { display:grid; justify-items:center; gap:20px; max-width:440px; }
+        .orientation-guard__phone { width:44px; height:76px; border:4px solid #ffe39a; border-radius:10px; box-shadow:0 0 18px #ffe39a66; animation:orientation-phone-turn 1.2s ease-in-out infinite alternate; }
+        .orientation-guard__phone::after { content:""; display:block; width:5px; height:5px; margin:62px auto 0; border-radius:50%; background:#ffe39a; }
+        .orientation-guard__text { margin:0; }
+        @keyframes orientation-phone-turn { to { transform:rotate(-90deg); } }
+        @media (prefers-reduced-motion: reduce) { .orientation-guard__phone { animation:none; transform:rotate(-90deg); } }
     </style>
 </head>
 <body>
     <iframe id="gameViewportFrame" title="NO MONEY, NO LIFE" allow="autoplay; fullscreen"></iframe>
-    <script src="game-viewport.js?v=mobile-opening-memory-2"></script>
+    <div id="orientationGuard" class="orientation-guard" role="status" aria-live="polite" hidden>
+        <div class="orientation-guard__card">
+            <span class="orientation-guard__phone" aria-hidden="true"></span>
+            <p class="orientation-guard__text">スマホを横向きにしてください</p>
+        </div>
+    </div>
+    <script src="game-viewport.js?v=portrait-map-load-guard-20261124-1"></script>
 </body>
 </html>
