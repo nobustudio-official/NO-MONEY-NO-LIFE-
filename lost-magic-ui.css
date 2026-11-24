@@ -202,8 +202,6 @@
     white-space: normal;
     overflow-wrap: anywhere;
 }
-.lost-magic-row.is-lost { animation: lost-magic-fade 520ms ease forwards; pointer-events: none; }
-@keyframes lost-magic-fade { from { opacity: 1; } to { opacity: 0; } }
 .lost-magic-empty { margin: auto; color: #d6dfe5; font-size: 18px; }
 
 .lost-magic-back { position: absolute; left: 26px; bottom: 18px; z-index: 2; padding: 9px 18px; font-size: 16px; }

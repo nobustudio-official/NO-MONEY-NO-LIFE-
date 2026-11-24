@@ -84,9 +84,6 @@
     function render(view, handlers = {}) {
         if (!view) return;
         if (view.stage === 'result') {
-            if (!root?.isConnected || root.dataset.stage !== 'magic') {
-                render({ ...view, stage:'magic', readOnly:true });
-            }
             showResult(view, handlers);
             return;
         }
@@ -179,35 +176,14 @@
 
     function showResult(view, handlers = {}) {
         const container = ensureRoot();
-        const list = root._body.querySelector('.lost-magic-list');
-        if (!list) return;
+        window.PlayerCardSize?.release(container);
+        window.Plane02Layout?.release(root._panel);
         root.dataset.stage = 'result';
         root._telop.hidden = false;
-        root._panel.hidden = false;
+        root._panel.hidden = true;
         root._back.hidden = true;
+        root._body.replaceChildren();
         container.onclick = null;
-        const magicId = Number(view.magicId);
-        let row = Array.from(list.querySelectorAll('.lost-magic-row'))
-            .find(entry => Number(entry.dataset.magicId) === magicId);
-        if (!row) {
-            const item = (view.magics || []).find(entry => Number(entry.id) === magicId);
-            if (item) {
-                row = createMagicRow(item);
-                list.append(row);
-            }
-        }
-        root._body.querySelectorAll('.lost-magic-button').forEach(button => { button.disabled = true; });
-        if (row && view.recovery) {
-            row.remove();
-        } else if (row) {
-            row.scrollIntoView({ block:'nearest', inline:'nearest', behavior:'instant' });
-            row.classList.remove('is-lost');
-            void row.offsetWidth;
-            row.classList.add('is-lost');
-            const remove = () => row?.remove();
-            row.addEventListener('animationend', event => { if (event.animationName === 'lost-magic-fade') remove(); }, { once:true });
-            window.setTimeout(remove, 560);
-        }
         setCopy(view.targetIcon, [node('strong', 'lost-magic-result-name', view.magicName || '魔法'), document.createTextNode('を失った！')]);
         root._next.textContent = '次へ ▶';
         const enable = () => {
