@@ -15,10 +15,10 @@
  ];
  const objects=rows.flatMap(([region,...values])=>[0,1,2].map(i=>({id:region+'-'+i,region,name:values[i*2],symbol:values[i*2+1],kind:i?'small':'landmark',width:i?150:460,height:i?110:350,asset:null})));
  objects.find(o=>o.id==='capital-0').asset='images/map/objects/capital/royal-castle-v2.webp';
- const images={'town-0':['ギルドの建物','town/guild-v1.png'],'grassland-0':['丘の上の風車小屋','grassland/windmill-v1.png'],'forest-0':['巨大な古木','forest/ancient-tree-v2.png'],'desert-0':['ヤシの木に囲まれたオアシス','desert/oasis-v1.png'],'snow-0':['青く光る氷の洞窟','snow/ice-cave-v1.png'],'ruins-0':['崩れかけた巨大な石の門','ruins/ruined-gate-v1.png'],'volcano-0':['火山','volcano/mini-volcano-v1.png']};
+ const images={'town-0':['ギルドの建物','town/guild-v1.png'],'grassland-0':['丘の上の風車小屋','grassland/windmill-v1.png'],'forest-0':['巨大な古木','optimized/forest/ancient-tree-v2-70pct.png'],'desert-0':['ヤシの木に囲まれたオアシス','desert/oasis-v1.png'],'snow-0':['青く光る氷の洞窟','snow/ice-cave-v1.png'],'ruins-0':['崩れかけた巨大な石の門','ruins/ruined-gate-v1.png'],'volcano-0':['火山','volcano/mini-volcano-v1.png']};
  for(const [id,[name,path]]of Object.entries(images))Object.assign(objects.find(o=>o.id===id),{name,asset:'images/map/objects/'+path.replace(/\.png$/i,'.webp')});
  objects.find(o=>o.id==='town-0').symbol='🏛️';
- objects.push({id:'grassland-tree-cluster',region:'grassland',name:'木と岩の茂み',symbol:'🌳',kind:'small',width:240,height:210,asset:'images/map/backgrounds/world/regions/grassland/tree-rock-cluster.webp'});
+ objects.push({id:'grassland-tree-cluster',region:'grassland',name:'木と岩の茂み',symbol:'🌳',kind:'small',width:240,height:210,asset:'images/map/objects/optimized/grassland/tree-rock-cluster-70pct.webp'});
  objects.push(...imported);
  const data={regions:regions.map(([id,name,symbol])=>({id,name,symbol})),objects,
   roadStyles:[{id:'stone',name:'石畳',color:'#c1b7a5'},{id:'capital-ivory',name:'王都1：白石の大通り',color:'#e2e5df'},{id:'capital-slate',name:'王都2：青灰石の街路',color:'#a3b6c4'},{id:'capital-brick',name:'王都3：赤茶レンガの街路',color:'#c2977e'},{id:'grassland-road',name:'草原：敷石の街道',color:'#c49c63'},{id:'forest-road',name:'森林：苔むした山道',color:'#684a34'},{id:'desert-road',name:'砂漠：砂岩の道',color:'#dda45c'},{id:'snow-road',name:'雪山：氷雪の道',color:'#b8cde3'},{id:'ruins-road',name:'古代遺跡：風化した石畳',color:'#aaa08d'},{id:'volcano-road',name:'火山：黒曜石の道',color:'#39363a'},{id:'lake-road',name:'湖：木の遊歩道',color:'#a97849'},{id:'trail',name:'土の道（仮）',color:'#b48d58'},{id:'bridge-stone',name:'石橋',color:'#ad9b85'},{id:'bridge-wood',name:'木橋',color:'#ab794e'},{id:'bridge',name:'橋（旧データ互換・石橋）',color:'#ad9b85'},{id:'sea',name:'海上ルート（仮）',color:'#b6d9df'}]};
