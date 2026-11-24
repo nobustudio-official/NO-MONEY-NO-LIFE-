@@ -88,6 +88,9 @@
 .gp-wait::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:100%;background:#e6c783;transform-origin:left;animation:gp-wait 1s linear both;animation-delay:var(--gp-wait-delay,0ms)}
 @keyframes gp-wait{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 .gp-table .gp-section td{border:0;border-bottom:1px solid #ccae7b80;border-radius:0;background:transparent;color:#fcfcfc;font-size:clamp(13px,1.5vw,19px);font-weight:700;text-align:left}
+#magicShopPopup .gp-table .gp-divider{height:auto}
+#magicShopPopup .gp-table .gp-divider td{padding:clamp(6px,1.2vh,10px) 0;border:0;border-radius:0;background:transparent}
+#magicShopPopup .gp-divider hr{margin:0;border:0;border-top:1px solid #ccae7b80}
 .gp-empty{text-align:center;color:#b7cddd;font-size:clamp(12px,1.4vw,18px)}
 .gp-footer{flex:none;display:flex;align-items:center;gap:clamp(8px,1.5vw,24px);min-height:clamp(62px,8.5vh,90px);margin-top:clamp(6px,1vh,10px);padding-top:clamp(6px,1.3vh,14px);border-top:1px solid #ccae7b66}
 .gp-magic-list .gp-footer{min-height:clamp(68px,9.5vh,110px)}

@@ -171,6 +171,7 @@
         v.table.setAttribute('aria-label',c.title);v.body.replaceChildren();
         for(const r of v.data){const tr=node('tr');
             if(r.section){tr.className='gp-section';const cell=node('td','',r.section);cell.colSpan=c.columns?.length||3;tr.append(cell);v.body.append(tr);continue;}
+            if(r.divider){tr.className='gp-divider';tr.setAttribute('aria-hidden','true');const cell=node('td');cell.colSpan=c.widths?.length||c.columns?.length||3;cell.append(node('hr'));tr.append(cell);v.body.append(tr);continue;}
             bind(v,tr,r);const name=node('td'),label=node('span','gp-name',r.name);label.tabIndex=0;name.append(label);tr.append(name);
             for(const [index,value]of (r.values||[]).entries()){const cell=node('td',r.classes?.[index]||'gp-price'),text=node('span','gp-number',value);
                 const passiveStatusAtRowEnd=c.kind==='inventory'&&Number(r.group)>0&&!r.useButton&&index===(r.values.length-1);

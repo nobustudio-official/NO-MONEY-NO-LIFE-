@@ -210,10 +210,11 @@
             hint:'選択すると、'+(magic?'魔力・魔法':'アイテム')+'の説明文が表示されます',
             rows:()=>{
                 const result=[];
-                for(const [category,label,ids]of magic?[['power','魔力',box.powerContents],['magic','魔法',box.magicContents]]:[['item','',box.itemContents]]){
+                for(const [category,ids]of magic?[['power',box.powerContents],['magic',box.magicContents]]:[['item',box.itemContents]]){
                     const catalog=category==='power'?POWER_CONTENTS:category==='magic'?MAGIC_CONTENTS:ITEM_CONTENTS;
-                    if(label)result.push({section:label});
-                    for(const contentId of (ids||[]).filter(contentId=>category!=='item'||Number(catalog[contentId]?.rank)<99).slice().sort((a,b)=>catalog[a].price-catalog[b].price)){
+                    const contents=(ids||[]).filter(contentId=>category!=='item'||Number(catalog[contentId]?.rank)<99).slice().sort((a,b)=>catalog[a].price-catalog[b].price);
+                    if(category==='magic'&&result.length&&contents.length)result.push({divider:true});
+                    for(const contentId of contents){
                         const product=catalog[contentId],known=category==='magic'&&(player.magic||[]).some(id=>Number(id)===Number(contentId));
                         const price=category==='power'?product.price:marketPrice(product.price);
                         result.push({key:category+':'+contentId,name:product.name||product.effect,values:[f(price)+'G'],disabled:known||player.money<price,
