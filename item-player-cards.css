@@ -1,0 +1,244 @@
+/* Item-effect player cards only. Receipt/reward cards and the HUD keep their rules.
+   The requested sizes apply through a 600px short viewport side, then grow to 125%. */
+:is(
+    #moneyTransferScreen,
+    .lost-magic-overlay,
+    .hatataki-overlay,
+    #specialItemPopup,
+    .guidebook-layer[data-view="offer"],
+    .guidebook-layer[data-view="offers"]
+) {
+    --player-card-width: clamp(135px, 22.5vmin, 168.75px);
+    --player-card-height: clamp(230px, 38.333334vmin, 287.5px);
+    --item-player-icon-size: clamp(76px, 12.666667vmin, 95px);
+    --item-player-name-size: clamp(19px, 3.166667vmin, 23.75px);
+    --item-player-button-size: clamp(16px, 2.666667vmin, 20px);
+    --item-player-money-size: clamp(19px, 3.166667vmin, 23.75px);
+    --item-player-card-gap: clamp(6px, 1vmin, 7.5px);
+    --item-player-card-padding: clamp(6px, 1vmin, 7.5px);
+}
+
+:is(
+    #moneyTransferScreen,
+    .lost-magic-overlay,
+    .hatataki-overlay,
+    #specialItemPopup,
+    .guidebook-layer[data-view="offer"],
+    .guidebook-layer[data-view="offers"]
+) :is(
+    .mt-target-card,
+    .mt-person,
+    .lost-magic-target-card,
+    .hatataki-player-card,
+    .special-item-card,
+    .guidebook-offer-list > .bf-receipt-card
+) {
+    box-sizing: border-box;
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: center;
+    justify-content: safe center;
+    width: var(--player-card-width);
+    min-width: var(--player-card-width);
+    max-width: var(--player-card-width);
+    height: var(--player-card-height);
+    min-height: var(--player-card-height);
+    max-height: var(--player-card-height);
+    gap: var(--item-player-card-gap);
+    padding: var(--item-player-card-padding);
+    overflow: auto;
+}
+
+:is(
+    #moneyTransferScreen,
+    .lost-magic-overlay,
+    .hatataki-overlay,
+    #specialItemPopup,
+    .guidebook-layer[data-view="offer"],
+    .guidebook-layer[data-view="offers"]
+) :is(
+    .mt-target-card,
+    .mt-person,
+    .lost-magic-target-card,
+    .hatataki-player-card,
+    .special-item-card,
+    .guidebook-offer-list > .bf-receipt-card
+) > img {
+    flex: none;
+    width: var(--item-player-icon-size);
+    min-width: var(--item-player-icon-size);
+    max-width: var(--item-player-icon-size);
+    height: var(--item-player-icon-size);
+    min-height: var(--item-player-icon-size);
+    max-height: var(--item-player-icon-size);
+    object-fit: contain;
+}
+
+:is(
+    #moneyTransferScreen,
+    .lost-magic-overlay,
+    .hatataki-overlay,
+    #specialItemPopup,
+    .guidebook-layer[data-view="offer"],
+    .guidebook-layer[data-view="offers"]
+) :is(
+    .mt-target-card,
+    .mt-person,
+    .lost-magic-target-card,
+    .hatataki-player-card,
+    .special-item-card,
+    .guidebook-offer-list > .bf-receipt-card
+) > :is(b, .lost-magic-target-name, .hatataki-player-name, .bf-receipt-name),
+#specialItemPopup .special-item-card > strong:not(.special-item-money) {
+    flex: none;
+    min-width: 0;
+    max-width: 100%;
+    font-size: var(--item-player-name-size);
+    line-height: 1.25;
+    white-space: normal;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+}
+
+#moneyTransferScreen :is(.mt-target-card, .mt-person) > strong,
+#specialItemPopup .special-item-card > .special-item-money,
+.guidebook-layer[data-view="offer"] .mt-person > strong,
+.guidebook-layer[data-view="offers"] .guidebook-offer-list .bf-total {
+    flex: none;
+    min-width: 0;
+    max-width: 100%;
+    font-size: var(--item-player-money-size);
+    line-height: 1.25;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+:is(
+    #moneyTransferScreen,
+    .lost-magic-overlay,
+    .hatataki-overlay,
+    #specialItemPopup,
+    .guidebook-layer[data-view="offers"]
+) :is(
+    .mt-target-card,
+    .mt-person,
+    .lost-magic-target-card,
+    .hatataki-player-card,
+    .special-item-card,
+    .guidebook-offer-list > .bf-receipt-card
+) > button {
+    flex: none;
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    height: auto;
+    min-height: 0;
+    padding: clamp(6px, 1vmin, 7.5px) clamp(10px, 1.666667vmin, 12.5px);
+    font-size: var(--item-player-button-size);
+    line-height: 1.25;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+/* Keep larger item cards reachable inside their existing panels. */
+#moneyTransferScreen .mt-target-card > small,
+.lost-magic-overlay .lost-magic-target-card > small {
+    flex: none;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.lost-magic-overlay .lost-magic-target-grid {
+    grid-template-columns: repeat(auto-fit, var(--player-card-width));
+}
+
+.hatataki-overlay .hatataki-body:has(.hatataki-player-card) {
+    grid-template-columns: minmax(0, 1fr) var(--player-card-width);
+    align-items: safe center;
+    overflow: auto;
+}
+
+#moneyTransferScreen .mt-content:has(:is(.mt-target-card, .mt-person)) {
+    align-items: safe center;
+    justify-content: safe center;
+    overflow: auto;
+}
+
+#moneyTransferScreen .mt-targets {
+    flex-wrap: wrap;
+    justify-content: safe center;
+}
+
+#moneyTransferScreen .mt-choices {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(2 * var(--player-card-width) + 96px)), 1fr));
+    align-items: start;
+}
+
+#moneyTransferScreen .mt-choice .mt-route {
+    grid-template-columns: var(--player-card-width) 42px var(--player-card-width);
+    justify-content: center;
+    gap: 12px;
+}
+
+/* The amount form follows the player cards; its input and button sizes are unchanged. */
+#moneyTransferScreen .mt-panel:has(> .mt-route) {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 65px;
+    overflow: auto;
+}
+
+#moneyTransferScreen .mt-panel:has(> .mt-route) > .mt-title { flex: none; }
+#moneyTransferScreen .mt-content:empty { display: none; }
+
+#moneyTransferScreen .mt-panel > .mt-route {
+    position: static;
+    flex: none;
+    grid-template-columns: var(--player-card-width) 42px var(--player-card-width);
+    width: max-content;
+    margin: auto;
+    transform: none;
+}
+
+#moneyTransferScreen .mt-panel > .mt-form {
+    position: static;
+    flex: none;
+    margin: 0 auto;
+    transform: none;
+}
+
+#specialItemPopup .special-item-choices:has(.special-item-card) {
+    align-items: safe center;
+    justify-content: safe center;
+    overflow: auto;
+}
+
+#specialItemPopup .special-item-choices:not(.is-equalize):has(> .special-item-card) {
+    flex-wrap: wrap;
+    align-content: safe center;
+}
+
+#specialItemPopup .special-equalize-cards {
+    flex: none;
+    flex-wrap: wrap;
+    justify-content: safe center;
+}
+
+#specialItemPopup .special-item-choices.is-equalize > :is(p, button) { flex: none; }
+
+/* Guidebook trade cards are item effects; guidebook receipts and rewards are excluded. */
+.guidebook-layer[data-view="offer"] .guidebook-panel {
+    grid-template-rows: auto auto auto auto;
+    align-content: start;
+}
+
+.guidebook-layer[data-view="offer"] .guidebook-panel .mt-route {
+    grid-template-columns: var(--player-card-width) 42px var(--player-card-width);
+    width: max-content;
+}
+
+.guidebook-layer[data-view="offer"] .guidebook-panel .mt-form { transform: none; }
+.guidebook-layer[data-view="offer"] .guidebook-back { position: static; }
