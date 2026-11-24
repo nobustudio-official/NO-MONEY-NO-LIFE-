@@ -1,6 +1,7 @@
 (function () {
     'use strict';
     let root = null;
+    let cleanupExitAlignment = null;
     const element = (tag, className, text) => {
         const node = document.createElement(tag);
         if (className) node.className = className;
@@ -8,7 +9,35 @@
         return node;
     };
 
+    function alignExitButton(panel, card, button) {
+        let frame = 0;
+        const update = () => {
+            frame = 0;
+            if (!panel.isConnected || !card.isConnected || !button.isConnected) return;
+            const panelRect = panel.getBoundingClientRect();
+            const cardRect = card.getBoundingClientRect();
+            button.style.left = `${cardRect.left + cardRect.width / 2 - panelRect.left - panel.clientLeft}px`;
+        };
+        const schedule = () => {
+            if (!frame) frame = requestAnimationFrame(update);
+        };
+        const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(schedule) : null;
+        observer?.observe(panel);
+        observer?.observe(card);
+        window.addEventListener('resize', schedule, { passive: true });
+        window.visualViewport?.addEventListener('resize', schedule, { passive: true });
+        update();
+        return () => {
+            observer?.disconnect();
+            window.removeEventListener('resize', schedule);
+            window.visualViewport?.removeEventListener('resize', schedule);
+            if (frame) cancelAnimationFrame(frame);
+        };
+    }
+
     function hide() {
+        cleanupExitAlignment?.();
+        cleanupExitAlignment = null;
         window.Plane02Layout?.release(root?.querySelector('.hatataki-panel'));
         root?.remove();
         root = null;
@@ -58,12 +87,14 @@
         body.append(card);
         panel.append(body);
 
+        let exitButton = null;
         if (targetComplete) {
             const action = element('button', 'hatataki-button hatataki-progress', view.status === 'end' ? '終了' : '次へ');
             action.classList.toggle('item-exit-button', view.status === 'end');
             action.type = 'button';
             action.disabled = Boolean(view.readOnly || view.busy);
             action.onclick = () => view.status === 'end' ? handlers.onEnd?.() : handlers.onNext?.();
+            if (view.status === 'end') exitButton = action;
             panel.append(action);
         }
         if (view.notice) {
@@ -87,7 +118,10 @@
         root.append(scene);
         document.body.append(root);
         const activePanel = root.querySelector('.hatataki-panel');
-        if (activePanel) window.Plane02Layout?.apply(activePanel);
+        if (activePanel) {
+            window.Plane02Layout?.apply(activePanel);
+            if (exitButton) cleanupExitAlignment = alignExitButton(activePanel, card, exitButton);
+        }
     }
 
     window.HatatakiHakenUI = Object.freeze({ render, hide });

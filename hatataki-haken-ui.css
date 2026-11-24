@@ -59,14 +59,15 @@
 .hatataki-item-row, .hatataki-finished {
     flex: none;
     padding: 10px 12px;
-    font-size: calc(clamp(24px, 1.7vw, 31px) - 4pt);
     font-weight: 700;
     line-height: 1.45;
     overflow-wrap: anywhere;
 }
-.hatataki-item-row { border-bottom: 1px solid #ccae7b55; }
-.hatataki-finished { color: #f2d58d; text-align: right; }
+.hatataki-item-row { border-bottom: 1px solid #ccae7b55; font-size: calc(clamp(24px, 1.7vw, 31px) - 8pt); }
+.hatataki-finished { color: #f2d58d; text-align: right; font-size: calc(clamp(24px, 1.7vw, 31px) - 4pt); }
 .hatataki-player-card {
+    position: relative;
+    left: -30px;
     width: 280px;
     height: 260px;
     display: flex;
@@ -108,6 +109,7 @@
 .hatataki-button:hover:not(:disabled) { background: linear-gradient(#315876, #173b57); }
 .hatataki-button:disabled { opacity: .55; cursor: default; }
 .hatataki-progress { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); }
+.hatataki-progress.item-exit-button { bottom: 26px; }
 .hatataki-summary { flex: none; margin: 8px 0 0; color: #f2d58d; font-weight: 700; }
 .hatataki-body.hatataki-notice { display: flex; flex-direction: column; justify-content: center; gap: 18px; text-align: center; }
 .hatataki-notice > img { width: 80px; height: 80px; object-fit: contain; }
@@ -142,4 +144,5 @@
     .hatataki-finished { padding: 2px 0; }
     .hatataki-button { min-width: 0; min-height: 24px; padding: 2px 8px; font-size: max(11px, calc(16 * var(--hatataki-unit))); }
     .hatataki-progress { bottom: 5px; }
+    .hatataki-progress.item-exit-button { bottom: 15px; }
 }
