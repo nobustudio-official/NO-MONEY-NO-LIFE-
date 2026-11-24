@@ -30,12 +30,13 @@
         }
         if (state.streaming) {
             const overview = board.classList.contains('map-overview-active') ||
-                (MapDetailLevel.touchDevice && getMapZoomUI() <= .6);
+                (MapDetailLevel.touchDevice && getMapZoomUI() < .6);
             const ready = MapDetailLevel.setTileSources(state.tiles, overview ? null : bounds, visibleBounds);
             MapDetailLevel.setTileSources(state.bridges, overview ? null : bounds);
             if (state.layer) {
                 state.vector.style.display = ready ? '' : 'inline';
-                state.layer.style.visibility = ready ? '' : 'hidden';
+                // The vector fills missing tiles without hiding roads already loaded.
+                state.layer.style.visibility = '';
             }
         }
         const zooming = board.classList.contains('map-zoom-interacting');

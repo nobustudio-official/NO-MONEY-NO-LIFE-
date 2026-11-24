@@ -232,7 +232,7 @@
     function setZoom(board, zoom) {
         const background = board.querySelector('.map-background');
         const state = states.get(background);
-        const lowDetail=Boolean(window.MapDetailLevel?.touchDevice&&zoom<=.6);
+        const lowDetail=Boolean(window.MapDetailLevel?.touchDevice&&zoom<.6);
         const wasLowDetail=board.classList.contains('map-low-detail-active');
         const flatLayerReady = Boolean(background?.querySelector('.map-flat-region-layer.is-ready'));
         const useLowDetail = lowDetail && flatLayerReady;

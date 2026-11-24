@@ -10,10 +10,9 @@ const bgmStates = new Map();
 
 function createBGM(path) {
     const audio = new Audio();
-    audio.muted = true;
     audio.preload = "none";
     audio.src = path;
-    bgmStates.set(audio, { gain: null, enabled: false, version: 0 });
+    bgmStates.set(audio, { gain: null, enabled: false, version: 0, level: BGM_VOLUME });
     return audio;
 }
 
@@ -59,6 +58,7 @@ function retryBGMPlayback() {
     if (!request || request.inFlight) return;
     const state = bgmStates.get(request.audio);
     if (!state.enabled || state.version !== request.version) return;
+    setBGMLevel(request.audio, state.level);
     request.inFlight = true;
     const failed = error => {
         if (pendingBGMPlayback !== request) return;
@@ -74,6 +74,7 @@ function retryBGMPlayback() {
                 return;
             }
             if (state.version !== request.version) return;
+            setBGMLevel(request.audio, state.level);
             if (pendingBGMPlayback === request) pendingBGMPlayback = null;
         }, failed);
     } catch (error) {
@@ -90,14 +91,12 @@ function playBGM(bgm) {
 }
 
 function silenceBGM(bgm) {
-    // Mute the media element as well as its Web Audio output before pausing.
-    bgm.muted = true;
-    bgm.volume = 0;
+    // Web playback keeps the media element stable and silences its GainNode.
     const gain = bgmStates.get(bgm).gain;
     if (gain) {
         gain.gain.cancelScheduledValues(0);
         gain.gain.value = 0;
-    }
+    } else bgm.volume = 0;
 }
 
 function deactivateBGM(bgm) {
@@ -115,10 +114,10 @@ function pauseBGM(bgm) {
 
 function setBGMLevel(bgm, volume) {
     const state = bgmStates.get(bgm);
-    const level = state.enabled ? Math.max(0, Math.min(1, volume)) : 0;
+    state.level = Math.max(0, Math.min(1, Number(volume) || 0));
+    const level = state.enabled ? state.level : 0;
     if (state.gain) {
         state.gain.gain.value = level;
-        bgm.volume = 1;
     } else bgm.volume = level;
 }
 
@@ -152,9 +151,9 @@ function setupBGM(
     const gain = setupBGMGain(bgm, gainNode);
     if (gain) {
         gainSetter(gain);
-        gain.gain.value = currentBGMVolume;
         bgm.volume = 1;
-    } else bgm.volume = currentBGMVolume;
+    }
+    setBGMLevel(bgm, currentBGMVolume);
     bgm.currentTime = 0;
     playBGM(bgm);
 }
@@ -547,6 +546,7 @@ function transitionAreaBGM(key, duration = 1400, {resume = false} = {}) {
         }
         target.audio.preload = "auto";
         if (!resume) target.audio.currentTime = 0;
+        setBGMLevel(target.audio, 0);
         playBGM(target.audio);
     }
 

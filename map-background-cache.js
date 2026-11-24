@@ -81,7 +81,7 @@
   if(!state)return;
   const overview=board.classList.contains('map-overview-active');
   const zoom=typeof getMapZoomUI==='function'?getMapZoomUI():1;
-  const lowDetail=window.MapDetailLevel?.touchDevice&&zoom<=.6;
+  const lowDetail=window.MapDetailLevel?.touchDevice&&zoom<.6;
   // Below the mobile detail threshold, never request native-resolution tiles.
   if(lowDetail){
    MapDetailLevel.setTileSources(state.tiles,null,visible);
@@ -101,7 +101,7 @@
   const state=windows.get(board);
   if(!state)return;
   MapDetailLevel.setTileSources(state.tiles,null,null);
-  const lowDetail=window.MapDetailLevel?.touchDevice&&getMapZoomUI()<=.6;
+  const lowDetail=window.MapDetailLevel?.touchDevice&&getMapZoomUI()<.6;
   state.svg.style.display=lowDetail?'none':'';
   const fallback=state.svg.querySelector('image[href],image[data-fallback-image]');
   if(fallback){

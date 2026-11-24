@@ -168,7 +168,7 @@
         state.onScroll = () => {
             if (state.disposed || state.cameraJumps.size) return;
             if (state.visibleOnly) { schedule(); return; }
-            if (touchDevice) {
+            if (touchDevice && state.zoom < .6) {
                 scrollPauses.add(state);
                 clearTimeout(state.scrollSettleTimer);
                 state.scrollSettleTimer = setTimeout(() => {
@@ -178,6 +178,11 @@
                     scheduleImagePump();
                     schedule();
                 }, 160);
+            } else if (touchDevice) {
+                clearTimeout(state.scrollSettleTimer);
+                state.scrollSettleTimer = 0;
+                scrollPauses.delete(state);
+                scheduleImagePump();
             }
             schedule();
         };
@@ -303,7 +308,7 @@
         if (!state) return;
         state.zoom = zoom;
         if (options.preview !== true || touchDevice) window.MapOverviewCache?.setZoom(board, zoom);
-        const lowDetail = touchDevice && zoom <= .6;
+        const lowDetail = touchDevice && zoom < .6;
         if (state.lowDetail !== lowDetail) {
             state.lowDetail = lowDetail;
             setSquareIconDetail(board, lowDetail);

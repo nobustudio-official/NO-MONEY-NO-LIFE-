@@ -66,7 +66,6 @@
 #mapBoard.map-low-detail-active .map-static-background > .map-static-detail,
 #mapBoard.map-low-detail-active .map-workshop-objects,
 #mapBoard.map-low-detail-active .map-workshop-magic-effects { display:none; }
-.map-background.map-background-tiles-pending > .map-background-raster,
 .map-background > .map-background-raster:not([src]) { visibility:hidden; }
 .game-screen > .map-area.map-ocean {
     background-color: #178bbb;

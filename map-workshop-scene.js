@@ -165,7 +165,7 @@
             },objectImageDwellMs);
         }
         const overview=board.classList.contains('map-overview-active');
-        const lowDetail=window.MapDetailLevel?.touchDevice&&getMapZoomUI()<=.6;
+        const lowDetail=window.MapDetailLevel?.touchDevice&&getMapZoomUI()<.6;
         const zooming=board.classList.contains('map-zoom-interacting');
         const objectMargin=objectImageMargin/Math.max(.01,getMapZoomUI()||1);
         const imageBounds={left:visibleBounds.left-objectMargin,right:visibleBounds.right+objectMargin,
