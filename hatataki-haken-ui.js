@@ -9,6 +9,48 @@
         if (text != null) node.textContent = text;
         return node;
     };
+    const svgElement = (tag, attributes = {}) => {
+        const node = document.createElementNS('http://www.w3.org/2000/svg', tag);
+        for (const [name, value] of Object.entries(attributes)) node.setAttribute(name, value);
+        return node;
+    };
+
+    // Stable geometry keeps existing cracks in place across renders and restores.
+    function crackPath(index) {
+        const centers = [[38, 45], [66, 104], [28, 125], [73, 32]];
+        const [x, y] = centers[Math.floor(index / 4) % centers.length];
+        const angle = index * 2.39996 + .35;
+        const dx = Math.cos(angle), dy = Math.sin(angle);
+        const length = Math.min(dx > 0 ? (100 - x) / dx : -x / dx,
+            dy > 0 ? (160 - y) / dy : -y / dy);
+        const points = [[x, y]];
+        for (let step = 1; step <= 6; step++) {
+            const offset = step === 6 ? 0 : (step % 2 ? 1 : -1) * (2 + index % 3);
+            points.push([x + dx * length * step / 6 - dy * offset,
+                y + dy * length * step / 6 + dx * offset]);
+        }
+        const point = ([px, py]) => `${px.toFixed(1)},${py.toFixed(1)}`;
+        const [bx, by] = points[3];
+        const side = index % 2 ? 1 : -1;
+        return `M${points.map(point).join(' L')} M${point(points[3])}` +
+            ` l${(-dy * 12 * side).toFixed(1)},${(dx * 12 * side).toFixed(1)}` +
+            ` L${point([Math.max(0, Math.min(100, bx - dy * 24 * side + dx * 8)),
+                Math.max(0, Math.min(160, by + dx * 24 * side + dy * 8))])}`;
+    }
+
+    function updateCracks(count, sameTarget) {
+        if (!sameTarget) ui.cracks.replaceChildren();
+        while (ui.cracks.children.length > count) ui.cracks.lastElementChild.remove();
+        while (ui.cracks.children.length < count) {
+            const group = svgElement('g');
+            const d = crackPath(ui.cracks.children.length);
+            for (const className of ['hatataki-crack-edge', 'hatataki-crack-depth']) {
+                group.append(svgElement('path', { d, class: className, pathLength: '1' }));
+            }
+            ui.cracks.append(group);
+        }
+        ui.cracks.style.setProperty('--hatataki-crack-width', `${Math.min(2.8, .8 + count * .18)}px`);
+    }
 
     function alignExitButton(panel, card, button) {
         let frame = 0;
@@ -62,6 +104,8 @@
         results.setAttribute('aria-live', 'polite');
         const card = element('article', 'hatataki-player-card');
         card.dataset.frameId = 'SP05';
+        const cracks = svgElement('svg', { class: 'hatataki-cracks', viewBox: '0 0 100 160',
+            preserveAspectRatio: 'none', 'aria-hidden': 'true', focusable: 'false' });
         const icon = element('img', 'hatataki-player-icon');
         icon.alt = '';
         const name = element('strong', 'hatataki-player-name');
@@ -75,12 +119,12 @@
         attack.type = 'button';
         action.type = 'button';
         noticeNext.type = 'button';
-        card.append(icon, name, attack);
+        card.append(cracks, icon, name, attack);
         body.append(results, card);
         panel.append(title, body);
         scene.append(panel);
         root.append(scene);
-        ui = { panel, body, results, card, icon, name, attack, action, summary,
+        ui = { panel, body, results, card, cracks, icon, name, attack, action, summary,
             noticeIcon, noticeCopy, noticeNext, showingNotice: false, view: null, handlers: {} };
         const screen = ui;
         attack.onclick = () => {
@@ -134,6 +178,7 @@
         ui.view = view;
         ui.handlers = handlers;
         updateResults(view.destroyedItems, sameTarget);
+        updateCracks(destroyedCount, sameTarget);
         setImage(ui.icon, view.targetIcon || '');
         setText(ui.name, view.targetName || 'プレイヤー');
         ui.attack.disabled = view.status !== 'attack' || disabled;

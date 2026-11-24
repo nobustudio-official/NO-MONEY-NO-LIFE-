@@ -19,6 +19,7 @@
     pointer-events: none;
 }
 .hatataki-panel {
+    --hatataki-action-bottom: 26px;
     position: absolute;
     inset: var(--transfer-panel-top) var(--transfer-panel-side) var(--transfer-panel-bottom);
     display: flex;
@@ -31,6 +32,7 @@
     box-shadow: 0 12px 26px #071a2a55;
     pointer-events: auto;
 }
+.hatataki-panel:has(> .hatataki-next-button) { --hatataki-action-bottom: 36px; }
 .hatataki-title {
     flex: none;
     margin: 0 0 14px;
@@ -69,6 +71,7 @@
 }
 .hatataki-player-card {
     --player-card-fitted-height: min(var(--player-card-height, 260px), 100%);
+    isolation: isolate;
     position: relative;
     left: -30px;
     width: 280px;
@@ -85,8 +88,26 @@
     box-shadow: inset 0 0 18px #f6d98a19, 0 5px 12px #0004;
     text-align: center;
 }
+.hatataki-player-card > :not(.hatataki-cracks) { position: relative; z-index: 1; }
+.hatataki-cracks {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    overflow: hidden;
+    pointer-events: none;
+}
+.hatataki-cracks path { fill: none; stroke-linejoin: bevel; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.hatataki-crack-edge { stroke: #b4c7d480; stroke-width: calc(var(--hatataki-crack-width, 1px) + 1px); }
+.hatataki-crack-depth { stroke: #020b15e6; stroke-width: var(--hatataki-crack-width, 1px); }
 @media (prefers-reduced-motion: no-preference) {
     .hatataki-player-card.is-hit { animation: hatataki-card-hit 260ms ease-out; }
+    .hatataki-cracks path { stroke-dasharray: 1; animation: hatataki-crack-grow 220ms ease-out both; transition: stroke-width 180ms ease-out; }
+}
+@keyframes hatataki-crack-grow {
+    from { stroke-dashoffset: 1; opacity: 0; }
+    to { stroke-dashoffset: 0; opacity: 1; }
 }
 @keyframes hatataki-card-hit {
     0%, 100% { transform: translate(0, 0); }
@@ -111,14 +132,13 @@
 }
 .hatataki-button:hover:not(:disabled) { background: linear-gradient(#315876, #173b57); }
 .hatataki-button:disabled { opacity: .55; cursor: default; }
-.hatataki-progress { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); }
-.hatataki-progress.item-exit-button { bottom: 26px; }
-.hatataki-progress.hatataki-next-button { bottom: 36px; }
+.hatataki-progress { position: absolute; left: 50%; bottom: var(--hatataki-action-bottom); transform: translateX(-50%); }
 .hatataki-summary {
     position: absolute;
     left: 26px;
     right: calc(26px + var(--player-card-width, 135px) + 30px + 22px);
-    bottom: 16px;
+    bottom: calc(var(--hatataki-action-bottom) + 15px);
+    transform: translateY(50%);
     margin: 0;
     color: #f2d58d;
     font-weight: 700;
@@ -138,6 +158,7 @@
     .hatataki-overlay { --hatataki-content-indent: calc(26px - max(6px, calc(17 * var(--hatataki-unit)))); }
     .hatataki-scene { inset: 0; width: auto; max-width: none; }
     .hatataki-panel {
+        --hatataki-action-bottom: 15px;
         inset: var(--hatataki-panel-top) auto auto 50%;
         transform: translateX(-50%);
         width: calc(967.2 * var(--hatataki-unit));
@@ -146,6 +167,7 @@
         padding-bottom: max(36px, calc(60 * var(--hatataki-unit)));
         overflow: hidden;
     }
+    .hatataki-panel:has(> .hatataki-next-button) { --hatataki-action-bottom: 25px; }
     .hatataki-body { grid-template-columns: minmax(0, 1fr) minmax(0, 42%); gap: 6px; }
     .hatataki-results { padding-block-start: calc(36 * var(--hatataki-unit)); }
     .hatataki-player-card { height: min(100%, calc(260 * var(--hatataki-unit))); min-height: 64px; width: 100%; gap: 3px; padding: 3px; }
@@ -158,12 +180,8 @@
     .hatataki-overlay .hatataki-item-row { padding-left: var(--hatataki-content-indent); }
     .hatataki-item-row { padding-top: 2px; padding-right: 0; padding-bottom: 2px; }
     .hatataki-button { min-width: 0; min-height: 24px; padding: 2px 8px; font-size: max(11px, calc(16 * var(--hatataki-unit))); }
-    .hatataki-progress { bottom: 5px; }
-    .hatataki-progress.item-exit-button { bottom: 15px; }
-    .hatataki-progress.hatataki-next-button { bottom: 25px; }
     .hatataki-overlay .hatataki-summary {
         left: 26px;
         right: calc(max(6px, 17 * var(--hatataki-unit)) + var(--player-card-width, 135px) + 30px + 6px);
-        bottom: 5px;
     }
 }
