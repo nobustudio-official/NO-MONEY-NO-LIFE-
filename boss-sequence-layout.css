@@ -177,6 +177,7 @@
 #boss-aftermath .bf-penalty-layout .bf-punish-grid {
     flex: 1 1 auto;
     min-height: 0;
+    margin-top: clamp(8px, 2.5vh, 16px);
     gap: clamp(3px, .8vw, 8px);
     grid-template-columns: minmax(0, 1.12fr) minmax(0, .75fr) minmax(0, .9fr);
     align-items: stretch;
