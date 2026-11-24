@@ -20,66 +20,30 @@
 .lost-magic-overlay *::after { box-sizing: border-box; }
 
 .lost-magic-scene {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: min(1560px, 96vw);
-    height: min(970px, 94vh);
-    transform: translate(-50%, -50%);
-}
-
-/* SP04: frame-catalog reference, fixed for every stage. */
-.lost-magic-panel {
-    position: absolute;
-    left: 50%;
-    top: 4%;
-    bottom: calc(3% + 180px);
-    width: 62%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    padding: 23px 28px 72px;
-    border: 1px solid #ccae7b;
-    border-radius: 18px;
-    background: linear-gradient(135deg, #102b40f2, #0b2033ed);
-    box-shadow: 0 12px 38px #06172566;
-}
-
-.lost-magic-panel[hidden] { display: none; }
-
-/* Use the same target-selection frame as 闇ヤマト. */
-.lost-magic-overlay[data-stage="targets"] .lost-magic-scene {
     position: fixed;
     inset: var(--transfer-stage-top) var(--transfer-stage-right) var(--transfer-stage-bottom) var(--transfer-stage-left);
     width: auto;
     height: auto;
     max-width: var(--transfer-stage-width);
     margin: auto;
-    transform: none;
 }
 
-.lost-magic-overlay[data-stage="targets"] .lost-magic-panel {
+/* One shared frame for target selection, magic selection and the result. */
+.lost-magic-panel {
+    position: absolute;
     inset: var(--transfer-panel-top) var(--transfer-panel-side) var(--transfer-panel-bottom);
     width: auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
     padding: 22px 26px 65px;
-    transform: none;
+    border: 1px solid #ccae7b;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #102b40f2, #0b2033ed);
+    box-shadow: 0 12px 26px #071a2a55;
 }
 
-.lost-magic-overlay[data-stage="targets"] .lost-magic-body {
-    position: absolute;
-    inset: 86px 26px 65px;
-}
-
-.lost-magic-overlay[data-stage="targets"] .lost-magic-back {
-    left: 26px;
-    padding: 9px 18px;
-    font-size: 16px;
-}
-
-@media (max-width: 1550px) {
-    .lost-magic-overlay[data-stage="targets"] .lost-magic-title { font-size: 24px; }
-}
+.lost-magic-panel[hidden] { display: none; }
 
 .lost-magic-title {
     flex: none;
@@ -91,7 +55,13 @@
     font-weight: 700;
 }
 
+@media (max-width: 1550px) {
+    .lost-magic-title { font-size: 24px; }
+}
+
 .lost-magic-body {
+    position: absolute;
+    inset: 86px 26px 65px;
     display: flex;
     flex: 1;
     min-height: 0;
@@ -224,7 +194,7 @@
 @keyframes lost-magic-fade { from { opacity: 1; } to { opacity: 0; } }
 .lost-magic-empty { margin: auto; color: #d6dfe5; font-size: 18px; }
 
-.lost-magic-back { position: absolute; left: 28px; bottom: 18px; z-index: 2; }
+.lost-magic-back { position: absolute; left: 26px; bottom: 18px; z-index: 2; padding: 9px 18px; font-size: 16px; }
 .lost-magic-back[hidden] { display: none; }
 
 /* AN02 is reserved for the introduction, blocked notice and result. */

@@ -90,10 +90,6 @@
             return;
         }
         const container = ensureRoot();
-        if (container.dataset.stage === 'targets' && view.stage !== 'targets') {
-            window.Plane02Layout?.release(root._panel);
-            root._panel.removeAttribute('style');
-        }
         container.dataset.stage = view.stage;
         root._telop.hidden = ['targets', 'magic'].includes(view.stage);
         container.onclick = null;
@@ -123,6 +119,7 @@
         }
 
         root._panel.hidden = false;
+        window.Plane02Layout?.apply(root._panel);
         if (view.stage === 'targets') {
             root._title.textContent = 'ロストマジックの対象を選んでください';
             const grid = node('div', 'lost-magic-target-grid');
@@ -144,7 +141,6 @@
             });
             root._body.append(grid);
             setBack(handlers.onBack, !view.readOnly);
-            window.Plane02Layout?.apply(root._panel);
             container.onclick = null;
             return;
         }
