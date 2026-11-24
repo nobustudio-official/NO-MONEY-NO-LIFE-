@@ -4,11 +4,21 @@
         '(pointer: coarse) and (hover: none) and (orientation: landscape) and (max-width: 1100px)'
     );
     const visualViewport = window.visualViewport;
+    const gameContainer = document.querySelector('.game-container');
+    let gameScreen = gameContainer?.querySelector('.game-screen') || null;
     let frameId = 0;
+    let appliedTop = null;
+    let appliedHeight = null;
 
     function clearViewportSize() {
-        root.style.removeProperty('--game-visible-top');
-        root.style.removeProperty('--game-visible-height');
+        if (appliedTop !== null) {
+            root.style.removeProperty('--game-visible-top');
+            appliedTop = null;
+        }
+        if (appliedHeight !== null) {
+            root.style.removeProperty('--game-visible-height');
+            appliedHeight = null;
+        }
     }
 
     function syncViewportSize() {
@@ -17,21 +27,24 @@
         if (
             !mobileLandscape.matches ||
             !visualViewport ||
-            !document.querySelector('.game-screen') ||
+            !gameScreen?.isConnected ||
             Math.abs(visualViewport.scale - 1) > 0.01
         ) {
             clearViewportSize();
             return;
         }
 
-        root.style.setProperty(
-            '--game-visible-top',
-            `${Math.max(0, visualViewport.offsetTop)}px`
-        );
-        root.style.setProperty(
-            '--game-visible-height',
-            `${Math.max(1, visualViewport.height)}px`
-        );
+        // Read both dimensions before a style write can invalidate layout.
+        const top = Math.max(0, visualViewport.offsetTop);
+        const height = Math.max(1, visualViewport.height);
+        if (top !== appliedTop) {
+            root.style.setProperty('--game-visible-top', `${top}px`);
+            appliedTop = top;
+        }
+        if (height !== appliedHeight) {
+            root.style.setProperty('--game-visible-height', `${height}px`);
+            appliedHeight = height;
+        }
     }
 
     function scheduleSync() {
@@ -43,11 +56,17 @@
     visualViewport?.addEventListener('resize', scheduleSync, { passive: true });
     visualViewport?.addEventListener('scroll', scheduleSync, { passive: true });
 
-    const screenObserver = new MutationObserver(scheduleSync);
-    screenObserver.observe(document.documentElement, {
-        childList: true,
-        subtree: true
-    });
+    if (gameContainer) {
+        // Screen templates replace the container's direct children. Updates
+        // inside the map, cards and effects do not change viewport dimensions.
+        const screenObserver = new MutationObserver(() => {
+            const nextScreen = gameContainer.querySelector('.game-screen');
+            if (nextScreen === gameScreen) return;
+            gameScreen = nextScreen;
+            scheduleSync();
+        });
+        screenObserver.observe(gameContainer, { childList: true });
+    }
 
     scheduleSync();
 })();
