@@ -24,7 +24,7 @@
         panel.dataset.frameId = 'SP04';
         const title = node('h2', 'lost-magic-title', ITEM_CONTENTS[18].name);
         const body = node('div', 'lost-magic-body');
-        const back = node('button', 'lost-magic-back', '戻る');
+        const back = node('button', 'lost-magic-back item-exit-button', '戻る');
         back.type = 'button';
         const telop = node('section', 'lost-magic-an02');
         telop.dataset.frameId = 'AN02';

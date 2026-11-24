@@ -27,7 +27,7 @@
         const header = node('header', 'duplicate-item-header');
         header.append(node('h2', '', '複製するアイテムを選んでください'));
         const list = node('div', 'duplicate-item-list');
-        const back = node('button', 'duplicate-item-back', '戻る');
+        const back = node('button', 'duplicate-item-back item-exit-button', '戻る');
         back.type = 'button';
         back.disabled = observer;
         let pending = false;

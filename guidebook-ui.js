@@ -158,15 +158,12 @@
         }
         if (kind === 'choice') {
             const choices = make('div', 'guidebook-choices br-choices');
-            const open = make('div', 'br-card-slot'), restore = make('div', 'br-card-slot');
+            const open = make('div', 'br-card-slot'), restore = make('div', 'guidebook-back-slot');
             const openButton = button('開く', () => go('read'), 'guidebook-choice-button');
             openButton.dataset.reward = 'money';
             openButton.dataset.frameId = 'BT03-G';
-            const backButton = button('戻る', back, 'guidebook-choice-button guidebook-choice-back');
-            backButton.dataset.frameId = 'BT03-S';
-            for (const card of [openButton, backButton]) {
-                card.replaceChildren(make('span', 'br-card-front', card.textContent));
-            }
+            const backButton = button('戻る', back, 'guidebook-choice-back item-exit-button');
+            openButton.replaceChildren(make('span', 'br-card-front', openButton.textContent));
             open.append(openButton);
             restore.append(backButton);
             if (book.remaining) panel.append(make('p', 'guidebook-expiry', '消失まであと ' + GuidebookRules.remainingTurns(book) + 'ターン'));
@@ -175,7 +172,7 @@
         } else if (kind === 'reading') {
             if (control) {
                 const heading = make('header', 'guidebook-heading');
-                heading.append(make('h2', '', '攻略本'), button('閉じる', () => go('next', { view: kind })));
+                heading.append(make('h2', '', '攻略本'), button('閉じる', () => go('next', { view: kind }), 'mt-button item-exit-button'));
                 const spread = make('div', 'guidebook-spread'), copy = make('div', 'guidebook-copy');
                 copy.append(...bookText(context.marketOutcomeAt18, context.marketEventTurn).map(line => make('p', '', line)));
                 spread.append(image(openBook, '攻略本の見開き'), copy);
@@ -247,7 +244,7 @@
                 if (!amount.disabled && amount.reportValidity()) go('apply', { amount: amount.valueAsNumber });
             };
             form.append(make('small', '', max < MIN_PRICE ? '購入に必要な30,000Gがありません。' : formatGold(MIN_PRICE) + '～（5,000G単位）'), controls, submit);
-            panel.append(heading, route, form, button('戻る', () => go('cancelOffer'), 'mt-button guidebook-back'));
+            panel.append(heading, route, form, button('戻る', () => go('cancelOffer'), 'mt-button guidebook-back item-exit-button'));
             announce('攻略本の購入申請を選択した！', active);
         } else if (kind === 'offers') {
             panel.append(make('h2', 'guidebook-heading', '攻略本の購入申請'));
@@ -409,7 +406,7 @@
         const panel = make('div', 'guidebook-panel');
         panel.dataset.frameId = 'SP04';
         const heading = make('header', 'guidebook-heading');
-        const dismiss = make('button', 'guidebook-next', '閉じる');
+        const dismiss = make('button', 'guidebook-next item-exit-button', '閉じる');
         dismiss.type = 'button';
         dismiss.onclick = () => close();
         heading.append(make('h2', '', '攻略本2'), dismiss);

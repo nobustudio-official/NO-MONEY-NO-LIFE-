@@ -10,9 +10,9 @@
         popup.dataset.itemSelection = String(stage !== 'result');
         const panel=document.createElement('section'); panel.className='special-item-panel';
         const header=document.createElement('header'), title=document.createElement('h2'), back=document.createElement('button');
-        back.className='special-item-back';
+        back.className='special-item-back item-exit-button';
         title.textContent=itemId===24 ? (stage==='destination'?'移動先を確認':'移動するエリアを選択') : itemId===25 ? (stage==='result'?'平均化の結果':'全員の所持金を平均化') : '封印する相手を選択';
-        back.textContent=stage==='destination'?'エリア選択へ戻る':'戻る'; back.disabled=!!observer; back.onclick=onBack;
+        back.textContent='戻る'; back.disabled=!!observer; back.onclick=onBack;
         if (stage==='result') back.hidden=true;
         header.append(title); panel.append(header,back);
         const choices=document.createElement('div'); choices.className='special-item-choices';
@@ -31,7 +31,9 @@
             const projected=document.createElement('p');projected.className='special-equalize-average';
             const value=SpecialItemRules.average(players);
             projected.textContent=(stage==='preview'?'実行後の平均：':'平均化後：')+(value===null?'—':Number(value).toLocaleString('ja-JP')+'G');
-            choices.append(cards,projected,stage==='preview'?makeButton('平均化する',button=>onExecute?.(button)):makeButton('ターン終了',button=>onExecute?.(button)));
+            const action=stage==='preview'?makeButton('平均化する',button=>onExecute?.(button)):makeButton('終了',button=>onExecute?.(button));
+            if(stage!=='preview')action.classList.add('item-exit-button');
+            choices.append(cards,projected,action);
         } else {
             players.forEach((player,index)=>{if(index===actorIndex || player.underground)return;const el=card(player,index);el.append(makeButton('選ぶ',button=>onSelect?.(index,button)));choices.append(el);});
         }

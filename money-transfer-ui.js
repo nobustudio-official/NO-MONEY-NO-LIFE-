@@ -38,7 +38,7 @@
         const route = (from, to, result = false, money = true) => { const e = node('div', 'mt-route'); e.append(person(from, false, money), arrow(), person(to, result, money)); return e; };
         const go = (next, index = targetIndex, direction = type, value = null) => show({...cfg, stage:next, targetIndex:index, type:direction, amount:value});
         if (stage !== 'result') {
-            const back = btn('戻る', () => { if (stage === 'target') { close(); cfg.onExit(); } else if (stage === 'type') go('target'); else go('type'); }, 'mt-back');
+            const back = btn('戻る', () => { if (stage === 'target') { close(); cfg.onExit(); } else if (stage === 'type') go('target'); else go('type'); }, 'mt-back item-exit-button');
             back.disabled = Boolean(remote); panel.append(back);
         }
         if (stage === 'target') {

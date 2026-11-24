@@ -60,6 +60,7 @@
 
         if (targetComplete) {
             const action = element('button', 'hatataki-button hatataki-progress', view.status === 'end' ? '終了' : '次へ');
+            action.classList.toggle('item-exit-button', view.status === 'end');
             action.type = 'button';
             action.disabled = Boolean(view.readOnly || view.busy);
             action.onclick = () => view.status === 'end' ? handlers.onEnd?.() : handlers.onNext?.();
