@@ -171,12 +171,16 @@
 
 #boss-aftermath .bf-penalty-content {
     gap: clamp(3px, .7vh, 7px);
+    justify-content: flex-start;
 }
 
 #boss-aftermath .bf-penalty-layout .bf-punish-grid {
     flex: 1 1 auto;
     min-height: 0;
     gap: clamp(3px, .8vw, 8px);
+    grid-template-columns: minmax(0, 1.12fr) minmax(0, .75fr) minmax(0, .9fr);
+    align-items: stretch;
+    transform: none;
 }
 
 #boss-aftermath .bf-penalty-layout .bf-target-card,
@@ -189,9 +193,10 @@
 #boss-aftermath .bf-penalty-layout .bf-dice-slot {
     position: relative;
     flex: 0 0 auto;
-    height: clamp(72px, 16vh, 175px);
-    min-height: clamp(72px, 16vh, 175px);
+    height: auto;
+    min-height: 0;
     min-width: 0;
+    align-self: stretch;
 }
 
 #boss-aftermath .bf-penalty-layout .bf-target-card img {
@@ -211,12 +216,13 @@
     line-height: 1.2;
     font-size: clamp(13px, 2.8vh, 20px);
     text-align: center;
-    transform: translateY(calc(clamp(16px, 10vh, 36px) + 15px));
+    transform: none;
 }
 
-/* Lower the punishment character, multiplier, and die together without changing their spacing. */
-#boss-aftermath .bf-penalty-layout .bf-punish-grid {
-    transform: translateY(clamp(16px, 10vh, 36px));
+#boss-aftermath .bf-penalty-content > .bf-roll {
+    flex: 0 0 auto;
+    align-self: center;
+    margin: 0 auto;
 }
 
 /* The next-boss map and status use the same panel shell and dimensions. */

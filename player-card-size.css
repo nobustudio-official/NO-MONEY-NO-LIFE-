@@ -6,7 +6,7 @@
     .lost-magic-target-card,
     .hatataki-player-card,
     .special-item-card,
-    #boss-aftermath:not([data-player-card-reference]) .bf-target-card,
+    #boss-aftermath:not([data-player-card-reference]) .bf-target-card.bf-immunity-target,
     #boss-aftermath:not([data-player-card-reference]) .bf-receipt-card,
     .guidebook-offer-list .bf-receipt-card,
     .special-reward-card
