@@ -88,12 +88,14 @@
 
         let exitButton = null;
         if (targetComplete) {
-            const action = element('button', 'hatataki-button hatataki-progress', view.status === 'end' ? '終了' : '次へ');
-            action.classList.toggle('item-exit-button', view.status === 'end');
+            const actionClass = view.status === 'advance'
+                ? 'hatataki-button hatataki-progress item-exit-button hatataki-next-button'
+                : 'hatataki-button hatataki-progress item-exit-button';
+            const action = element('button', actionClass, view.status === 'end' ? '終了' : '次へ');
             action.type = 'button';
             action.disabled = Boolean(view.readOnly || view.busy);
             action.onclick = () => view.status === 'end' ? handlers.onEnd?.() : handlers.onNext?.();
-            if (view.status === 'end') exitButton = action;
+            exitButton = action;
             panel.append(action);
         }
         if (view.notice) {
