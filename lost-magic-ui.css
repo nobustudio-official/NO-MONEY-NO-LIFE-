@@ -1,12 +1,12 @@
 .lost-magic-overlay {
-    --lost-magic-row-height: 76px;
-    --lost-magic-icon-size: 52px;
+    --lost-magic-row-height: 50px;
+    --lost-magic-icon-size: 40px;
     --lost-magic-icon-column: 64px;
     --lost-magic-row-gap: 14px;
-    --lost-magic-list-gap: 10px;
+    --lost-magic-list-gap: 6px;
     --lost-magic-row-padding-x: 14px;
-    --lost-magic-button-min-width: 88px;
-    --lost-magic-button-height: 42px;
+    --lost-magic-button-min-width: 95px;
+    --lost-magic-button-height: 40px;
     position: fixed;
     inset: 0;
     z-index: 45000;
@@ -67,6 +67,10 @@
     min-height: 0;
     align-items: stretch;
     justify-content: center;
+}
+
+.lost-magic-overlay[data-stage="magic"] .lost-magic-body {
+    bottom: calc(18px + 30px + 10px);
 }
 
 .lost-magic-target-grid {
@@ -138,15 +142,23 @@
     line-height: 1.35;
 }
 
+.lost-magic-row > .lost-magic-button {
+    width: var(--lost-magic-button-min-width);
+    height: var(--lost-magic-button-height);
+    padding: 0 10px;
+}
+
 .lost-magic-no-magic { color: #d6dfe5; font-size: clamp(10px, 2.5vh, 12px); line-height: 1.2; }
 
 .lost-magic-list {
     display: flex;
     flex: 1;
     min-height: 0;
+    max-height: none;
     flex-direction: column;
     gap: var(--lost-magic-list-gap);
     overflow-y: auto;
+    margin: 0;
     padding: 14px 8px 14px 4px;
     scrollbar-color: #ccae7b #102b4366;
     scrollbar-width: thin;
@@ -168,7 +180,7 @@
     align-items: center;
     gap: var(--lost-magic-row-gap);
     overflow: hidden;
-    padding: 8px var(--lost-magic-row-padding-x);
+    padding: 4px var(--lost-magic-row-padding-x);
     border: 1px solid #a9c8df45;
     border-radius: 12px;
     background: linear-gradient(145deg, #274860c9, #17344edb);
