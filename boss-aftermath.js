@@ -56,9 +56,10 @@
     }
     function renderPenaltyEquation(equation, { distance, multiplier, die, normalAmount, additionalAmount, amount }, showDeduction) {
         const formula = `${distance} × ${fmt(multiplier)} × ${die} ＝ <strong>${fmt(normalAmount)}G</strong>`;
-        equation.innerHTML = showDeduction && additionalAmount > 0
-            ? `<del>${formula}</del><br>追加徴収額 <strong>＋${fmt(additionalAmount)}G</strong> → 合計 <strong>${fmt(amount)}G</strong>`
-            : formula;
+        const hasSurcharge = showDeduction && additionalAmount > 0;
+        equation.innerHTML = `<span>${hasSurcharge ? `<del>${formula}</del>` : formula}</span>`
+            + `<span>${hasSurcharge ? `追加徴収額 <strong>＋${fmt(additionalAmount)}G</strong>` : ''}</span>`
+            + `<span>${hasSurcharge ? `合計 <strong>${fmt(amount)}G</strong>` : ''}</span>`;
         equation.style.visibility = 'visible';
     }
     function show(options) {
