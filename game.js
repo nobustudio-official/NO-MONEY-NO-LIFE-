@@ -1258,6 +1258,7 @@ function renderGameTemplate(templateId, target) {
         const setupCard = setup.firstElementChild;
         const setupFooter = setupCard.querySelector(".title-screen__setup-footer");
         const isTurnSelect = templateId === "turnSelectTemplate";
+        setupFooter?.querySelector("#confirmTurnButton")?.remove();
         setupFooter?.classList.toggle("is-turn-select-footer", isTurnSelect);
         const setupContent = setup.firstElementChild.querySelector(".title-screen__setup-content");
         setupContent.replaceChildren(template.content.cloneNode(true));
