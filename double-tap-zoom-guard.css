@@ -1,9 +1,9 @@
-/* Disable browser double-tap zoom throughout the game while preserving
- * ordinary panning and pinch-to-zoom gestures.
+/* Keep ordinary panning and scrolling available while disabling native
+ * browser pinch zoom. The map keeps its own pinch handler in map-area.
  */
 html,
 body,
 .game-container,
 #gameViewportFrame {
-    touch-action: manipulation;
+    touch-action: pan-x pan-y;
 }
