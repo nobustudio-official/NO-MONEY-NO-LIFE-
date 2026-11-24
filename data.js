@@ -598,7 +598,7 @@ const MAGIC_CONTENTS = {
         rank: 0
     },
     4: {
-        name: "ダークチェーン",
+        name: "Dチェーン",
         type: "attack",
         icon: "images/magic/icons/dark-chain-icon.png",
         effect: "魔力の500％で攻撃",
