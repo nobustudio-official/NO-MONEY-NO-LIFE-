@@ -77,7 +77,7 @@ body:has(#undergroundPresentation.ug-underground:not([hidden])) .map-area { visi
     .ug-sale-totals { padding:4px 0; font-size:16px; }
 }
 .ug-slot.gold-roulette { display:block; color:white; line-height:normal; }
-.ug-slot .gold-roulette-number { font-size:clamp(20px, 9vw, 42px); }
+.ug-slot .gold-roulette-number { font-size:24px; }
 .ug-error { position:absolute; top:12%; left:12%; color:#ffd0c5; }
 #destinationInfo.ug-penica > :not(.ug-penica-value) { display:none; }
 .ug-penica-value[hidden] { display:none; }
