@@ -1,5 +1,5 @@
-/* Item-effect player cards only. Receipt/reward cards and the HUD keep their rules.
-   The requested sizes apply through a 600px short viewport side, then grow to 125%. */
+/* Match boss-reward receipt sizing within item effects only.
+   Card dimensions inherit the guidebook receipt measurement from PlayerCardSize. */
 :is(
     #moneyTransferScreen,
     .lost-magic-overlay,
@@ -8,14 +8,12 @@
     .guidebook-layer[data-view="offer"],
     .guidebook-layer[data-view="offers"]
 ) {
-    --player-card-width: clamp(135px, 22.5vmin, 168.75px);
-    --player-card-height: clamp(230px, 38.333334vmin, 287.5px);
-    --item-player-icon-size: clamp(76px, 12.666667vmin, 95px);
-    --item-player-name-size: clamp(19px, 3.166667vmin, 23.75px);
-    --item-player-button-size: clamp(16px, 2.666667vmin, 20px);
-    --item-player-money-size: clamp(19px, 3.166667vmin, 23.75px);
-    --item-player-card-gap: clamp(6px, 1vmin, 7.5px);
-    --item-player-card-padding: clamp(6px, 1vmin, 7.5px);
+    --item-player-icon-size: clamp(30px, 12vh, 54px);
+    --item-player-name-size: clamp(12px, 2.8vh, 17px);
+    --item-player-button-size: clamp(12px, 2.8vh, 15px);
+    --item-player-money-size: clamp(15px, 3.6vh, 22px);
+    --item-player-card-gap: clamp(3px, .8vh, 8px);
+    --item-player-card-padding: clamp(4px, 1vh, 9px);
 }
 
 :is(
@@ -47,6 +45,10 @@
     max-height: var(--player-card-height);
     gap: var(--item-player-card-gap);
     padding: var(--item-player-card-padding);
+    border: 1px solid #d8ba71;
+    border-radius: 13px;
+    background: linear-gradient(155deg, #344b5fef, #172b40f7);
+    box-shadow: inset 0 0 18px #f6d98a19, 0 5px 12px #0004;
     overflow: auto;
 }
 
@@ -95,8 +97,8 @@
     min-width: 0;
     max-width: 100%;
     font-size: var(--item-player-name-size);
-    line-height: 1.25;
-    white-space: normal;
+    line-height: normal;
+    white-space: nowrap;
     overflow: visible;
     overflow-wrap: anywhere;
     text-overflow: clip;
@@ -110,9 +112,9 @@
     min-width: 0;
     max-width: 100%;
     font-size: var(--item-player-money-size);
-    line-height: 1.25;
-    white-space: normal;
-    overflow-wrap: anywhere;
+    line-height: normal;
+    white-space: nowrap;
+    overflow-wrap: normal;
 }
 
 :is(
@@ -135,14 +137,16 @@
     max-width: 100%;
     height: auto;
     min-height: 0;
-    padding: clamp(6px, 1vmin, 7.5px) clamp(10px, 1.666667vmin, 12.5px);
+    padding: clamp(4px, .8vh, 8px) clamp(6px, 1vw, 12px);
+    border: 1px solid #d8ba71;
+    border-radius: 9px;
     font-size: var(--item-player-button-size);
-    line-height: 1.25;
-    white-space: normal;
+    line-height: normal;
+    white-space: nowrap;
     overflow-wrap: anywhere;
 }
 
-/* Keep larger item cards reachable inside their existing panels. */
+/* Keep item cards reachable inside their existing panels. */
 #moneyTransferScreen .mt-target-card > small,
 .lost-magic-overlay .lost-magic-target-card > small {
     flex: none;

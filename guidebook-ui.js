@@ -296,6 +296,7 @@
         }
         document.body.append(root);
         if (kind !== 'choice') styleBanner(banner);
+        if (kind === 'offer' || kind === 'offers') window.PlayerCardSize?.fitItemAmounts(root);
         const screen = document.querySelector('.game-screen');
         const hud = screen?.querySelector('.game-hud');
         if (hud && !panel.hidden) stopHudTracking = trackHud(root, hud);

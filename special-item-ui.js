@@ -36,6 +36,7 @@
             players.forEach((player,index)=>{if(index===actorIndex || player.underground)return;const el=card(player,index);el.append(makeButton('選ぶ',button=>onSelect?.(index,button)));choices.append(el);});
         }
         panel.append(choices);popup.append(panel);
+        window.PlayerCardSize?.fitItemAmounts(popup);
         if ([24,26].includes(Number(itemId))) window.Plane02Layout?.apply(panel);
         if (stage === 'result') {
             const announcement=document.createElement('div');announcement.className='special-item-announcement';

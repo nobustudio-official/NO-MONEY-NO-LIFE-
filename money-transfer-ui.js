@@ -123,6 +123,7 @@
         }
         document.body.append(root);
         if ([13, 19, 21, 22].some(id => ITEM_CONTENTS[id]?.name === itemName)) window.Plane02Layout?.apply(panel);
+        window.PlayerCardSize?.fitItemAmounts(root);
         if (!remote) cfg.onSync(stage, targetIndex, type, stage === 'amount' ? Number(root.querySelector('.mt-amount').value) : cfg.amount);
     }
     window.MoneyTransferUI = Object.freeze({ show, close, limit });
