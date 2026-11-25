@@ -94,6 +94,33 @@
         if (!(element.complete && element.naturalWidth)) releaseImage(element);
     }
 
+    function enterLowDetail(board, state) {
+        clearTimeout(state.detailTimer);
+        state.detailTimer = 0;
+        state.detailPending = false;
+        if (!state.lowDetail) {
+            state.lowDetail = true;
+            // Cancel unfinished work; keep decoded images and their DOM sources.
+            for (const request of [...pendingImages.values(), ...activeRequests.values()]) {
+                if (request.board === board) releaseImage(request.element);
+            }
+            for (const [key, job] of presentationJobs) if (job.board === board) presentationJobs.delete(key);
+        }
+        window.MapOverviewCache?.setZoom(board, state.zoom);
+    }
+
+    function prepareNormalPresentation(board) {
+        // The lightweight parent still hides detail here. Hide only loaded
+        // display elements before revealing them through the paced queue.
+        for (const image of board.querySelectorAll('img')) {
+            if (!image.complete || !image.naturalWidth || image.closest('.boss-node')) continue;
+            if (image.classList.contains('map-space-icon') || image.closest('.map-background') ||
+                image.closest('.map-workshop-objects')) {
+                if (image.style.visibility !== 'hidden') image.style.visibility = 'hidden';
+            }
+        }
+    }
+
     function settleRequest(request, image = null, error = null) {
         if (request.settled) return;
         request.settled = true;
@@ -381,19 +408,21 @@
         const { left, right, top, bottom } = { left: visible.left - margin, right: visible.right + margin,
             top: visible.top - margin, bottom: visible.bottom + margin };
         const near = state.visibleOnly ? visible : { left, right, top, bottom };
-        window.MapBackgroundCache?.setViewport(board, near, visible);
-        window.MapRoadCache?.setViewport(board, near, visible);
-        window.MapWorkshopScene?.setViewport(board, near, visible, { immediateImages: state.visibleOnly });
+        if (!state.lowDetail) {
+            window.MapBackgroundCache?.setViewport(board, near, visible);
+            window.MapRoadCache?.setViewport(board, near, visible);
+            window.MapWorkshopScene?.setViewport(board, near, visible, { immediateImages: state.visibleOnly });
+        }
         for (const row of state.nodes) {
             const outside = row.x < left || row.x > right || row.y < top || row.y > bottom;
             if (row.outside !== outside) {
                 row.outside = outside;
                 row.node.classList.toggle('map-detail-offscreen', outside);
             }
-            if (touchDevice && row.icon?.isConnected && !row.node.classList.contains('boss-node')) {
+            if (touchDevice && !state.lowDetail && row.icon?.isConnected && !row.node.classList.contains('boss-node')) {
                 const onScreen = row.x + 64 >= visible.left && row.x - 64 <= visible.right &&
                     row.y + 64 >= visible.top && row.y - 64 <= visible.bottom;
-                if (state.lowDetail || !onScreen) hideImage(row.icon);
+                if (!onScreen) hideImage(row.icon);
                 else if (row.icon.complete && row.icon.naturalWidth) showImage(row.icon);
                 else enqueueImage(row.icon, row.icon.dataset.highQualitySrc, 0,
                     (row.x - (visible.left + visible.right) / 2) ** 2 + (row.y - (visible.top + visible.bottom) / 2) ** 2).catch(() => {});
@@ -467,7 +496,8 @@
                 state.detailPending = true;
                 window.MapOverviewCache?.setZoom(board, zoom);
             }
-            if (state.previewing || window.MapScene?.isViewportResizing?.()) prepareViewportResize(board);
+            if (zoom < .5) enterLowDetail(board, state);
+            else if (state.previewing || window.MapScene?.isViewportResizing?.()) prepareViewportResize(board);
             else if (changed || (state.detailPending && !state.detailTimer)) {
                 state.detailPending = true;
                 clearTimeout(state.detailTimer);
@@ -475,10 +505,11 @@
                     state.detailTimer = 0;
                     if (state.disposed || !board.isConnected || state.previewing || state.scrolling ||
                         board.classList.contains('map-zoom-interacting') || window.MapScene?.isViewportResizing?.()) return;
-                    state.lowDetail = state.zoom < .5;
+                    if (state.lowDetail) prepareNormalPresentation(board);
+                    state.lowDetail = false;
                     state.detailPending = false;
                     window.MapOverviewCache?.setZoom(board, state.zoom);
-                    if (!state.lowDetail) window.MapBackgroundCache?.showFallback?.(board);
+                    window.MapBackgroundCache?.showFallback?.(board);
                     state.schedule();
                     scheduleImagePump();
                     schedulePresentation();

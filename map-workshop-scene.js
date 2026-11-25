@@ -152,7 +152,8 @@
         const viewportChanged=!sameViewport(state.visibleBounds,visibleBounds);
         state.bounds=bounds;
         state.visibleBounds=visibleBounds;
-        if(state.streamImages&&(viewportChanged||immediateImages&&!state.objectImagesReady)){
+        const needsImages=!state.objectImagesReady&&(!state.objectImageTimer||immediateImages);
+        if(state.streamImages&&(viewportChanged||needsImages)){
             state.objectImagesReady=immediateImages;
             clearTimeout(state.objectImageTimer);
             state.objectImageTimer=immediateImages?0:window.setTimeout(()=>{
@@ -186,8 +187,8 @@
                     if(image.classList.contains('is-ready'))image.classList.remove('is-ready');
                     if (!(image.complete && image.naturalWidth)) window.MapDetailLevel?.releaseImage(image);
                 }else if(image.complete&&image.naturalWidth){
-                    if(onScreen&&!image.classList.contains('is-ready'))window.MapDetailLevel.queuePresentation(image,()=>{
-                        if(row.onScreen)image.classList.add('is-ready');
+                    if(onScreen&&(!image.classList.contains('is-ready')||image.style.visibility==='hidden'))window.MapDetailLevel.queuePresentation(image,()=>{
+                        if(row.onScreen){image.style.visibility='';image.classList.add('is-ready');}
                     });
                 }else if(onScreen&&!zooming&&state.objectImagesReady&&!state.pendingObjectImages.has(row)){
                     const centerX=(visibleBounds.left+visibleBounds.right)/2,centerY=(visibleBounds.top+visibleBounds.bottom)/2;
@@ -202,6 +203,13 @@
             }
         }
         if(!state.effectTimer)updateMagicEffects(board,state);
+    }
+    function pauseDetail(board) {
+        const state=boards.get(board);if(!state)return;
+        clearTimeout(state.objectImageTimer);
+        clearTimeout(state.effectTimer);
+        state.objectImageTimer=state.effectTimer=0;
+        state.objectImagesReady=false;
     }
     function releaseDetail(board) {
         const state=boards.get(board);if(!state?.streamImages)return;
@@ -247,7 +255,7 @@
             row.extent=objectExtent(row);
             image.addEventListener('load',()=>{
                 window.MapDetailLevel.queuePresentation(image,()=>{
-                    if(!window.MapDetailLevel.touchDevice||row.onScreen)image.classList.add('is-ready');
+                    if(!window.MapDetailLevel.touchDevice||row.onScreen){image.style.visibility='';image.classList.add('is-ready');}
                 });
                 if(object.imageHeight!==undefined)return;
                 const height=width*image.naturalHeight/image.naturalWidth;
@@ -278,5 +286,5 @@
         const board=document.getElementById('mapBoard'),state=boards.get(board);
         if(state&&!state.effectTimer)updateMagicEffects(board,state);
     });
-    window.MapWorkshopScene=Object.freeze({roadStyle,roadPoints,arrowPlacement,prepare,prepareRoads,drawRoad,drawObjects,mount,setViewport,releaseDetail});
+    window.MapWorkshopScene=Object.freeze({roadStyle,roadPoints,arrowPlacement,prepare,prepareRoads,drawRoad,drawObjects,mount,setViewport,releaseDetail,pauseDetail});
 })();

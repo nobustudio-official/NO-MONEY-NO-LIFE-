@@ -217,18 +217,9 @@
         const state = boards.get(board);
         if (!state || state.simpleMode === simpleMode) return;
         state.simpleMode = simpleMode;
-        if (state.simpleMode) {
-            if (state.streaming) {
-                MapDetailLevel.setTileSources(state.tiles, null, null);
-                MapDetailLevel.setTileSources(state.bridges, null, null);
-            }
-            for (const tile of state.tiles) tile.element.style.display = 'none';
-            for (const bridge of state.bridges) bridge.element.style.display = 'none';
-        } else {
-            for (const tile of state.tiles) tile.element.style.display = '';
-            for (const bridge of state.bridges) bridge.element.style.display = '';
-            MapDetailLevel.scheduleViewport(board);
-        }
+        // Existing parent CSS switches road/bridge layers without touching
+        // every retained tile. The normal viewport restores visible tiles.
+        if (!simpleMode) MapDetailLevel.scheduleViewport(board);
     }
     function releaseDetail(board) {
         const state = boards.get(board);

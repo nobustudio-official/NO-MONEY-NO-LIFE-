@@ -66,6 +66,7 @@
 .map-background.map-overview-active > .map-road-raster { display:none; }
 #mapBoard.map-overview-active .map-stone-roads > .map-road-vector { display:none; }
 .map-background.map-low-detail-active > .map-background-raster,
+.map-background.map-low-detail-active > .map-continent,
 .map-background.map-low-detail-active > .map-road-raster { display:none; }
 #mapBoard.map-low-detail-active .map-static-background > .map-static-raster,
 #mapBoard.map-low-detail-active .map-background > .map-overview-raster { display:none; }

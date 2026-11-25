@@ -249,7 +249,11 @@
         if (useLowDetail && !wasLowDetail) releaseMobileBase(board);
         else if (!useLowDetail && wasLowDetail) restoreMobileBase(board);
         window.MapRoadCache?.setSimpleMode(board, useLowDetail);
-        if(useLowDetail&&!wasLowDetail)releaseTouchDetails(board);
+        if(useLowDetail&&!wasLowDetail) {
+            window.MapWorkshopScene?.pauseDetail?.(board);
+            const mobile = mobileStates.get(background);
+            if (mobile) mobile.pending.length = 0;
+        }
         if (!state?.ready) return;
         // Mobile uses the fixed 0.5 threshold, without desktop size/signature checks.
         let active = useLowDetail;
@@ -265,10 +269,6 @@
         state.active = active;
         background.classList.toggle('map-overview-active', active);
         board.classList.toggle('map-overview-active', active);
-        if(active&&window.MapDetailLevel?.touchDevice){
-            // Flat region vectors replace detail without discarding decoded images.
-            releaseTouchDetails(board);
-        }
     }
     window.MapOverviewCache = Object.freeze({ prepare, setZoom, signature, mountAsBase, setMobileViewport,
         releaseDetail: releaseTouchDetails });
