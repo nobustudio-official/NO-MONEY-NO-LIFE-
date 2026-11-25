@@ -29,20 +29,31 @@
         } else if (itemId===25) {
             choices.classList.add('is-equalize');
             const cards=document.createElement('div');cards.className='special-equalize-cards';
-            players.forEach((player,index)=>{if(player.underground)return;const el=card(player,index),amount=document.createElement('strong');amount.className='special-item-money';amount.textContent=Number(player.money).toLocaleString('ja-JP')+'G';el.append(amount);cards.append(el);});
+            players.forEach((player,index)=>{
+                if(player.underground)return;
+                const el=card(player,index),amount=document.createElement('strong');
+                amount.className='special-item-money';
+                amount.textContent=Number(player.money).toLocaleString('ja-JP')+'G';
+                el.append(amount);
+                const frame=document.createElement('div');
+                frame.className='special-equalize-card-frame';
+                frame.append(el);cards.append(frame);
+            });
             const projected=document.createElement('p');projected.className='special-equalize-average';
             const value=SpecialItemRules.average(players);
             projected.textContent=(stage==='preview'?'実行後の平均：':'平均化後：')+(value===null?'—':Number(value).toLocaleString('ja-JP')+'G');
             const action=stage==='preview'?makeButton('平均化する',button=>onExecute?.(button)):makeButton('終了',button=>onExecute?.(button));
-            action.classList.add(stage==='preview'?'special-equalize-execute':'item-exit-button');
+            action.classList.add('special-equalize-action');
+            if(stage!=='preview')action.classList.add('item-exit-button');
             choices.append(cards,projected,action);
         } else {
             players.forEach((player,index)=>{if(index===actorIndex || player.underground)return;const el=card(player,index);el.append(makeButton('選ぶ',button=>onSelect?.(index,button)));choices.append(el);});
         }
         panel.append(choices);popup.append(panel);
+        if (Number(itemId) === 25) window.Plane02Layout?.apply(panel, {once:true});
         window.PlayerCardSize?.watch(popup);
         if ([24,25,26].includes(Number(itemId))) window.Plane02Layout?.apply(panel);
-        if (stage === 'result') {
+        if (stage === 'result' && Number(itemId) !== 25) {
             const announcement=document.createElement('div');announcement.className='special-item-announcement';
             const portrait=document.createElement('img');portrait.src=options.icon(actorIndex);portrait.alt='';
             const itemName=ITEM_CONTENTS[itemId].name;

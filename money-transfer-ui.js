@@ -114,6 +114,15 @@
             content.append(choices);
         } else if (stage === 'items' || stage === 'assets') {
             const list = node('ul', 'mt-items');
+            const description = stage === 'items' ? node('p', 'mt-item-description') : null;
+            let pinnedDescription = '', selectedRow = null;
+            if (description) {
+                description.id = 'mt-item-description';
+                description.setAttribute('aria-live', 'polite');
+                panel.append(description);
+                list.onpointerleave = () => { description.textContent = pinnedDescription; };
+                list.onfocusout = event => { if (!list.contains(event.relatedTarget)) description.textContent = pinnedDescription; };
+            }
             const entries = (isAssetTransfer ? cfg.getAssets : cfg.getItems)(type === 'send' ? actor : target, type);
             if (!entries.length) list.append(node('li', 'mt-items-empty', isAssetTransfer ? '移転できる資産はありません。' : '選べるアイテムがありません。'));
             for (const entry of entries) {
@@ -129,6 +138,20 @@
                     const copy = node('div', 'mt-item-copy');
                     copy.append(name, node('small', '', entry.detail)); row.append(copy, action);
                 } else row.append(name, action);
+                if (description) {
+                    const text = ITEM_CONTENTS[entry.id]?.effect || '';
+                    const select = () => {
+                        selectedRow?.removeAttribute('data-selected'); selectedRow = row;
+                        row.dataset.selected = ''; pinnedDescription = text; description.textContent = text;
+                    };
+                    row.tabIndex = 0;
+                    row.setAttribute('aria-describedby', description.id);
+                    row.onpointerenter = row.onfocusin = () => { description.textContent = text; };
+                    row.onclick = event => { if (!event.target.closest('button')) select(); };
+                    row.onkeydown = event => {
+                        if (!event.target.closest('button') && ['Enter', ' '].includes(event.key)) { event.preventDefault(); select(); }
+                    };
+                }
                 list.append(row);
             }
             content.append(list);

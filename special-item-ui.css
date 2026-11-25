@@ -33,23 +33,23 @@
 .special-item-choices:not(.is-areas):not(.is-equalize) > .special-item-card { flex:1 1 0; width:100%; max-width:230px; }
 .special-equalize-cards { width:100%; }
 .special-equalize-cards > .special-item-card { flex:1 1 0; width:100%; max-width:230px; }
-/* Equalize uses the job event frame; other special item panels keep their styling. */
+/* Equalize keeps job event geometry with the inventory panel's translucent background. */
 #specialItemPopup[data-item-id="25"] .special-item-panel {
     --equalize-back-bottom: 18px;
     --equalize-back-height: 30px;
     --equalize-action-height: 45px;
     border: 2px solid rgba(255, 218, 105, .82);
     border-radius: 16px;
-    background: #141423;
+    background: linear-gradient(145deg, #14334aee, #123148f5);
     box-shadow: 0 10px 34px rgba(0, 0, 0, .55),
         0 0 0 1px rgba(50, 170, 255, .7),
         inset 0 0 0 1px rgba(255, 255, 255, .25);
 }
 #specialItemPopup[data-item-id="25"] .special-item-back { bottom: var(--equalize-back-bottom); }
-#specialItemPopup[data-item-id="25"] .special-equalize-execute {
+#specialItemPopup[data-item-id="25"] .special-equalize-action {
     position: absolute;
     left: 50%;
-    bottom: calc(var(--equalize-back-bottom) + (var(--equalize-back-height) - var(--equalize-action-height)) / 2 - 10px);
+    bottom: calc(var(--equalize-back-bottom) + (var(--equalize-back-height) - var(--equalize-action-height)) / 2);
     transform: translateX(-50%);
     box-sizing: border-box;
     height: var(--equalize-action-height);
@@ -58,3 +58,18 @@
     margin: 0;
     padding-block: 0;
 }
+#specialItemPopup[data-item-id="25"] .special-equalize-action.item-exit-button { --equalize-action-height: 30px; }
+#specialItemPopup[data-item-id="25"] .special-equalize-card-frame { position: relative; isolation: isolate; flex: none; }
+#specialItemPopup[data-item-id="25"] .special-equalize-card-frame::before {
+    content: '';
+    position: absolute;
+    inset: 5px 0;
+    z-index: -1;
+    box-sizing: border-box;
+    border: 1px solid #d8ba71;
+    border-radius: 13px;
+    background: linear-gradient(155deg, #344b5fef, #172b40f7);
+    box-shadow: inset 0 0 18px #f6d98a19, 0 5px 12px #0004;
+    pointer-events: none;
+}
+#specialItemPopup[data-item-id="25"] .special-item-card { border-color: transparent; background: none; box-shadow: none; }
