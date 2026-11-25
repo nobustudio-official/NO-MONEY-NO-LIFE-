@@ -120,15 +120,15 @@
             }
             if (presentationPaused(job.board)) continue;
             const state = states.get(job.board);
-            // During camera travel, retain loaded terrain; defer new bindings
-            // and optional icon/object reveals until the camera settles.
-            if ((state?.scrolling || state?.cameraMotions.size) && (job.request || job.group > 0)) continue;
-            if (!(waitingGroups.get(job.board) < job.group)) available.push([key, job]);
+            // Square illustrations stay available during travel. Background
+            // bindings and decorative objects can wait for the camera to settle.
+            if ((state?.scrolling || state?.cameraMotions.size) && job.group !== 1 && (job.request || job.group > 0)) continue;
+            if (job.group === 1 || !(waitingGroups.get(job.board) < job.group)) available.push([key, job]);
         }
         if (!available.length) { notifyPresentationWaiters(); return; }
-        const group = Math.min(...available.map(([, job]) => job.group));
-        // Background/roads first, then up to eight icons or two objects per frame.
-        let budget = [1, 8, 2][group];
+        const group = available.some(([, job]) => job.group === 1) ? 1 : Math.min(...available.map(([, job]) => job.group));
+        // Prioritize square illustrations, one at a time, without a stop-time burst.
+        let budget = [1, 1, 2][group];
         for (const [key, job] of available) {
             if (job.group !== group || !presentationJobs.has(key)) continue;
             presentationJobs.delete(key);
@@ -177,8 +177,7 @@
         // display elements before revealing them through the paced queue.
         for (const image of board.querySelectorAll('img')) {
             if (!image.complete || !image.naturalWidth || image.closest('.boss-node')) continue;
-            if (image.classList.contains('map-space-icon') || image.closest('.map-background') ||
-                image.closest('.map-workshop-objects')) {
+            if (image.closest('.map-background') || image.closest('.map-workshop-objects')) {
                 if (image.style.visibility !== 'hidden') image.style.visibility = 'hidden';
             }
         }
@@ -273,11 +272,14 @@
             const request = [...pendingImages.values()].filter(request => {
                 if (request.entry.loading || request.entry.ready) return false;
                 if (!request.board) return true;
-                if (cameraJumps.size || scrollPauses.size || window.MapScene?.isViewportResizing?.()) return false;
+                if (cameraJumps.size || window.MapScene?.isViewportResizing?.()) return false;
+                if (scrollPauses.size && imageGroup(request.element) !== 1) return false;
                 if (states.get(request.board)?.detailPending || (touchDevice && isLowDetail(request.board))) return false;
                 if (touchDevice && request.board.classList.contains('map-zoom-interacting')) return false;
-                return !states.get(request.board)?.scrolling || request.priority === 0;
-            }).sort((a, b) => a.priority - b.priority || imageGroup(a.element) - imageGroup(b.element) || a.distance - b.distance)[0];
+                return true;
+            }).sort((a, b) => a.priority - b.priority ||
+                Number(imageGroup(b.element) === 1) - Number(imageGroup(a.element) === 1) ||
+                imageGroup(a.element) - imageGroup(b.element) || a.distance - b.distance)[0];
             if (!request) break;
             startImageLoad(request.entry, request.priority);
         }
@@ -411,8 +413,8 @@
             if (state.disposed || state.cameraJumps.size) return;
             if (state.visibleOnly) { schedule(); return; }
             state.scrolling = true;
-            // Keep decoded tiles visible at every zoom, but defer new decodes
-            // until manual or automatic camera travel has settled.
+            // Keep decoded tiles visible; defer new scenery decodes during travel.
+            // Square illustrations use the same single load slot, without waiting.
             updateCameraActivity(board, state);
             clearTimeout(state.scrollSettleTimer);
             state.scrollSettleTimer = setTimeout(() => {
@@ -497,9 +499,11 @@
             if (touchDevice && !state.lowDetail && row.icon?.isConnected && !row.node.classList.contains('boss-node')) {
                 const onScreen = row.x + 64 >= visible.left && row.x - 64 <= visible.right &&
                     row.y + 64 >= visible.top && row.y - 64 <= visible.bottom;
-                if (!onScreen) hideImage(row.icon);
-                else if (row.icon.complete && row.icon.naturalWidth) showImage(row.icon);
-                else enqueueImage(row.icon, row.icon.dataset.highQualitySrc, 0,
+                // The parent node handles offscreen visibility. Keep its loaded
+                // illustration intact so panning back does not need a reveal job.
+                if (row.icon.complete && row.icon.naturalWidth) showImage(row.icon);
+                else if (outside) releaseImage(row.icon);
+                else enqueueImage(row.icon, row.icon.dataset.highQualitySrc, onScreen ? 0 : 1,
                     (row.x - (visible.left + visible.right) / 2) ** 2 + (row.y - (visible.top + visible.bottom) / 2) ** 2).catch(() => {});
             }
         }
