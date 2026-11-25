@@ -16,6 +16,8 @@
     const saves = LocalMatchSave.controller({ store: LocalMatchSave.indexedDBStore(window.indexedDB),
         online: () => Boolean(window.onlineGame?.isOnline), onError: warn });
     function camera() {
+        // The empty board's temporary coordinates must not replace the saved camera.
+        if (document.querySelector('.game-container')?.inert) return null;
         const area = document.querySelector('.game-screen .map-area');
         return area ? { zoom: window.getMapZoomUI?.() ?? 0.8, left: area.scrollLeft, top: area.scrollTop } : null;
     }

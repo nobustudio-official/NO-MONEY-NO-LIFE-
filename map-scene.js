@@ -9,6 +9,7 @@
  const cameraLimits=new WeakMap();let cameraLayoutVersion=0;
  const viewportSizes=new WeakMap();let viewportLayoutVersion=0;
  const viewportGeometry=new WeakMap();
+ const viewportWaiters=new Set();
  const continent=window.MapContinentData;
  const oceanImageUrls=['images/map/backgrounds/world/ocean/base-repeat.svg','images/map/backgrounds/world/ocean/ripples-repeat.svg'];
  const assetUrls=[continent.grassTexture,...window.MapRegionBackground.assetUrls];
@@ -26,6 +27,17 @@
   invalidateCameraLimits();
  }
  function isViewportResizing(){return Boolean(resizeTimer||resizeFrame);}
+ function finishViewportResize(stable=false){
+  for(const waiter of viewportWaiters)waiter.resolve(stable&&waiter.board.isConnected&&document.getElementById('mapBoard')===waiter.board);
+  viewportWaiters.clear();
+ }
+ function whenViewportStable(board){
+  if(!board?.isConnected)return Promise.resolve(false);
+  return new Promise(resolve=>{
+   viewportWaiters.add({board,resolve});
+   if(!isViewportResizing())scheduleViewportResize(board.closest('.map-area'));
+  });
+ }
  function scheduleViewportResize(area){
   invalidateViewportSize(area);
   window.MapDetailLevel?.prepareViewportResize?.(document.getElementById('mapBoard'));
@@ -37,15 +49,17 @@
    resizeFrame=requestAnimationFrame(()=>{
     const board=document.getElementById('mapBoard');
     const viewport=document.querySelector('.game-screen .map-area');
-    if(!board||!viewport){resizeFrame=0;return;}
+    if(!board||!viewport){resizeFrame=0;finishViewportResize();return;}
     const width=viewport.clientWidth,height=viewport.clientHeight;
     resizeFrame=requestAnimationFrame(()=>{
      resizeFrame=0;
-     if(!board.isConnected||document.getElementById('mapBoard')!==board)return;
+     if(!board.isConnected||document.getElementById('mapBoard')!==board){finishViewportResize();return;}
      if(width!==viewport.clientWidth||height!==viewport.clientHeight){scheduleViewportResize(viewport);return;}
+     if(!(width>0&&height>0)){if(viewportWaiters.size)scheduleViewportResize(viewport);return;}
      const zoom=typeof window.getMapZoomUI==='function'?window.getMapZoomUI():activeScale;
      if(typeof window.setMapZoomUI==='function')window.setMapZoomUI(zoom);
      else{setZoom(zoom);window.MapDetailLevel?.setZoom(board,zoom);}
+     finishViewportResize(true);
     });
    });
   },120);
@@ -259,5 +273,5 @@
  }
  window.addEventListener('resize',()=>scheduleViewportResize());
  document.addEventListener('fullscreenchange',()=>scheduleViewportResize());
- window.MapScene=Object.freeze({config,cameraFrame,assetUrls,createBackground,setZoom,getMinZoom,getCameraLimits,clampScroll,getViewport,createSpatialIndex,invalidateCameraLimits,invalidateViewportSize,scheduleViewportResize,isViewportResizing});
+ window.MapScene=Object.freeze({config,cameraFrame,assetUrls,createBackground,setZoom,getMinZoom,getCameraLimits,clampScroll,getViewport,createSpatialIndex,invalidateCameraLimits,invalidateViewportSize,scheduleViewportResize,whenViewportStable,isViewportResizing});
 })();

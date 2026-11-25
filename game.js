@@ -2027,6 +2027,7 @@ function showGameScreen(
 
 
     renderGameTemplate("mainGameTemplate", gameContainer);
+    if (localResume) gameContainer.inert = true;
     window.GameActionInput.reset();
     window.GameActionInput.watchPanels();
     activeKnockbackPresentation = null;
@@ -10968,10 +10969,13 @@ if (!window.onlineGame?.isOnline && window.LocalMatchRecovery) {
     }));
 }
 
-// A new match starts slightly zoomed out, regardless of the previous map view.
-window.resetMapZoomUI?.();
-
-renderMap();
+// Fresh games keep their opening. Recovery builds the map at its saved camera
+// only after the viewport has settled, without queuing the opening's camera pan.
+// Attach size observers on the empty board so their initial notifications are
+// included in that wait, before scenery or viewport canvases are created.
+if (localResume?.camera) window.setMapZoomUI?.(localResume.camera.zoom);
+else window.resetMapZoomUI?.();
+if (!localResume) renderMap();
 
 renderPlayers();
 
@@ -10986,24 +10990,32 @@ else window.UndergroundUI.render(getOfflineUndergroundState(), true, null);
 // プレイヤー1をマップ中央へ
 // =========================
 
-const finishInitialLocalView = function () {
+const finishInitialLocalView = async function () {
     try {
-    if (localResume) {
+        if (!localResume) { centerCurrentPlayerOnMap("auto"); return; }
+        const board = document.getElementById('mapBoard');
+        if (!await window.MapScene.whenViewportStable(board)) { resumeResolve(); return; }
+        window.cancelMapCameraScroll?.();
+        if (localResume.camera) {
+            window.setMapZoomUI?.(localResume.camera.zoom);
+            const area = board.closest('.map-area');
+            area.scrollTo({ left: localResume.camera.left, top: localResume.camera.top, behavior: 'instant' });
+            window.MapScene.clampScroll();
+        }
+        renderMap({ preserveCamera: true });
+        if (!localResume.camera && localResume.step.phase !== 'ending') {
+            await new Promise(resolve => centerPlayerOnMap(currentPlayer, 'auto', resolve));
+        }
         window.gameOpeningComplete = true;
         resumeLocalStep(localResume);
         if (localResume.step.phase === 'ending') { resumeResolve(); return; }
-        if (localResume.camera) {
-            window.setMapZoomUI?.(localResume.camera.zoom);
-            const area = document.querySelector('.game-screen .map-area');
-            area?.scrollTo({ left: localResume.camera.left, top: localResume.camera.top, behavior: 'instant' });
-        } else centerCurrentPlayerOnMap('auto');
         window.MapAreaAudio?.updateForPlayer(players[currentPlayer], { immediate: true });
         resumeResolve();
-    } else centerCurrentPlayerOnMap("auto");
     } catch (error) { if (resumeReject) resumeReject(error); else throw error; }
+    finally { if (localResume) gameContainer.inert = false; }
 };
-// A backgrounded standalone app can suspend animation frames. Restoring logical
-// state must finish independently of the rendering clock.
+// Logical state is restored above. Rendering can wait while a backgrounded app
+// suspends frames; it starts after the visible viewport has settled.
 if (localResume) queueMicrotask(finishInitialLocalView);
 else requestAnimationFrame(finishInitialLocalView);
 
