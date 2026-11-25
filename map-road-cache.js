@@ -109,6 +109,7 @@
     }
 
     async function prepare(svg, squares) {
+        if (window.MapViewportRenderer?.setRoads(svg, squares)) return;
         const previous = pending.get(svg);
         previous?.layer?.remove();
         previous?.bridgeLayer?.remove();
@@ -201,6 +202,7 @@
     }
 
     function setBridgeCollapse(svg, state) {
+        if (window.MapViewportRenderer?.setBridgeCollapse(svg, state)) return;
         const board = svg?.closest('#mapBoard'), scene = board && boards.get(board);
         if (!scene) return;
         for (const bridge of scene.bridges || []) {

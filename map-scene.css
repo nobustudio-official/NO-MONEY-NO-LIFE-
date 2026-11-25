@@ -114,3 +114,13 @@
     /* Avoid reserving layers for every object exposed during camera travel. */
     #mapBoard .map-workshop-objects img.map-object-sharp { will-change: auto; }
 }
+
+/* The experimental surface is a sibling of the scroll viewport, never a world-sized layer. */
+.game-screen > .map-viewport-surface {
+    position:absolute; inset:0; width:100%; height:100%; z-index:9;
+    pointer-events:none; contain:strict;
+}
+.game-screen > .map-viewport-surface[hidden] { display:none; }
+.game-screen > .map-area.map-ocean.map-viewport-active { background:transparent; }
+#mapBoard.map-viewport-active:not(.map-low-detail-active) > .map-background > .map-continent,
+#mapBoard.map-viewport-active:not(.map-low-detail-active) > .map-lines { display:none; }

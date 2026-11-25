@@ -28,7 +28,7 @@
     <link rel="stylesheet" href="reward-cards.css?v=mobile-reward-cards-top10-20261122">
     <link rel="stylesheet" href="boss-gate.css?v=boss-gate-frame-match-sequence-20261123-1">
     <link rel="stylesheet" href="battle-reward-ui.css?v=normal-reward-anywhere-20261122">
-    <link rel="stylesheet" href="map-scene.css?v=map-transition-work-budget-20261125-1">
+    <link rel="stylesheet" href="map-scene.css?v=viewport-background-roads-20261125-1">
     <link rel="stylesheet" href="disadvantage-immunity-effect.css?v=gold-overlay-1">
     <link rel="stylesheet" href="battle-effects/thunder-css.css">
     <link rel="stylesheet" href="battle-effects/meteor.css">
@@ -1761,6 +1761,8 @@
         window.mobileOpeningLightweight = !compatibilityMode;
         const phoneViewport = matchMedia('(pointer: coarse)').matches;
         window.mobileRuntimeTuning = !compatibilityMode && settings.get('mobile-runtime') !== 'off' && phoneViewport;
+        // Immediate rollback: append ?map-renderer=legacy (or &map-renderer=legacy).
+        window.mapViewportRendering = window.mobileRuntimeTuning && settings.get('map-renderer') !== 'legacy';
     }
 </script>
 <script src="data.js?v=shopkeeper-voice-20261122"></script>
@@ -1792,13 +1794,13 @@
 <script src="map-island-banks.js"></script>
 <script src="map-boundary-strips.js"></script>
 <script src="map-region-background.js?v=unused-code-cleanup-20261125-1"></script>
-<script src="map-scene.js?v=staged-map-restore-20261125-1"></script>
-<script src="map-background-cache.js?v=staged-map-restore-20261125-1"></script>
+<script src="map-scene.js?v=viewport-background-roads-20261125-1"></script>
+<script src="map-background-cache.js?v=viewport-background-roads-20261125-1"></script>
 <script src="map-background-raster-data.js"></script>
 <script src="map-overview-cache.js?v=fix-low-detail-entry-20261125-1"></script>
 <script src="map-overview-raster-data.js?v=roadless-mobile-overview-1"></script>
 <script src="map-zoom-interaction.js?v=map-render-scope-zoom-cache-20261125-1"></script>
-<script src="map-detail-level.js?v=normal-map-illustrations-20261125-1"></script>
+<script src="map-detail-level.js?v=viewport-background-roads-20261125-1"></script>
 <script src="map-character-layout.js"></script>
 <script src="map-movement-presentation.js?v=map-transition-work-budget-20261125-1"></script>
 <script src="gold-counter-ui.js?v=sale-balance-1"></script>
@@ -1834,7 +1836,7 @@
 <script src="fukubukuro-ui.js?v=item-choice-no-an02-20261123-1"></script>
 <script src="movement-counter-ui.js"></script>
 <link rel="stylesheet" href="map-road-renderer.css?v=isolated-shortest-route-layer-20261123-1">
-<script src="map-road-cache.js?v=fix-low-detail-entry-20261125-1"></script>
+<script src="map-road-cache.js?v=viewport-background-roads-20261125-1"></script>
 <script src="map-road-raster-data.js?v=bridge-overlays-only-1"></script>
 <script src="map-workshop-data.js?v=asset-type-ids-20261110"></script>
 <script src="map-authoring/imported-small-objects.js"></script>
@@ -1843,6 +1845,7 @@
 <script src="map-authoring/bridge-roads.js?v=shared-map-image-cache-20261124-1"></script>
 <script src="map-authoring/region-roads.js?v=shared-map-image-cache-20261124-1"></script>
 <script src="map-workshop-scene.js?v=map-transition-work-budget-20261125-1"></script>
+<script src="map-viewport-renderer.js?v=viewport-background-roads-20261125-1"></script>
 <script src="map-road-renderer.js?v=map-render-scope-zoom-cache-20261125-1"></script>
 <script src="vertical-slot.js"></script>
 <script src="slot-presentation.js?v=slot-spacing-and-item-font-20261121"></script>

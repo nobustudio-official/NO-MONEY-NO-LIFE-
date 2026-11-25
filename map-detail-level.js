@@ -441,6 +441,7 @@
 
     function dispose(board) {
         if (!board || disposedBoards.has(board)) return;
+        window.MapViewportRenderer?.dispose(board);
         disposedBoards.add(board);
         window.MapScene?.invalidateCameraLimits?.(board);
         const state = states.get(board);
@@ -486,8 +487,10 @@
             top: visible.top - margin, bottom: visible.bottom + margin };
         const near = state.visibleOnly ? visible : { left, right, top, bottom };
         if (!state.lowDetail) {
-            window.MapBackgroundCache?.setViewport(board, near, visible);
-            window.MapRoadCache?.setViewport(board, near, visible);
+            if (!window.MapViewportRenderer?.setViewport(board, near, visible)) {
+                window.MapBackgroundCache?.setViewport(board, near, visible);
+                window.MapRoadCache?.setViewport(board, near, visible);
+            }
             window.MapWorkshopScene?.setViewport(board, near, visible, { immediateImages: state.visibleOnly });
         }
         for (const row of state.nodes) {
@@ -546,7 +549,8 @@
                         .filter(request => request.board === board && request.priority === 0).map(request => request.promise);
                     await Promise.race([
                         Promise.allSettled([overviewReady, ...visibleLoads]).then(() =>
-                            waitForPresentation(board, Math.max(0, deadline - performance.now()))),
+                            waitForPresentation(board, Math.max(0, deadline - performance.now())))
+                            .then(() => window.MapViewportRenderer?.whenPresented(board)),
                         new Promise(resolve => {
                             stopWaiting = () => { clearTimeout(timeout); resolve(); };
                             state.waits.add(stopWaiting);
@@ -623,6 +627,7 @@
             scheduleImagePump();
             state.schedule();
         }
+        window.MapViewportRenderer?.schedule(board, true);
     }
 
     function prepareViewportResize(board) {

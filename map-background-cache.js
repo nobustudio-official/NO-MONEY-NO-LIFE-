@@ -48,6 +48,7 @@
  }
  async function prepare(background,svg){
   window.MapOverviewCache?.prepare(background);
+  if(window.MapViewportRenderer?.mount(background,svg))return;
   const data=window.MapBackgroundRasterData;
   if(!data?.tiles?.length){background.dataset.rasterState='fallback';return;}
   const board=background.closest('#mapBoard');
