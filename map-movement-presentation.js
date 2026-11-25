@@ -25,8 +25,10 @@
         const parent = piece.closest('.map-node');
         const parentRect = parent.getBoundingClientRect();
         // Include both board zoom and the square's own visual scale.
-        const dx = (before.left - after.left) / (parentRect.width/parent.offsetWidth);
-        const dy = (before.top - after.top) / (parentRect.height/parent.offsetHeight);
+        const nodeScaleX = parentRect.width / parent.offsetWidth;
+        const nodeScaleY = parentRect.height / parent.offsetHeight;
+        const dx = (before.left - after.left) / nodeScaleX;
+        const dy = (before.top - after.top) / nodeScaleY;
         if (Math.hypot(dx, dy) < .5) return Promise.resolve();
         piece.classList.add('map-piece-moving');
         // Individual translate leaves sprite direction/scale transforms intact.
@@ -39,8 +41,8 @@
         if(route?.length>2){
             const first=route[0],last=route.at(-1),total=route.slice(1).reduce((sum,p,i)=>sum+Math.hypot(p.x-route[i].x,p.y-route[i].y),0);
             const zoom=typeof getMapZoomUI==='function'?getMapZoomUI():1;
-            const sx=first.x!==last.x?dx/(first.x-last.x):zoom/(parentRect.width/parent.offsetWidth);
-            const sy=first.y!==last.y?dy/(first.y-last.y):zoom/(parentRect.height/parent.offsetHeight);
+            const sx=first.x!==last.x?dx/(first.x-last.x):zoom/nodeScaleX;
+            const sy=first.y!==last.y?dy/(first.y-last.y):zoom/nodeScaleY;
             let length=0;
             positions=route.map((p,i)=>{if(i)length+=Math.hypot(p.x-route[i-1].x,p.y-route[i-1].y);return {x:(p.x-last.x)*sx,y:(p.y-last.y)*sy,offset:length/total};});
         }
@@ -49,7 +51,7 @@
         const start = area ? {left:area.scrollLeft,top:area.scrollTop} : null;
         const view = area?.getBoundingClientRect();
         const node = piece.closest('.map-node').getBoundingClientRect();
-        const limits = window.MapScene?.getCameraLimits();
+        let limits = window.MapScene?.getCameraLimits();
         const clamp = (value,min,max) => Math.max(min,Math.min(max,value));
         const target = area ? {
             left:clamp(start.left+(node.left+node.width/2)-(view.left+view.width/2),
@@ -63,17 +65,24 @@
         let lastCameraTick = performance.now();
         function follow(now) {
             if (!area || !piece.isConnected || active.get(board)!==state) return;
+            if (window.MapScene?.isViewportResizing?.()) {
+                lastCameraTick = now;
+                frame = requestAnimationFrame(follow);
+                return;
+            }
+            limits = window.MapScene?.getCameraLimits() || limits;
             // Read the sprite's animation clock: camera and character share the
             // exact progress even if rendering temporarily misses a frame.
             const progress = clamp(Number(animation.currentTime || 0)/duration,0,1);
             const end=positions.findIndex(p=>p.offset>=progress),a=positions[Math.max(0,end-1)],b=positions[Math.max(0,end)],t=(progress-a.offset)/(b.offset-a.offset||1);
-            const x=a.x+(b.x-a.x)*t,y=a.y+(b.y-a.y)*t,sx=parentRect.width/parent.offsetWidth,sy=parentRect.height/parent.offsetHeight;
+            const x=a.x+(b.x-a.x)*t,y=a.y+(b.y-a.y)*t,sx=nodeScaleX,sy=nodeScaleY;
             const desiredLeft=clamp(start.left+(x-dx)*sx+(target.left-start.left+dx*sx)*progress,limits?.minLeft??0,limits?.maxLeft??area.scrollWidth-area.clientWidth);
             const desiredTop=clamp(start.top+(y-dy)*sy+(target.top-start.top+dy*sy)*progress,limits?.minTop??0,limits?.maxTop??area.scrollHeight-area.clientHeight);
             const maxStep=cameraSpeedLimit*Math.max(0,Math.min(32,now-lastCameraTick))/1000;
             lastCameraTick=now;
-            const distance=Math.hypot(desiredLeft-area.scrollLeft,desiredTop-area.scrollTop),fraction=distance?Math.min(1,maxStep/distance):1;
-            area.scrollTo({left:area.scrollLeft+(desiredLeft-area.scrollLeft)*fraction,top:area.scrollTop+(desiredTop-area.scrollTop)*fraction,behavior:'instant'});
+            const left=area.scrollLeft,top=area.scrollTop;
+            const distance=Math.hypot(desiredLeft-left,desiredTop-top),fraction=distance?Math.min(1,maxStep/distance):1;
+            if(distance>.01)area.scrollTo({left:left+(desiredLeft-left)*fraction,top:top+(desiredTop-top)*fraction,behavior:'instant'});
             frame=requestAnimationFrame(follow);
         }
         if (area) frame=requestAnimationFrame(follow);

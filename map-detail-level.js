@@ -98,7 +98,8 @@
             const request = [...pendingImages.values()].filter(request => {
                 if (request.entry.loading) return false;
                 if (!request.board) return true;
-                if (cameraJumps.size || scrollPauses.size) return false;
+                if (cameraJumps.size || scrollPauses.size || window.MapScene?.isViewportResizing?.()) return false;
+                if (touchDevice && request.board.classList.contains('map-zoom-interacting')) return false;
                 return !states.get(request.board)?.scrolling || request.priority === 0;
             }).sort((a, b) => a.priority - b.priority || a.distance - b.distance)[0];
             if (!request) break;
@@ -223,7 +224,9 @@
             if (state.disposed || state.cameraJumps.size) return;
             if (state.visibleOnly) { schedule(); return; }
             state.scrolling = true;
-            if (touchDevice && state.zoom < .5) scrollPauses.add(state);
+            // Keep decoded tiles visible at every zoom, but defer new decodes
+            // until manual or automatic camera travel has settled.
+            if (touchDevice) scrollPauses.add(state);
             else scrollPauses.delete(state);
             clearTimeout(state.scrollSettleTimer);
             state.scrollSettleTimer = setTimeout(() => {
@@ -380,7 +383,10 @@
                 row.piece.style.setProperty('--piece-node-scale', scale);
             }
         }
-        if (options.preview !== true) state.schedule();
+        if (options.preview !== true) {
+            scheduleImagePump();
+            state.schedule();
+        }
     }
 
     function setSquareIconDetail(board, lowDetail) {

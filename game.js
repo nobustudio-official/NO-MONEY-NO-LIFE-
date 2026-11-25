@@ -10472,20 +10472,23 @@ let activeMapCameraScroll = null;
 
 function animateMapCameraScroll(mapArea, left, top, speed = MAP_TAP_CAMERA_SPEED, signal) {
     activeMapCameraScroll?.cancel();
-    const limits = window.MapScene?.getCameraLimits?.();
-    const maxScrollLeft = Math.max(0, mapArea.scrollWidth - mapArea.clientWidth);
-    const maxScrollTop = Math.max(0, mapArea.scrollHeight - mapArea.clientHeight);
-    left = Math.max(limits?.minLeft ?? 0, Math.min(limits?.maxLeft ?? maxScrollLeft, left));
-    top = Math.max(limits?.minTop ?? 0, Math.min(limits?.maxTop ?? maxScrollTop, top));
-    const controller = new AbortController();
-    const startLeft = mapArea.scrollLeft;
-    const startTop = mapArea.scrollTop;
-    const deltaLeft = left - startLeft;
-    const deltaTop = top - startTop;
-    const distance = Math.hypot(deltaLeft, deltaTop);
     speed = Number.isFinite(speed) && speed > 0 ? Math.min(speed, MAP_TAP_CAMERA_SPEED) : MAP_TAP_CAMERA_SPEED;
-    const duration = distance / speed * 1000;
-    let lastTick = performance.now(), elapsed = 0;
+    let startLeft, startTop, deltaLeft, deltaTop, duration;
+    function preparePan() {
+        const limits = window.MapScene?.getCameraLimits?.();
+        const maxScrollLeft = limits?.maxLeft ?? Math.max(0, mapArea.scrollWidth - mapArea.clientWidth);
+        const maxScrollTop = limits?.maxTop ?? Math.max(0, mapArea.scrollHeight - mapArea.clientHeight);
+        left = Math.max(limits?.minLeft ?? 0, Math.min(maxScrollLeft, left));
+        top = Math.max(limits?.minTop ?? 0, Math.min(maxScrollTop, top));
+        startLeft = mapArea.scrollLeft;
+        startTop = mapArea.scrollTop;
+        deltaLeft = left - startLeft;
+        deltaTop = top - startTop;
+        duration = Math.hypot(deltaLeft, deltaTop) / speed * 1000;
+    }
+    preparePan();
+    const controller = new AbortController();
+    let lastTick = performance.now(), elapsed = 0, viewportPaused = false;
     let frame = 0;
     let settled = false;
     let resolvePromise;
@@ -10503,16 +10506,27 @@ function animateMapCameraScroll(mapArea, left, top, speed = MAP_TAP_CAMERA_SPEED
     function cancel() { finish(false); }
     function tick(now) {
         if (signal?.aborted || !mapArea.isConnected) { finish(false); return; }
+        if (window.MapScene?.isViewportResizing?.()) {
+            viewportPaused = true;
+            lastTick = now;
+            frame = requestAnimationFrame(tick);
+            return;
+        }
+        if (viewportPaused) {
+            viewportPaused = false;
+            preparePan();
+            elapsed = 0;
+            lastTick = now;
+        }
         elapsed += Math.max(0, Math.min(32, now - lastTick)); lastTick = now;
         const progress = duration === 0 ? 1 : Math.min(1, elapsed / duration);
-        mapArea.scrollLeft = startLeft + deltaLeft * progress;
-        mapArea.scrollTop = startTop + deltaTop * progress;
+        mapArea.scrollTo({
+            left: progress === 1 ? left : startLeft + deltaLeft * progress,
+            top: progress === 1 ? top : startTop + deltaTop * progress,
+            behavior: 'instant'
+        });
         if (progress < 1) frame = requestAnimationFrame(tick);
-        else {
-            mapArea.scrollLeft = left;
-            mapArea.scrollTop = top;
-            finish(true);
-        }
+        else finish(true);
     }
 
     activeMapCameraScroll = { cancel };
