@@ -4,22 +4,24 @@
 (() => {
     'use strict';
 
-    const title = document.querySelector('.title-screen');
-    const startButtons = document.querySelectorAll('#startButton, #localGameButton');
-    if (title && startButtons.length) {
-        const portraitPhone = window.matchMedia('(pointer: coarse) and (max-width: 700px) and (orientation: portrait)');
-        const updateStartAvailability = () => {
-            if (!title.isConnected) return;
-            const blocked = portraitPhone.matches && !title.classList.contains('is-setup');
-            for (const button of startButtons) {
-                button.disabled = blocked;
-                button.title = blocked ? 'スマホを横向きにすると開始できます。' : '';
-            }
-        };
-        portraitPhone.addEventListener('change', updateStartAvailability);
-        new MutationObserver(updateStartAvailability).observe(title, { attributes: true, attributeFilter: ['class'] });
-        updateStartAvailability();
+    const phone = window.matchMedia('(pointer: coarse) and (max-width: 700px)');
+    const portrait = window.matchMedia('(orientation: portrait)');
+    function updateStartAvailability() {
+        const button = document.getElementById('confirmTurnButton');
+        if (!button) return;
+        // The keyboard can change viewport proportions without rotating the phone.
+        const type = window.screen?.orientation?.type;
+        const isPortrait = type ? type.startsWith('portrait') :
+            typeof window.orientation === 'number' ? window.orientation % 180 === 0 : portrait.matches;
+        const blocked = phone.matches && isPortrait;
+        button.disabled = blocked;
+        button.title = blocked ? 'スマホを横向きにすると開始できます。' : '';
     }
+    phone.addEventListener('change', updateStartAvailability);
+    portrait.addEventListener('change', updateStartAvailability);
+    if (window.screen?.orientation?.addEventListener) {
+        window.screen.orientation.addEventListener('change', updateStartAvailability);
+    } else window.addEventListener('orientationchange', updateStartAvailability);
 
     async function startLandscapeMode() {
         const isTouchDevice = window.matchMedia?.('(pointer: coarse)').matches ||
@@ -65,5 +67,5 @@
         await lockLandscape();
     }
 
-    window.GameOrientation = Object.freeze({ startLandscapeMode });
+    window.GameOrientation = Object.freeze({ startLandscapeMode, updateStartAvailability });
 })();

@@ -1836,6 +1836,7 @@ function showTurnSelectScreen(
             "confirmTurnButton"
         );
 
+    window.GameOrientation?.updateStartAvailability?.();
 
     confirmTurnButton.addEventListener(
         "click",
