@@ -16,6 +16,83 @@
     // Each map releases only its own pause, including during screen replacement.
     const scrollPauses = new Set();
     const cameraJumps = new Set();
+    const presentationJobs = new Map();
+    let presentationFrame = 0;
+
+    function imageGroup(element) {
+        if (element.classList.contains('map-space-icon')) return 1;
+        return element.closest?.('.map-workshop-objects') ? 2 : 0;
+    }
+
+    function isLowDetail(board) {
+        const state = states.get(board);
+        if (!touchDevice) return false;
+        const zoom = state?.zoom ?? (typeof getMapZoomUI === 'function' ? getMapZoomUI() : 1);
+        return state?.lowDetail ?? zoom < .5;
+    }
+
+    function presentationPaused(board) {
+        const state = states.get(board);
+        return state?.detailPending || isLowDetail(board) || state?.cameraJumps.size ||
+            window.MapScene?.isViewportResizing?.() || board.classList.contains('map-zoom-interacting');
+    }
+
+    function schedulePresentation() {
+        if (!presentationFrame && presentationJobs.size) presentationFrame = requestAnimationFrame(flushPresentation);
+    }
+
+    function queuePresentation(element, apply, request = null) {
+        if (request?.settled) return;
+        const board = request?.board || element.closest?.('#mapBoard');
+        if (!touchDevice || !board) { apply(); return; }
+        if (disposedBoards.has(board) || disposedImages.has(element)) return;
+        presentationJobs.set(request || element, { element, board, group: imageGroup(element), apply, request });
+        schedulePresentation();
+    }
+
+    function flushPresentation() {
+        presentationFrame = 0;
+        const available = [];
+        const waitingGroups = new Map();
+        for (const request of [...pendingImages.values(), ...activeRequests.values()]) {
+            if (request.priority !== 0 || request.settled) continue;
+            const group = imageGroup(request.element);
+            waitingGroups.set(request.board, Math.min(group, waitingGroups.get(request.board) ?? Infinity));
+        }
+        for (const [key, job] of presentationJobs) {
+            if (!job.element.isConnected || disposedBoards.has(job.board)) {
+                presentationJobs.delete(key);
+                if (job.request) settleRequest(job.request);
+                continue;
+            }
+            if (presentationPaused(job.board)) continue;
+            if (!(waitingGroups.get(job.board) < job.group)) available.push([key, job]);
+        }
+        if (!available.length) return;
+        const group = Math.min(...available.map(([, job]) => job.group));
+        // Background/roads first, then up to eight icons or two objects per frame.
+        let budget = [1, 8, 2][group];
+        for (const [key, job] of available) {
+            if (job.group !== group || !presentationJobs.has(key)) continue;
+            presentationJobs.delete(key);
+            job.apply();
+            if (--budget === 0) break;
+        }
+        schedulePresentation();
+    }
+
+    function showImage(element) {
+        if (element.style.visibility === 'hidden') queuePresentation(element, () => {
+            element.style.visibility = '';
+            states.get(element.closest?.('#mapBoard'))?.schedule();
+        });
+    }
+
+    function hideImage(element) {
+        presentationJobs.delete(element);
+        if (element.style.visibility !== 'hidden') element.style.visibility = 'hidden';
+        if (!(element.complete && element.naturalWidth)) releaseImage(element);
+    }
 
     function settleRequest(request, image = null, error = null) {
         if (request.settled) return;
@@ -23,8 +100,10 @@
         request.cleanup?.();
         if (pendingImages.get(request.element) === request) pendingImages.delete(request.element);
         if (activeRequests.get(request.element) === request) activeRequests.delete(request.element);
+        presentationJobs.delete(request);
         request.entry.requests.delete(request);
         if (error) request.reject(error); else request.resolve(image);
+        schedulePresentation();
     }
 
     function attachImage(request) {
@@ -32,7 +111,10 @@
         const { element, entry } = request;
         pendingImages.delete(element);
         activeRequests.set(element, request);
-        const finish = () => settleRequest(request, element.naturalWidth ? element : null);
+        const finish = () => {
+            if (element.naturalWidth) showImage(element);
+            settleRequest(request, element.naturalWidth ? element : null);
+        };
         const fail = () => settleRequest(request, null, new Error(`画像を表示できません: ${entry.url}`));
         const timer = setTimeout(fail, 4000);
         request.cleanup = () => {
@@ -71,7 +153,7 @@
                 entry.ready = true;
                 entry.width = image.naturalWidth;
                 entry.height = image.naturalHeight;
-                for (const request of [...entry.requests]) attachImage(request);
+                for (const request of [...entry.requests]) queuePresentation(request.element, () => attachImage(request), request);
             }
             scheduleImagePump();
         };
@@ -96,12 +178,13 @@
         pumpScheduled = false;
         while (activeLoads.size < maxConcurrentImageLoads) {
             const request = [...pendingImages.values()].filter(request => {
-                if (request.entry.loading) return false;
+                if (request.entry.loading || request.entry.ready) return false;
                 if (!request.board) return true;
                 if (cameraJumps.size || scrollPauses.size || window.MapScene?.isViewportResizing?.()) return false;
+                if (states.get(request.board)?.detailPending || (touchDevice && isLowDetail(request.board))) return false;
                 if (touchDevice && request.board.classList.contains('map-zoom-interacting')) return false;
                 return !states.get(request.board)?.scrolling || request.priority === 0;
-            }).sort((a, b) => a.priority - b.priority || a.distance - b.distance)[0];
+            }).sort((a, b) => a.priority - b.priority || imageGroup(a.element) - imageGroup(b.element) || a.distance - b.distance)[0];
             if (!request) break;
             startImageLoad(request.entry, request.priority);
         }
@@ -114,6 +197,7 @@
     }
 
     function releaseImage(element) {
+        presentationJobs.delete(element);
         const request = pendingImages.get(element) || activeRequests.get(element);
         if (request) {
             settleRequest(request);
@@ -151,7 +235,7 @@
         const request = { element, board, image: url, entry, priority, distance, promise, resolve, reject, settled: false };
         pendingImages.set(element, request);
         entry.requests.add(request);
-        if (entry.ready) attachImage(request); else scheduleImagePump();
+        if (entry.ready) queuePresentation(element, () => attachImage(request), request); else scheduleImagePump();
         return promise;
     }
 
@@ -184,18 +268,18 @@
             const element = tile.element;
             if (disposedImages.has(element) || disposedBoards.has(element.closest?.('#mapBoard'))) continue;
             if (!bounds || !intersects(tile, bounds)) {
-                if (element.style.visibility !== 'hidden') element.style.visibility = 'hidden';
-                if (!(element.complete && element.naturalWidth)) releaseImage(element);
+                hideImage(element);
                 continue;
             }
-            if (element.style.visibility) element.style.visibility = '';
+            if (element.complete && element.naturalWidth) showImage(element);
+            else if (touchDevice) element.style.visibility = 'hidden';
             const rank = imagePriority(tile, visible);
             if (!element.hasAttribute('src') || (element.complete && !element.naturalWidth)) {
                 enqueueImage(element, tile.image, rank.priority, rank.distance).catch(() => {});
             } else {
                 updateImagePriority(element, rank.priority, rank.distance);
             }
-            if (visible && intersects(tile, visible) && !(element.complete && element.naturalWidth)) ready = false;
+            if (visible && intersects(tile, visible) && (!(element.complete && element.naturalWidth) || element.style.visibility === 'hidden')) ready = false;
         }
         if (pendingImages.size) scheduleImagePump();
         return ready;
@@ -207,14 +291,15 @@
         if (state) return state;
         const area = board.closest('.map-area');
         state = { area, nodes: [], important: [], bossPieces: [], zoom: 1, frame: 0, scrollSettleTimer: 0, lowDetail: null,
+            detailPending: false, detailTimer: 0, previewing: false,
             cameraJumps: new Set(), waits: new Set(), disposed: false, visibleOnly: false, scrolling: false };
         states.set(board, state);
         const schedule = () => {
-            if (state.disposed || !board.isConnected || state.frame || state.cameraJumps.size || window.MapScene?.isViewportResizing?.()) return;
+            if (state.disposed || !board.isConnected || state.frame || state.cameraJumps.size || state.detailPending || window.MapScene?.isViewportResizing?.()) return;
             state.frame = requestAnimationFrame(() => {
                 state.frame = 0;
                 if (state.disposed || !board.isConnected) return;
-                if (board.classList.contains('map-zoom-interacting') || window.MapScene?.isViewportResizing?.()) return;
+                if (state.detailPending || board.classList.contains('map-zoom-interacting') || window.MapScene?.isViewportResizing?.()) return;
                 const visible = cull(board, state);
                 if (visible) window.MapOverviewCache?.setMobileViewport?.(board, visible, state.zoom, { visibleOnly: state.visibleOnly });
             });
@@ -234,7 +319,9 @@
                 if (state.disposed) return;
                 state.scrolling = false;
                 scrollPauses.delete(state);
+                if (state.detailPending) setZoom(board, state.zoom);
                 scheduleImagePump();
+                schedulePresentation();
                 schedule();
             }, 160);
             scheduleImagePump();
@@ -260,6 +347,7 @@
             state.area?.removeEventListener('scroll', state.onScroll);
             if (state.frame) cancelAnimationFrame(state.frame);
             clearTimeout(state.scrollSettleTimer);
+            clearTimeout(state.detailTimer);
             scrollPauses.delete(state);
             for (const token of state.cameraJumps) cameraJumps.delete(token);
             state.cameraJumps.clear();
@@ -278,6 +366,7 @@
             disposedImages.add(image);
             releaseImage(image);
         }
+        for (const [key, job] of presentationJobs) if (job.board === board) presentationJobs.delete(key);
         scheduleImagePump();
     }
 
@@ -297,10 +386,20 @@
         window.MapWorkshopScene?.setViewport(board, near, visible, { immediateImages: state.visibleOnly });
         for (const row of state.nodes) {
             const outside = row.x < left || row.x > right || row.y < top || row.y > bottom;
-            if (row.outside === outside) continue;
-            row.outside = outside;
-            row.node.classList.toggle('map-detail-offscreen', outside);
+            if (row.outside !== outside) {
+                row.outside = outside;
+                row.node.classList.toggle('map-detail-offscreen', outside);
+            }
+            if (touchDevice && row.icon?.isConnected && !row.node.classList.contains('boss-node')) {
+                const onScreen = row.x + 64 >= visible.left && row.x - 64 <= visible.right &&
+                    row.y + 64 >= visible.top && row.y - 64 <= visible.bottom;
+                if (state.lowDetail || !onScreen) hideImage(row.icon);
+                else if (row.icon.complete && row.icon.naturalWidth) showImage(row.icon);
+                else enqueueImage(row.icon, row.icon.dataset.highQualitySrc, 0,
+                    (row.x - (visible.left + visible.right) / 2) ** 2 + (row.y - (visible.top + visible.bottom) / 2) ** 2).catch(() => {});
+            }
         }
+        schedulePresentation();
         return visible;
     }
 
@@ -359,12 +458,35 @@
     function setZoom(board, zoom, options = {}) {
         const state = stateFor(board);
         if (!state) return;
+        const changed = state.zoom !== zoom || state.previewing;
         state.zoom = zoom;
-        if (options.preview !== true || touchDevice) window.MapOverviewCache?.setZoom(board, zoom);
-        const lowDetail = touchDevice && zoom < .5;
-        if (state.lowDetail !== lowDetail) {
-            state.lowDetail = lowDetail;
-            setSquareIconDetail(board, lowDetail);
+        state.previewing = options.preview === true;
+        if (touchDevice) {
+            if (state.lowDetail === null) {
+                state.lowDetail = true;
+                state.detailPending = true;
+                window.MapOverviewCache?.setZoom(board, zoom);
+            }
+            if (state.previewing || window.MapScene?.isViewportResizing?.()) prepareViewportResize(board);
+            else if (changed || (state.detailPending && !state.detailTimer)) {
+                state.detailPending = true;
+                clearTimeout(state.detailTimer);
+                state.detailTimer = setTimeout(() => {
+                    state.detailTimer = 0;
+                    if (state.disposed || !board.isConnected || state.previewing || state.scrolling ||
+                        board.classList.contains('map-zoom-interacting') || window.MapScene?.isViewportResizing?.()) return;
+                    state.lowDetail = state.zoom < .5;
+                    state.detailPending = false;
+                    window.MapOverviewCache?.setZoom(board, state.zoom);
+                    if (!state.lowDetail) window.MapBackgroundCache?.showFallback?.(board);
+                    state.schedule();
+                    scheduleImagePump();
+                    schedulePresentation();
+                }, 180);
+            } else if (!state.detailPending) window.MapOverviewCache?.setZoom(board, zoom);
+        } else {
+            state.lowDetail = false;
+            if (!state.previewing) window.MapOverviewCache?.setZoom(board, zoom);
         }
         // Avoid invalidating inherited styles on every road, SVG and icon.
         // Keep pieces at their normal map-relative size from 0.5 upwards.
@@ -389,19 +511,13 @@
         }
     }
 
-    function setSquareIconDetail(board, lowDetail) {
-        for (const image of board.querySelectorAll('.map-space-icon')) {
-            // Keep the boss marker recognizable in the lightweight overview.
-            if (image.closest('.boss-node')) continue;
-            const source = image.dataset.highQualitySrc || image.getAttribute('src');
-            if (!source) continue;
-            image.dataset.highQualitySrc = source;
-            if (lowDetail) {
-                if (image.hasAttribute('src')) image.removeAttribute('src');
-            } else if (image.getAttribute('src') !== source) {
-                image.src = source;
-            }
-        }
+    function prepareViewportResize(board) {
+        const state = states.get(board);
+        if (!touchDevice || !state) return;
+        clearTimeout(state.detailTimer);
+        state.detailTimer = 0;
+        state.detailPending = true;
+        window.MapBackgroundCache?.showFallback?.(board);
     }
 
     function refreshPieces(board, zoom) {
@@ -421,12 +537,14 @@
         const state = stateFor(board);
         if (!state) return;
         state.nodes = [...board.querySelectorAll('.map-node')].map(node => ({
-            node, x: parseFloat(node.style.left), y: parseFloat(node.style.top), outside: null
+            node, icon: node.querySelector('.map-space-icon'), x: parseFloat(node.style.left), y: parseFloat(node.style.top), outside: null
         }));
         refreshPieces(board, zoom);
         cull(board, state);
     }
     window.MapDetailLevel = Object.freeze({ refresh, refreshPieces, setZoom, dispose, touchDevice, setTileSources,
+        isLowDetail, prepareViewportResize, queuePresentation,
+        cancelPresentation: element => presentationJobs.delete(element),
         loadImage, requestImage: enqueueImage, updateImagePriority, releaseImage, beginCameraJump,
         isCameraJumping: board => Boolean(states.get(board)?.cameraJumps.size),
         scheduleViewport: board => stateFor(board)?.schedule() });

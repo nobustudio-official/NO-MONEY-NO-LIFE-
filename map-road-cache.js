@@ -30,7 +30,7 @@
         }
         if (state.streaming) {
             const overview = board.classList.contains('map-overview-active') ||
-                (MapDetailLevel.touchDevice && getMapZoomUI() < .5);
+                MapDetailLevel.isLowDetail(board);
             const ready = MapDetailLevel.setTileSources(state.tiles, overview ? null : bounds, visibleBounds);
             MapDetailLevel.setTileSources(state.bridges, overview ? null : bounds, visibleBounds);
             if (state.layer) {

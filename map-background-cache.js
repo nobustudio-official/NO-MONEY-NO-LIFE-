@@ -80,19 +80,14 @@
   const state=windows.get(board);
   if(!state)return;
   const overview=board.classList.contains('map-overview-active');
-  const zoom=typeof getMapZoomUI==='function'?getMapZoomUI():1;
-  const lowDetail=window.MapDetailLevel?.touchDevice&&zoom<.5;
+  const lowDetail=window.MapDetailLevel?.isLowDetail(board);
   // Below the mobile detail threshold, never request native-resolution tiles.
   if(lowDetail){
    MapDetailLevel.setTileSources(state.tiles,null,visible);
    if(state.svg.style.display!=='none')state.svg.style.display='none';
-   const fallback=state.svg.querySelector('image[href]');
-   if(fallback){fallback.dataset.fallbackImage ||= fallback.getAttribute('href');fallback.removeAttribute('href');}
    if(state.background.classList.contains('map-background-tiles-pending'))state.background.classList.remove('map-background-tiles-pending');
    return;
   }
-  const fallback=state.svg.querySelector('image[data-fallback-image]');
-  if(fallback&&fallback.getAttribute('href')!==fallback.dataset.fallbackImage)fallback.setAttribute('href',fallback.dataset.fallbackImage);
   const ready=MapDetailLevel.setTileSources(state.tiles,overview?null:bounds,visible);
   const display=ready?'none':'';
   if(state.svg.style.display!==display)state.svg.style.display=display;
@@ -102,14 +97,16 @@
   const state=windows.get(board);
   if(!state)return;
   MapDetailLevel.setTileSources(state.tiles,null,null);
-  const lowDetail=window.MapDetailLevel?.touchDevice&&getMapZoomUI()<.5;
+  const lowDetail=window.MapDetailLevel?.isLowDetail(board);
   state.svg.style.display=lowDetail?'none':'';
-  const fallback=state.svg.querySelector('image[href],image[data-fallback-image]');
-  if(fallback){
-   if(lowDetail){fallback.dataset.fallbackImage ||= fallback.getAttribute('href');fallback.removeAttribute('href');}
-   else if(fallback.getAttribute('href')!==fallback.dataset.fallbackImage)fallback.setAttribute('href',fallback.dataset.fallbackImage);
-  }
   state.background.classList.remove('map-background-tiles-pending');
  }
- window.MapBackgroundCache=Object.freeze({prepare,bake,setViewport,releaseDetail});
+ function showFallback(board){
+  const state=windows.get(board);
+  if(!state||window.MapDetailLevel.isLowDetail(board))return;
+  // The mobile fallback is one existing overview image, not the original SVG scenery.
+  if(state.svg.children.length!==1||state.svg.children[0].tagName.toLowerCase()!=='image')return;
+  if(state.svg.style.display)state.svg.style.display='';
+ }
+ window.MapBackgroundCache=Object.freeze({prepare,bake,setViewport,releaseDetail,showFallback});
 })();

@@ -3694,8 +3694,7 @@ if (iconPath) {
     iconImage.className =
         "map-space-icon";
 
-    iconImage.src =
-        iconPath;
+    if (!window.MapDetailLevel.touchDevice || isBossSquare) iconImage.src = iconPath;
 
     iconImage.dataset.highQualitySrc = iconPath;
 

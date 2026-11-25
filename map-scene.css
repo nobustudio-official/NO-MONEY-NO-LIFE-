@@ -8,6 +8,7 @@
 .game-screen .map-node:has(.player-piece) { z-index: 6; }
 .game-screen .map-node:has(.player-piece.map-piece-moving) { z-index: 7; }
 #mapBoard .map-node.map-detail-offscreen:not(.boss-node):not(:has(.player-piece)) { visibility:hidden; }
+#mapBoard .map-space-icon:not([src]) { visibility:hidden; }
 .game-screen .map-node .player-piece.player-sprite {
     /* Small per-character surfaces preserve detail after wheel compositing ends. */
     will-change:transform;

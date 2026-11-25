@@ -114,6 +114,7 @@
             for (const [tile, entry] of level.images) {
                 if (needed.has(tile)) continue;
                 if (entry.ready) {
+                    window.MapDetailLevel.cancelPresentation(entry.image);
                     entry.image.style.visibility = 'hidden';
                     continue;
                 }
@@ -145,7 +146,7 @@
                     background.append(image);
                 }
                 entry.priority = visible ? 0 : 1;
-                entry.image.style.visibility = '';
+                if (entry.image.style.visibility) window.MapDetailLevel.queuePresentation(entry.image, () => { entry.image.style.visibility = ''; });
                 window.MapDetailLevel.updateImagePriority(entry.image, entry.priority, distance(tile));
                 if (visibleOnly && visible && opacity > 0) visibleLoads.push(entry.readyPromise);
                 if (!entry.started) pending.push({ entry, visible, opaque: opacity === 1, resolution: level.resolution });
@@ -164,6 +165,7 @@
         state.pending.length=0;
         for(const level of state.levels){
             for(const [tile,entry] of level.images){
+                window.MapDetailLevel.cancelPresentation(entry.image);
                 entry.image.style.visibility='hidden';
                 if(entry.ready)continue;
                 window.MapDetailLevel.releaseImage(entry.image);
@@ -190,7 +192,7 @@
     function restoreMobileBase(board) {
         const image = board.querySelector('.map-static-background > .map-static-raster');
         const source = image?.dataset.mapBaseImage;
-        if (image) image.style.visibility = '';
+        if (image) window.MapDetailLevel.queuePresentation(image, () => { image.style.visibility = ''; });
         if (source && !image.hasAttribute('src')) {
             window.MapDetailLevel?.loadImage(image, source, 0).catch(() => {});
         }
@@ -239,7 +241,7 @@
         const background = board.querySelector('.map-background');
         const state = states.get(background);
         const touchDevice=Boolean(window.MapDetailLevel?.touchDevice);
-        const lowDetail=touchDevice&&zoom<.5;
+        const lowDetail=touchDevice&&window.MapDetailLevel.isLowDetail(board);
         const wasLowDetail=board.classList.contains('map-low-detail-active');
         const flatLayerReady = Boolean(background?.querySelector('.map-flat-region-layer.is-ready'));
         const useLowDetail = lowDetail && flatLayerReady;

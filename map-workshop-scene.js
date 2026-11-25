@@ -163,7 +163,7 @@
             },objectImageDwellMs);
         }
         const overview=board.classList.contains('map-overview-active');
-        const lowDetail=window.MapDetailLevel?.touchDevice&&getMapZoomUI()<.5;
+        const lowDetail=window.MapDetailLevel?.isLowDetail(board);
         const zooming=board.classList.contains('map-zoom-interacting');
         const objectMargin=objectImageMargin/Math.max(.01,getMapZoomUI()||1);
         const imageBounds={left:visibleBounds.left-objectMargin,right:visibleBounds.right+objectMargin,
@@ -172,6 +172,7 @@
             const {image,extent}=row;
             const visible=!overview&&!lowDetail&&extent.left<bounds.right&&extent.right>bounds.left&&extent.top<bounds.bottom&&extent.bottom>bounds.top;
             const onScreen=visible&&extent.left<visibleBounds.right&&extent.right>visibleBounds.left&&extent.top<visibleBounds.bottom&&extent.bottom>visibleBounds.top;
+            row.onScreen=onScreen;
             if(row.sharp!==visible){
                 row.sharp=visible;
                 image?.classList.toggle('map-object-sharp',visible);
@@ -180,11 +181,14 @@
             if(state.streamImages){
                 const keepImage=!overview&&!lowDetail&&extent.left<imageBounds.right&&extent.right>imageBounds.left&&extent.top<imageBounds.bottom&&extent.bottom>imageBounds.top;
                 if(!keepImage){
+                    window.MapDetailLevel.cancelPresentation(image);
                     cancelObjectLoad(state,row);
                     if(image.classList.contains('is-ready'))image.classList.remove('is-ready');
                     if (!(image.complete && image.naturalWidth)) window.MapDetailLevel?.releaseImage(image);
                 }else if(image.complete&&image.naturalWidth){
-                    if(!image.classList.contains('is-ready'))image.classList.add('is-ready');
+                    if(onScreen&&!image.classList.contains('is-ready'))window.MapDetailLevel.queuePresentation(image,()=>{
+                        if(row.onScreen)image.classList.add('is-ready');
+                    });
                 }else if(onScreen&&!zooming&&state.objectImagesReady&&!state.pendingObjectImages.has(row)){
                     const centerX=(visibleBounds.left+visibleBounds.right)/2,centerY=(visibleBounds.top+visibleBounds.bottom)/2;
                     const distance=(row.object.x-centerX)**2+(row.object.y-centerY)**2;
@@ -207,6 +211,7 @@
         for(const row of [...state.pendingObjectImages.keys()])cancelObjectLoad(state,row);
         for(const row of state.rows){
             if(!row.image)continue;
+            window.MapDetailLevel.cancelPresentation(row.image);
             row.sharp=false;
             row.image.classList.remove('map-object-sharp');
             row.image.classList.remove('is-ready');
@@ -241,7 +246,9 @@
             const row={image,object,width,height,asset:template.asset,sharp:null};rows.push(row);
             row.extent=objectExtent(row);
             image.addEventListener('load',()=>{
-                image.classList.add('is-ready');
+                window.MapDetailLevel.queuePresentation(image,()=>{
+                    if(!window.MapDetailLevel.touchDevice||row.onScreen)image.classList.add('is-ready');
+                });
                 if(object.imageHeight!==undefined)return;
                 const height=width*image.naturalHeight/image.naturalWidth;
                 if(row.height===height)return;

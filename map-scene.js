@@ -27,18 +27,25 @@
  function isViewportResizing(){return Boolean(resizeTimer||resizeFrame);}
  function scheduleViewportResize(area){
   invalidateViewportSize(area);
+  window.MapDetailLevel?.prepareViewportResize?.(document.getElementById('mapBoard'));
   clearTimeout(resizeTimer);
   if(resizeFrame){cancelAnimationFrame(resizeFrame);resizeFrame=0;}
   // Rotation reports intermediate dimensions. Commit the map once they settle.
   resizeTimer=setTimeout(()=>{
    resizeTimer=0;
    resizeFrame=requestAnimationFrame(()=>{
-    resizeFrame=0;
     const board=document.getElementById('mapBoard');
-    if(!board||!document.querySelector('.game-screen .map-area'))return;
-    const zoom=typeof window.getMapZoomUI==='function'?window.getMapZoomUI():activeScale;
-    if(typeof window.setMapZoomUI==='function')window.setMapZoomUI(zoom);
-    else{setZoom(zoom);window.MapDetailLevel?.setZoom(board,zoom);}
+    const viewport=document.querySelector('.game-screen .map-area');
+    if(!board||!viewport){resizeFrame=0;return;}
+    const width=viewport.clientWidth,height=viewport.clientHeight;
+    resizeFrame=requestAnimationFrame(()=>{
+     resizeFrame=0;
+     if(!board.isConnected||document.getElementById('mapBoard')!==board)return;
+     if(width!==viewport.clientWidth||height!==viewport.clientHeight){scheduleViewportResize(viewport);return;}
+     const zoom=typeof window.getMapZoomUI==='function'?window.getMapZoomUI():activeScale;
+     if(typeof window.setMapZoomUI==='function')window.setMapZoomUI(zoom);
+     else{setZoom(zoom);window.MapDetailLevel?.setZoom(board,zoom);}
+    });
    });
   },120);
  }
