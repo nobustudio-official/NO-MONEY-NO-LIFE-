@@ -280,7 +280,7 @@
     }
 
     function scheduleImagePump() {
-        if (pumpScheduled) return;
+        if (pumpScheduled || !pendingImages.size) return;
         pumpScheduled = true;
         setTimeout(pumpImageLoads, 32);
     }
@@ -300,8 +300,8 @@
             }
         }
         // Decoded cache owners are independent of display elements and players.
-        element.removeAttribute('src');
-        scheduleImagePump();
+        if (element.hasAttribute('src')) element.removeAttribute('src');
+        if (request) scheduleImagePump();
     }
 
     function enqueueImage(element, image, priority = 1, distance = 0) {
@@ -383,7 +383,7 @@
         let state = states.get(board);
         if (state) return state;
         const area = board.closest('.map-area');
-        state = { area, nodes: [], important: [], bossPieces: [], zoom: 1, frame: 0, scrollSettleTimer: 0, lowDetail: null,
+        state = { area, nodes: [], nodeIndex: null, activeNodes: new Set(), important: [], bossPieces: [], zoom: 1, frame: 0, scrollSettleTimer: 0, lowDetail: null,
             detailPending: false, detailTimer: 0, previewing: false, cameraMotions: new Set(), lastCullTime: -Infinity,
             cameraJumps: new Set(), waits: new Set(), disposed: false, visibleOnly: false, scrolling: false };
         states.set(board, state);
@@ -453,6 +453,7 @@
             for (const stopWaiting of state.waits) stopWaiting();
             state.waits.clear();
             state.nodes = []; state.important = []; state.bossPieces = [];
+            state.nodeIndex = null; state.activeNodes.clear();
             state.area = state.observer = state.onScroll = state.schedule = null;
             state.frame = state.scrollSettleTimer = 0;
             states.delete(board);
@@ -471,11 +472,10 @@
 
     function cull(board, state) {
         if (state.disposed || !board.isConnected || !state.area || state.cameraJumps.size) return;
-        const view = state.area.getBoundingClientRect();
-        const bounds = board.getBoundingClientRect();
-        const zoom = state.zoom;
-        const visible = { left: (view.left - bounds.left) / zoom, right: (view.right - bounds.left) / zoom,
-            top: (view.top - bounds.top) / zoom, bottom: (view.bottom - bounds.top) / zoom };
+        const viewport = window.MapScene.getViewport(board);
+        if (!viewport) return;
+        const { zoom, left: viewLeft, right: viewRight, top: viewTop, bottom: viewBottom } = viewport;
+        const visible = { left: viewLeft, right: viewRight, top: viewTop, bottom: viewBottom };
         const margin = overscan / zoom;
         const { left, right, top, bottom } = { left: visible.left - margin, right: visible.right + margin,
             top: visible.top - margin, bottom: visible.bottom + margin };
@@ -487,8 +487,12 @@
             }
             window.MapWorkshopScene?.setViewport(board, near, visible);
         }
-        for (const row of state.nodes) {
+        const candidates = state.nodeIndex?.query({ left, right, top, bottom }) || new Set();
+        for (const row of state.activeNodes) candidates.add(row);
+        const active = new Set();
+        for (const row of candidates) {
             const outside = row.x < left || row.x > right || row.y < top || row.y > bottom;
+            if (!outside) active.add(row);
             if (row.outside !== outside) {
                 row.outside = outside;
                 row.node.classList.toggle('map-detail-offscreen', outside);
@@ -504,6 +508,7 @@
                     (row.x - (visible.left + visible.right) / 2) ** 2 + (row.y - (visible.top + visible.bottom) / 2) ** 2).catch(() => {});
             }
         }
+        state.activeNodes = active;
         schedulePresentation();
         return visible;
     }
@@ -569,6 +574,7 @@
         const state = stateFor(board);
         if (!state) return;
         const changed = state.zoom !== zoom || state.previewing;
+        if (changed || options.preview === true) window.MapScene.invalidateCameraLimits(board);
         state.zoom = zoom;
         state.previewing = options.preview === true;
         if (touchDevice) {
@@ -621,16 +627,17 @@
             scheduleImagePump();
             state.schedule();
         }
-        window.MapViewportRenderer?.schedule(board, true);
+        window.MapViewportRenderer?.schedule(board, changed || options.preview === true, changed);
     }
 
     function prepareViewportResize(board) {
         const state = states.get(board);
         if (!touchDevice || !state) return;
+        const alreadyPending = state.detailPending && !state.detailTimer;
         clearTimeout(state.detailTimer);
         state.detailTimer = 0;
         state.detailPending = true;
-        window.MapBackgroundCache?.showFallback?.(board);
+        if (!alreadyPending) window.MapBackgroundCache?.showFallback?.(board);
     }
 
     function refreshPieces(board, zoom) {
@@ -642,7 +649,7 @@
             base: parseFloat(piece.style.getPropertyValue('--piece-node-scale')) /
                 (parseFloat(piece.closest('.boss-node').style.getPropertyValue('--map-important-scale')) || 1)
         }));
-        board.style.removeProperty('--map-important-scale');
+        if (board.style.getPropertyValue('--map-important-scale')) board.style.removeProperty('--map-important-scale');
         setZoom(board, zoom);
     }
 
@@ -650,8 +657,12 @@
         const state = stateFor(board);
         if (!state) return;
         state.nodes = [...board.querySelectorAll('.map-node')].map(node => ({
-            node, icon: node.querySelector('.map-space-icon'), x: parseFloat(node.style.left), y: parseFloat(node.style.top), outside: null
+            node, icon: node.querySelector('.map-space-icon'), x: parseFloat(node.style.left), y: parseFloat(node.style.top), outside: true
         }));
+        state.nodeIndex = window.MapScene.createSpatialIndex(state.nodes, row => ({ left: row.x, right: row.x, top: row.y, bottom: row.y }));
+        state.activeNodes.clear();
+        for (const row of state.nodes) if (!row.node.classList.contains('map-detail-offscreen')) row.node.classList.add('map-detail-offscreen');
+        window.MapScene.invalidateCameraLimits(board);
         refreshPieces(board, zoom);
         cull(board, state);
     }

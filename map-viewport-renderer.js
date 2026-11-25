@@ -15,7 +15,7 @@
     function schedule(board, geometryChanged = false, contentChanged = true) {
         const state = scenes.get(board);
         if (!state || state.disposed) return;
-        state.geometryDirty ||= geometryChanged;
+        if (geometryChanged) window.MapScene.invalidateCameraLimits(board);
         state.contentDirty ||= contentChanged;
         if (!state.frame && !document.hidden) state.frame = requestAnimationFrame(now => paint(state, now));
     }
@@ -57,9 +57,10 @@
     }
 
     function measure(state) {
-        if (state.sizeDirty) {
-            const width = state.area.clientWidth, height = state.area.clientHeight;
-            if (!(width > 0 && height > 0)) return false;
+        const viewport = window.MapScene.getViewport(state.board);
+        if (!viewport) return false;
+        if (state.sizeDirty || state.width !== viewport.width || state.height !== viewport.height) {
+            const { width, height } = viewport;
             const bufferWidth = width + padding * 2, bufferHeight = height + padding * 2;
             const ratio = Math.min(window.devicePixelRatio || 1, 1.5, maxSide / bufferWidth, maxSide / bufferHeight,
                 Math.sqrt(maxPixels / (bufferWidth * bufferHeight)));
@@ -69,27 +70,24 @@
                 // Rotation must not allocate new width × old height temporarily.
                 state.canvas.width = state.canvas.height = 0;
                 state.canvas.width = pixelsWide; state.canvas.height = pixelsHigh;
+                state.contentDirty = true;
             }
+            if (state.width !== width || state.height !== height) state.contentDirty = true;
             state.width = width; state.height = height;
             state.pixelX = pixelsWide / bufferWidth; state.pixelY = pixelsHigh / bufferHeight;
             state.styleVersion++;
-            state.sizeDirty = false; state.geometryDirty = true;
+            state.sizeDirty = false;
         }
-        if (state.geometryDirty) {
-            const view = state.area.getBoundingClientRect(), map = state.board.getBoundingClientRect();
-            const scale = view.width / state.width;
-            if (!(scale > 0 && map.width > 0)) return false;
-            state.zoom = map.width / window.MapScene.config.width / scale;
-            state.originX = (map.left - view.left) / scale + state.area.scrollLeft;
-            state.originY = (map.top - view.top) / scale + state.area.scrollTop;
-            state.geometryDirty = false;
+        if (state.zoom !== viewport.zoom || state.originX !== viewport.originX || state.originY !== viewport.originY) {
+            state.zoom = viewport.zoom;
+            state.originX = viewport.originX; state.originY = viewport.originY;
             state.contentDirty = true;
         }
-        return true;
+        return viewport;
     }
 
     function releaseIcon(entry) {
-        if (!entry.canvas) return;
+        if (!entry.canvas?.width) return;
         entry.canvas.hidden = true;
         entry.canvas.width = entry.canvas.height = 0;
         entry.node.classList.remove('map-viewport-icon-ready');
@@ -138,9 +136,19 @@
             const image = entry.icon;
             if (entry.unavailable || !image.isConnected || !image.complete || !image.naturalWidth) continue;
             const source = image.currentSrc || image.src;
-            if (entry.canvas?.width && entry.source === source && entry.styleVersion === state.styleVersion) continue;
             // Keep the original illustration visible until its small canvas is
             // ready; a cached viewport must not allocate every icon at once.
+            if (!budget && !entry.canvas?.width) { schedule(state.board, false, false); continue; }
+            if (entry.styleVersion !== state.styleVersion) {
+                const style = getComputedStyle(image), ratio = Math.min(window.devicePixelRatio || 1, 1.5);
+                entry.width = Math.max(1, Math.ceil((parseFloat(style.width) || 66) * ratio));
+                entry.height = Math.max(1, Math.ceil((parseFloat(style.height) || 66) * ratio));
+                entry.styleVersion = state.styleVersion;
+            }
+            const { width, height } = entry;
+            if (entry.canvas?.width === width && entry.canvas.height === height && entry.source === source) {
+                continue;
+            }
             if (!budget) { schedule(state.board, false, false); continue; }
             budget--;
             if (!entry.canvas) {
@@ -148,13 +156,14 @@
                 canvas.className = 'map-space-icon map-viewport-square-icon'; canvas.setAttribute('aria-hidden', 'true');
                 canvas.hidden = true; image.parentElement.append(canvas); entry.canvas = canvas;
             }
-            const style = getComputedStyle(image), ratio = Math.min(window.devicePixelRatio || 1, 1.5);
-            const width = Math.max(1, Math.ceil((parseFloat(style.width) || 66) * ratio));
-            const height = Math.max(1, Math.ceil((parseFloat(style.height) || 66) * ratio));
             const canvas = entry.canvas;
-            canvas.width = canvas.height = 0; canvas.width = width; canvas.height = height;
+            const resized = canvas.width !== width || canvas.height !== height;
+            if (resized) {
+                canvas.width = canvas.height = 0; canvas.width = width; canvas.height = height;
+            }
             const ctx = canvas.getContext('2d');
             if (!ctx) { entry.unavailable = true; releaseIcon(entry); continue; }
+            if (!resized) ctx.clearRect(0, 0, width, height);
             const scale = Math.min(width / image.naturalWidth, height / image.naturalHeight);
             const drawWidth = image.naturalWidth * scale, drawHeight = image.naturalHeight * scale;
             ctx.drawImage(image, (width - drawWidth) / 2, (height - drawHeight) / 2, drawWidth, drawHeight);
@@ -233,8 +242,8 @@
         if (!state.board.isConnected) { dispose(state.board); return; }
         if (document.hidden || window.MapScene.isViewportResizing()) return;
         const lowDetail = window.MapDetailLevel.isLowDetail(state.board);
-        state.canvas.hidden = lowDetail;
-        state.board.classList.toggle('map-viewport-active', !lowDetail);
+        if (state.canvas.hidden !== lowDetail) state.canvas.hidden = lowDetail;
+        if (state.board.classList.contains('map-viewport-active') === lowDetail) state.board.classList.toggle('map-viewport-active', !lowDetail);
         if (lowDetail) {
             for (const entry of state.activeIcons) releaseIcon(entry);
             state.activeIcons.clear();
@@ -246,10 +255,8 @@
         // Tolerate timestamp rounding: a nominal 60 Hz frame must not be skipped.
         if (now - state.lastPaint < frameInterval - 1) { schedule(state.board, false, false); return; }
         try {
-            if (!measure(state)) return;
-            const x = state.originX - state.area.scrollLeft, y = state.originY - state.area.scrollTop;
-            const visible = { left: -x / state.zoom, top: -y / state.zoom,
-                right: (state.width - x) / state.zoom, bottom: (state.height - y) / state.zoom };
+            const visible = measure(state);
+            if (!visible) return;
             const guard = padding / 2 / state.zoom;
             const previous = state.bounds;
             const redraw = state.contentDirty || !previous || visible.left < previous.left + guard ||
@@ -275,8 +282,10 @@
                 for (const bridge of state.bridges) {
                     if (!window.BridgeCollapseRules?.isClosed(state.collapse, bridge.from, bridge.to)) drawImage(ctx, bridge.source.image, bridge, bounds);
                 }
-                Object.assign(state.canvas.style, { left: bounds.left + 'px', top: bounds.top + 'px',
-                    width: (bounds.right - bounds.left) + 'px', height: (bounds.bottom - bounds.top) + 'px' });
+                for (const [name, value] of Object.entries({ left: bounds.left + 'px', top: bounds.top + 'px',
+                    width: (bounds.right - bounds.left) + 'px', height: (bounds.bottom - bounds.top) + 'px' })) {
+                    if (state.canvas.style[name] !== value) state.canvas.style[name] = value;
+                }
                 state.bounds = bounds; state.contentDirty = false;
             }
             const iconsChanged = drawIcons(state, visible);
@@ -306,7 +315,7 @@
         canvas.className = 'map-viewport-surface'; canvas.setAttribute('aria-hidden', 'true'); canvas.hidden = true;
         const loader = document.createElement('div'); loader.hidden = true;
         const state = { board, area, background, svg, canvas, ctx, loader, sources: new Map(), roadCells: new Map(),
-            frame: 0, lastPaint: -Infinity, geometryDirty: true, sizeDirty: true, contentDirty: true, disposed: false, presented: new Set(),
+            frame: 0, lastPaint: -Infinity, sizeDirty: true, contentDirty: true, disposed: false, presented: new Set(),
             styleVersion: 0, icons: new Map(), iconCells: new Map(), activeIcons: new Set(), bounds: null,
             zoom: typeof getMapZoomUI === 'function' ? getMapZoomUI() : 1, collapse: window.bridgeCollapseVisualState };
         background.append(loader);
@@ -317,10 +326,16 @@
         board.append(canvas);
         board.classList.add('map-viewport-active');
         state.onScroll = () => schedule(board, false, false);
-        state.onVisibility = () => schedule(board, true);
+        state.onVisibility = () => {
+            window.MapScene.invalidateViewportSize(area);
+            state.sizeDirty = true; schedule(board, true, false);
+        };
         area.addEventListener('scroll', state.onScroll, { passive: true });
         document.addEventListener('visibilitychange', state.onVisibility);
-        state.observer = new ResizeObserver(() => { state.sizeDirty = true; schedule(board, true); });
+        state.observer = new ResizeObserver(() => {
+            window.MapScene.invalidateViewportSize(area);
+            state.sizeDirty = true; schedule(board, true, false);
+        });
         state.observer.observe(area);
         background.dataset.rasterState = 'viewport';
         schedule(board, true);

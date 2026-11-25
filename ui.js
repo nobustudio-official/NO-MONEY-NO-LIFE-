@@ -396,13 +396,13 @@ function applyMapZoomUI() {
     // マップ全体をズーム
     // =========================
 
-    mapBoard.style.transform = Math.abs(mapZoomUI - 1) < 1e-6
+    const transform = Math.abs(mapZoomUI - 1) < 1e-6
         ? 'none'
         : `scale(${mapZoomUI})`;
+    if (mapBoard.style.transform !== transform) mapBoard.style.transform = transform;
 
 
-    mapBoard.style.transformOrigin =
-        "center center";
+    if (mapBoard.style.transformOrigin !== 'center center') mapBoard.style.transformOrigin = 'center center';
 
     window.MapScene?.setZoom(mapZoomUI);
 

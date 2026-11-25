@@ -151,10 +151,15 @@
         const objectMargin=objectImageMargin/Math.max(.01,getMapZoomUI()||1);
         const imageBounds={left:visibleBounds.left-objectMargin,right:visibleBounds.right+objectMargin,
             top:visibleBounds.top-objectMargin,bottom:visibleBounds.bottom+objectMargin};
-        for(const row of state.rows){
+        const candidates=state.index.query({left:Math.min(bounds.left,imageBounds.left),right:Math.max(bounds.right,imageBounds.right),
+            top:Math.min(bounds.top,imageBounds.top),bottom:Math.max(bounds.bottom,imageBounds.bottom)});
+        for(const row of state.activeRows)candidates.add(row);
+        const active=new Set();
+        for(const row of candidates){
             const {image,extent}=row;
             const visible=!overview&&!lowDetail&&extent.left<bounds.right&&extent.right>bounds.left&&extent.top<bounds.bottom&&extent.bottom>bounds.top;
             const onScreen=visible&&extent.left<visibleBounds.right&&extent.right>visibleBounds.left&&extent.top<visibleBounds.bottom&&extent.bottom>visibleBounds.top;
+            if(visible)active.add(row);
             row.onScreen=onScreen;
             if(row.sharp!==visible){
                 row.sharp=visible;
@@ -163,6 +168,7 @@
             if(!image)continue;
             if(state.streamImages){
                 const keepImage=!overview&&!lowDetail&&extent.left<imageBounds.right&&extent.right>imageBounds.left&&extent.top<imageBounds.bottom&&extent.bottom>imageBounds.top;
+                if(keepImage)active.add(row);
                 if(!keepImage){
                     window.MapDetailLevel.cancelPresentation(image);
                     cancelObjectLoad(state,row);
@@ -184,6 +190,7 @@
                 }
             }
         }
+        state.activeRows=active;
         if(!state.effectTimer)updateMagicEffects(board,state);
     }
     function pauseDetail(board) {
@@ -202,6 +209,7 @@
             row.image.classList.remove('is-ready');
             if (!(row.image.complete && row.image.naturalWidth)) window.MapDetailLevel?.releaseImage(row.image);
         }
+        state.activeRows.clear();
     }
     function objectExtent({object,width,height}) {
         const angle=object.rotation*Math.PI/180,cos=Math.cos(angle),sin=Math.sin(angle);
@@ -220,7 +228,7 @@
             const template=templates.get(object.templateId);if(!template?.asset)continue;
             if(bakedScenery&&object.templateId!==targetTemplate){
                 if(object.templateId!==elfTemplate)continue;
-                const row={object,...objectDimensions(object,{naturalWidth:0}),sharp:null};
+                const row={object,...objectDimensions(object,{naturalWidth:0}),sharp:false};
                 row.extent=objectExtent(row);rows.push(row);
                 continue;
             }
@@ -228,7 +236,7 @@
             if(useStreaming)image.classList.add('map-object-stream');
             const {width,height}=objectDimensions(object,image);
             Object.assign(image.style,{position:'absolute',left:object.x+'px',top:object.y+'px',width:width+'px',height:height+'px',maxWidth:'none',transform:'translate(-50%,-100%) rotate('+object.rotation+'deg)',transformOrigin:'50% 100%'});
-            const row={image,object,width,height,asset:template.asset,sharp:null};rows.push(row);
+            const row={image,object,width,height,asset:template.asset,sharp:false};rows.push(row);
             row.extent=objectExtent(row);
             image.addEventListener('load',()=>{
                 window.MapDetailLevel.queuePresentation(image,()=>{
@@ -241,7 +249,10 @@
                 row.extent=objectExtent(row);
                 image.style.height=height+'px';
                 const board=layer.parentElement,state=boards.get(board);
-                if(state?.bounds)setViewport(board,state.bounds,state.visibleBounds);
+                if(state){
+                    state.index.update(row);
+                    window.MapDetailLevel.scheduleViewport(board);
+                }
             });
             layer.append(image);
         }
@@ -251,7 +262,8 @@
             const board=background.closest('#mapBoard');
             if(!board)return;
             board.append(layer);
-            boards.set(board,{rows,bounds:null,visibleBounds:null,pairs:effects.pairs,effectTimer:0,streamImages:useStreaming,
+            boards.set(board,{rows,index:window.MapScene.createSpatialIndex(rows,row=>row.extent),activeRows:new Set(),
+                bounds:null,visibleBounds:null,pairs:effects.pairs,effectTimer:0,streamImages:useStreaming,
                 pendingObjectImages:new Map()});
             if(!useStreaming)for(const row of rows){
                 if(row.image)window.MapDetailLevel.loadImage(row.image,row.asset,1).catch(()=>{});

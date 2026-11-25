@@ -1,4 +1,4 @@
-/* Background and world bounds only. Never modifies squares or online state. */
+/* Shared map geometry and scenery. Never modifies squares or online state. */
 (function(){
  'use strict';
  const config=Object.freeze({width:9216,height:7424,minZoom:.1,maxZoom:2.2,baseTileSize:1024,rippleTileSize:768});
@@ -8,6 +8,7 @@
  const oceanTextureStates=new WeakMap();let resizeTimer=0,resizeFrame=0;
  const cameraLimits=new WeakMap();let cameraLayoutVersion=0;
  const viewportSizes=new WeakMap();let viewportLayoutVersion=0;
+ const viewportGeometry=new WeakMap();
  const continent=window.MapContinentData;
  const oceanImageUrls=['images/map/backgrounds/world/ocean/base-repeat.svg','images/map/backgrounds/world/ocean/ripples-repeat.svg'];
  const assetUrls=[continent.grassTexture,...window.MapRegionBackground.assetUrls];
@@ -57,7 +58,48 @@
   return Math.max(touchDevice ? .02 : config.minZoom,fitZoom);
  }
  function invalidateCameraLimits(board){
-  if(board)cameraLimits.delete(board);else cameraLayoutVersion++;
+  if(board){cameraLimits.delete(board);viewportGeometry.delete(board);}else cameraLayoutVersion++;
+ }
+ // Cache layout, not camera position: native scroll only changes these two offsets.
+ function getViewport(board){
+  const area=board?.closest('.map-area');if(!area||!board.isConnected)return null;
+  let geometry=viewportGeometry.get(board);
+  if(!geometry||geometry.area!==area||geometry.version!==cameraLayoutVersion){
+   const {width,height}=getViewportSize(area);
+   if(!(width>0&&height>0))return null;
+   const view=area.getBoundingClientRect(),map=board.getBoundingClientRect();
+   const scale=view.width/width,zoom=map.width/config.width/scale;
+   if(!(scale>0&&zoom>0))return null;
+   geometry={area,version:cameraLayoutVersion,width,height,zoom,
+    originX:(map.left-view.left)/scale+area.scrollLeft,originY:(map.top-view.top)/scale+area.scrollTop};
+   viewportGeometry.set(board,geometry);
+  }
+  const left=(area.scrollLeft-geometry.originX)/geometry.zoom,top=(area.scrollTop-geometry.originY)/geometry.zoom;
+  return {...geometry,left,top,right:left+geometry.width/geometry.zoom,bottom:top+geometry.height/geometry.zoom};
+ }
+ // Both points and rotated object extents use the same inclusive cell lookup.
+ function createSpatialIndex(rows,boundsFor,cellSize=512){
+  const cells=new Map(),memberships=new Map();
+  function update(row){
+   for(const key of memberships.get(row)||[]){const cell=cells.get(key);cell.delete(row);if(!cell.size)cells.delete(key);}
+   const bounds=boundsFor(row),keys=[];
+   for(let y=Math.floor(bounds.top/cellSize);y<=Math.floor(bounds.bottom/cellSize);y++){
+    for(let x=Math.floor(bounds.left/cellSize);x<=Math.floor(bounds.right/cellSize);x++){
+     const key=x+':'+y;if(!cells.has(key))cells.set(key,new Set());cells.get(key).add(row);keys.push(key);
+    }
+   }
+   memberships.set(row,keys);
+  }
+  for(const row of rows)update(row);
+  return {update,query(bounds){
+   const found=new Set();
+   for(let y=Math.floor(bounds.top/cellSize);y<=Math.floor(bounds.bottom/cellSize);y++){
+    for(let x=Math.floor(bounds.left/cellSize);x<=Math.floor(bounds.right/cellSize);x++){
+     for(const row of cells.get(x+':'+y)||[])found.add(row);
+    }
+   }
+   return found;
+  }};
  }
  function getCameraLimits(){
   const area=document.querySelector('.game-screen .map-area'),board=document.getElementById('mapBoard');if(!area||!board)return null;
@@ -101,11 +143,8 @@
    (Math.abs(cdA)<1e-7&&onSegment(c,a,d))||(Math.abs(cdB)<1e-7&&onSegment(c,b,d));
  }
  function viewportShowsOcean(){
-  const area=document.querySelector('.game-screen .map-area'),board=document.getElementById('mapBoard');
-  if(!area||!board)return false;
-  const view=area.getBoundingClientRect(),bounds=board.getBoundingClientRect();
-  const left=(view.left-bounds.left)/activeScale,top=(view.top-bounds.top)/activeScale;
-  const right=left+area.clientWidth/activeScale,bottom=top+area.clientHeight/activeScale;
+  const viewport=getViewport(document.getElementById('mapBoard'));if(!viewport)return false;
+  const {left,right,top,bottom}=viewport;
   const corners=[{x:left,y:top},{x:right,y:top},{x:right,y:bottom},{x:left,y:bottom}];
   // Anything outside the continent polygon is ocean, including the camera margin.
   if(corners.some(point=>!pointInCoast(point.x,point.y)))return true;
@@ -135,27 +174,36 @@
   }
  }
  function queueOceanCheck(){if(!oceanCheckFrame)oceanCheckFrame=requestAnimationFrame(updateOceanTexture);}
+ function setStyle(element,name,value){
+  if(element.style[name]===value)return false;
+  element.style[name]=value;return true;
+ }
  function setZoom(zoom){
   const area=document.querySelector('.game-screen .map-area');if(!area)return;
-  const scale=Math.max(getMinZoom(),Math.min(config.maxZoom,Number(zoom)||1));activeScale=scale;
-  area.classList.add('map-ocean');
-  area.classList.toggle('map-ocean-flat',scale<.5);
-  oceanTextureStates.delete(area);
+  const scale=Math.max(getMinZoom(),Math.min(config.maxZoom,Number(zoom)||1)),changed=activeScale!==scale;activeScale=scale;
+  if(!area.classList.contains('map-ocean'))area.classList.add('map-ocean');
+  if(scale<.5&&!area.classList.contains('map-ocean-flat'))area.classList.add('map-ocean-flat');
+  if(changed)oceanTextureStates.delete(area);
   if(!observedAreas.has(area)){observedAreas.add(area);area.addEventListener('scroll',queueOceanCheck,{passive:true});}
   // Center-origin enlargement otherwise pushes the world's left/top into
   // negative, unreachable scroll coordinates. Reserve matching space on both sides.
   const extraX=Math.max(0,config.width*(scale-1)/2),extraY=Math.max(0,config.height*(scale-1)/2);
   // Keep the viewport's padding bounded; oversized padding would enlarge its
   // border box. Enlargement space belongs to the board's content margins.
-  area.style.paddingLeft=area.style.paddingRight='50vw';
-  area.style.paddingTop=area.style.paddingBottom='50vh';
+  let layoutChanged=false;
+  for(const name of ['paddingLeft','paddingRight'])layoutChanged=setStyle(area,name,'50vw')||layoutChanged;
+  for(const name of ['paddingTop','paddingBottom'])layoutChanged=setStyle(area,name,'50vh')||layoutChanged;
   const board=document.getElementById('mapBoard');
-  if(board){board.style.marginLeft=board.style.marginRight=extraX+'px';board.style.marginTop=board.style.marginBottom=extraY+'px';}
-  area.style.setProperty('--ocean-base-size',config.baseTileSize*scale+'px');
-  area.style.setProperty('--ocean-ripple-size',config.rippleTileSize*scale+'px');
+  if(board){
+   for(const name of ['marginLeft','marginRight'])layoutChanged=setStyle(board,name,extraX+'px')||layoutChanged;
+   for(const name of ['marginTop','marginBottom'])layoutChanged=setStyle(board,name,extraY+'px')||layoutChanged;
+  }
+  for(const [name,value] of [['--ocean-base-size',config.baseTileSize*scale+'px'],['--ocean-ripple-size',config.rippleTileSize*scale+'px']]){
+   if(area.style.getPropertyValue(name)!==value)area.style.setProperty(name,value);
+  }
   // Match the board's center-origin zoom, including the scrollable padding.
-  area.style.backgroundPosition=`calc(50vw + ${extraX+config.width*(1-scale)/2}px) calc(50vh + ${extraY+config.height*(1-scale)/2}px)`;
-  invalidateCameraLimits();
+  setStyle(area,'backgroundPosition',`calc(50vw + ${extraX+config.width*(1-scale)/2}px) calc(50vh + ${extraY+config.height*(1-scale)/2}px)`);
+  if(changed||layoutChanged)invalidateCameraLimits();
   clampScroll();
   queueOceanCheck();
  }
@@ -211,5 +259,5 @@
  }
  window.addEventListener('resize',()=>scheduleViewportResize());
  document.addEventListener('fullscreenchange',()=>scheduleViewportResize());
- window.MapScene=Object.freeze({config,cameraFrame,assetUrls,createBackground,setZoom,getMinZoom,getCameraLimits,clampScroll,invalidateCameraLimits,invalidateViewportSize,scheduleViewportResize,isViewportResizing});
+ window.MapScene=Object.freeze({config,cameraFrame,assetUrls,createBackground,setZoom,getMinZoom,getCameraLimits,clampScroll,getViewport,createSpatialIndex,invalidateCameraLimits,invalidateViewportSize,scheduleViewportResize,isViewportResizing});
 })();
