@@ -60,7 +60,8 @@
                 limits?.minTop ?? 0,limits?.maxTop ?? area.scrollHeight-area.clientHeight)
         } : null;
         const cameraAbort = new AbortController();
-        const state = {cancel(){cameraAbort.abort();cancelAnimationFrame(frame);animation.cancel();piece.classList.remove('map-piece-moving');}};
+        const releaseCameraMotion = window.MapDetailLevel?.beginCameraMotion?.(board);
+        const state = {cancel(){cameraAbort.abort();cancelAnimationFrame(frame);animation.cancel();piece.classList.remove('map-piece-moving');releaseCameraMotion?.();}};
         active.set(board,state);
         let lastCameraTick = performance.now();
         function follow(now) {
@@ -87,17 +88,19 @@
         }
         if (area) frame=requestAnimationFrame(follow);
         return animation.finished.catch(() => {}).then(async () => {
-            cancelAnimationFrame(frame);
-            if (active.get(board)===state) {
-                // If a zoomed-in or off-center view lagged behind the sprite,
-                // finish at the same camera limit instead of snapping to it.
-                if (area && piece.isConnected && !cameraAbort.signal.aborted) {
-                    await window.panMapCameraTo?.(area,target.left,target.top,cameraSpeedLimit,cameraAbort.signal);
+            try {
+                cancelAnimationFrame(frame);
+                if (active.get(board)===state) {
+                    // If a zoomed-in or off-center view lagged behind the sprite,
+                    // finish at the same camera limit instead of snapping to it.
+                    if (area && piece.isConnected && !cameraAbort.signal.aborted) {
+                        await window.panMapCameraTo?.(area,target.left,target.top,cameraSpeedLimit,cameraAbort.signal);
+                    }
+                    if(active.get(board)===state)active.delete(board);
                 }
-                if(active.get(board)===state)active.delete(board);
-            }
-            animation.cancel();
-            piece.classList.remove('map-piece-moving');
+                animation.cancel();
+                piece.classList.remove('map-piece-moving');
+            } finally { releaseCameraMotion?.(); }
         });
     }
     window.MapMovementPresentation = Object.freeze({ duration, durationForDistance, worldPixelsPerMs, cameraSpeedLimit, capture, play, isMoving:board=>active.has(board) });

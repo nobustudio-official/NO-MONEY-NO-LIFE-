@@ -24,6 +24,8 @@
         }
         phase = 'waiting';
         waits.clear();
+        let mapJump = window.MapDetailLevel?.beginCameraJump?.(document.getElementById('mapBoard'));
+        window.cancelMapCameraScroll?.();
         const popup = document.getElementById('eventPopup');
         if (popup) popup.style.display = 'none';
         window.UndergroundUI?.prepareTurnHandoff?.();
@@ -38,8 +40,6 @@
             setTimeout(() => {
                 if (!element) return;
                 phase = 'black';
-                let mapJump = window.MapDetailLevel?.beginCameraJump?.(document.getElementById('mapBoard'));
-                window.cancelMapCameraScroll?.();
                 const callbacks = blackCallbacks; blackCallbacks = [];
                 for (const callback of callbacks) { try { callback(); } catch (error) { console.error('[turn-handoff]', error); } }
                 try { apply(); } catch (error) { console.error('[turn-handoff]', error); }
@@ -57,7 +57,11 @@
                     }
                     phase = 'fading-in';
                     element.classList.remove('is-dark');
-                    setTimeout(() => { element?.remove(); element = null; phase = 'idle'; if (queued) { const next = queued; queued = null; run(next); } }, 260);
+                    setTimeout(() => {
+                        element?.remove(); element = null; phase = 'idle';
+                        if (queued) { const next = queued; queued = null; run(next); }
+                        else window.MapDetailLevel?.resumeWork?.();
+                    }, 260);
                 };
                 requestAnimationFrame(() => requestAnimationFrame(fadeInWhenReady));
             }, 260);

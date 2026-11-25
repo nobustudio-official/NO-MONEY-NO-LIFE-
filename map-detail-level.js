@@ -11,12 +11,13 @@
     const imageCache = new Map();
     const activeLoads = new Set();
     const activeRequests = new Map();
-    const maxConcurrentImageLoads = 2;
+    const maxConcurrentImageLoads = touchDevice ? 1 : 2;
     let pumpScheduled = false;
     // Each map releases only its own pause, including during screen replacement.
     const scrollPauses = new Set();
     const cameraJumps = new Set();
     const presentationJobs = new Map();
+    const presentationWaiters = new Map();
     let presentationFrame = 0;
 
     function imageGroup(element) {
@@ -35,6 +36,58 @@
         const state = states.get(board);
         return state?.detailPending || isLowDetail(board) || state?.cameraJumps.size ||
             window.MapScene?.isViewportResizing?.() || board.classList.contains('map-zoom-interacting');
+    }
+
+    function updateCameraActivity(board, state) {
+        if (!touchDevice || state.disposed) return;
+        const moving = state.scrolling || state.cameraMotions.size > 0;
+        const busy = moving || state.cameraJumps.size > 0 || window.TurnHandoff?.isActive?.() === true;
+        if (board.classList.contains('map-camera-busy') !== busy) {
+            board.classList.toggle('map-camera-busy', busy);
+            if (busy) window.MapWorkshopScene?.pauseDetail?.(board);
+        }
+        if (moving) scrollPauses.add(state); else scrollPauses.delete(state);
+    }
+
+    function beginCameraMotion(board) {
+        const state = stateFor(board);
+        if (!touchDevice || !state) return () => {};
+        const token = {};
+        state.cameraMotions.add(token);
+        updateCameraActivity(board, state);
+        return () => {
+            if (!state.cameraMotions.delete(token) || state.disposed) return;
+            updateCameraActivity(board, state);
+            if (state.detailPending && !state.cameraMotions.size && !state.scrolling) setZoom(board, state.zoom);
+            scheduleImagePump();
+            schedulePresentation();
+            state.schedule();
+        };
+    }
+
+    function notifyPresentationWaiters() {
+        for (const [board, finish] of presentationWaiters) {
+            if (![...presentationJobs.values()].some(job => job.board === board)) finish();
+        }
+    }
+
+    function waitForPresentation(board, timeout) {
+        if (![...presentationJobs.values()].some(job => job.board === board)) return Promise.resolve();
+        const state = states.get(board);
+        if (!state || state.disposed) return Promise.resolve();
+        return new Promise(resolve => {
+            const finish = () => {
+                clearTimeout(timer);
+                state.waits.delete(finish);
+                if (presentationWaiters.get(board) === finish) presentationWaiters.delete(board);
+                resolve();
+            };
+            presentationWaiters.get(board)?.();
+            presentationWaiters.set(board, finish);
+            state.waits.add(finish);
+            const timer = setTimeout(finish, timeout);
+            schedulePresentation();
+        });
     }
 
     function schedulePresentation() {
@@ -66,9 +119,13 @@
                 continue;
             }
             if (presentationPaused(job.board)) continue;
+            const state = states.get(job.board);
+            // During camera travel, retain loaded terrain; defer new bindings
+            // and optional icon/object reveals until the camera settles.
+            if ((state?.scrolling || state?.cameraMotions.size) && (job.request || job.group > 0)) continue;
             if (!(waitingGroups.get(job.board) < job.group)) available.push([key, job]);
         }
-        if (!available.length) return;
+        if (!available.length) { notifyPresentationWaiters(); return; }
         const group = Math.min(...available.map(([, job]) => job.group));
         // Background/roads first, then up to eight icons or two objects per frame.
         let budget = [1, 8, 2][group];
@@ -79,6 +136,7 @@
             if (--budget === 0) break;
         }
         schedulePresentation();
+        notifyPresentationWaiters();
     }
 
     function showImage(element) {
@@ -101,12 +159,17 @@
         if (!state.lowDetail) {
             state.lowDetail = true;
             // Cancel unfinished work; keep decoded images and their DOM sources.
-            for (const request of [...pendingImages.values(), ...activeRequests.values()]) {
-                if (request.board === board) releaseImage(request.element);
-            }
-            for (const [key, job] of presentationJobs) if (job.board === board) presentationJobs.delete(key);
+            cancelPendingImages(board);
         }
         window.MapOverviewCache?.setZoom(board, state.zoom);
+    }
+
+    function cancelPendingImages(board) {
+        for (const request of [...pendingImages.values(), ...activeRequests.values()]) {
+            if (request.board === board) releaseImage(request.element);
+        }
+        for (const [key, job] of presentationJobs) if (job.board === board) presentationJobs.delete(key);
+        notifyPresentationWaiters();
     }
 
     function prepareNormalPresentation(board) {
@@ -192,10 +255,13 @@
             scheduleImagePump();
         };
         image.onload = async () => {
+            if (!entry.loading) return;
+            entry.decoding = true;
             try {
                 if (typeof image.decode === 'function') await image.decode();
                 finish();
             } catch (error) { finish(error); }
+            finally { entry.decoding = false; }
         };
         image.onerror = () => finish(new Error(`画像を読み込めません: ${entry.url}`));
         image.src = entry.url;
@@ -230,7 +296,11 @@
             settleRequest(request);
             const entry = request.entry;
             if (!entry.ready && !entry.requests.size) {
-                if (entry.cancel) entry.cancel(); else imageCache.delete(entry.url);
+                // Let an already-started decode finish in its single slot;
+                // aborting it and starting another decode can overlap work.
+                if (!entry.decoding) {
+                    if (entry.cancel) entry.cancel(); else imageCache.delete(entry.url);
+                }
             }
         }
         // Decoded cache owners are independent of display elements and players.
@@ -318,15 +388,20 @@
         if (state) return state;
         const area = board.closest('.map-area');
         state = { area, nodes: [], important: [], bossPieces: [], zoom: 1, frame: 0, scrollSettleTimer: 0, lowDetail: null,
-            detailPending: false, detailTimer: 0, previewing: false,
+            detailPending: false, detailTimer: 0, previewing: false, cameraMotions: new Set(), lastCullTime: -Infinity,
             cameraJumps: new Set(), waits: new Set(), disposed: false, visibleOnly: false, scrolling: false };
         states.set(board, state);
         const schedule = () => {
             if (state.disposed || !board.isConnected || state.frame || state.cameraJumps.size || state.detailPending || window.MapScene?.isViewportResizing?.()) return;
-            state.frame = requestAnimationFrame(() => {
+            state.frame = requestAnimationFrame(now => {
                 state.frame = 0;
                 if (state.disposed || !board.isConnected) return;
                 if (state.detailPending || board.classList.contains('map-zoom-interacting') || window.MapScene?.isViewportResizing?.()) return;
+                if (touchDevice && (state.scrolling || state.cameraMotions.size) && now - state.lastCullTime < 32) {
+                    schedule();
+                    return;
+                }
+                state.lastCullTime = now;
                 const visible = cull(board, state);
                 if (visible) window.MapOverviewCache?.setMobileViewport?.(board, visible, state.zoom, { visibleOnly: state.visibleOnly });
             });
@@ -338,14 +413,13 @@
             state.scrolling = true;
             // Keep decoded tiles visible at every zoom, but defer new decodes
             // until manual or automatic camera travel has settled.
-            if (touchDevice) scrollPauses.add(state);
-            else scrollPauses.delete(state);
+            updateCameraActivity(board, state);
             clearTimeout(state.scrollSettleTimer);
             state.scrollSettleTimer = setTimeout(() => {
                 state.scrollSettleTimer = 0;
                 if (state.disposed) return;
                 state.scrolling = false;
-                scrollPauses.delete(state);
+                updateCameraActivity(board, state);
                 if (state.detailPending) setZoom(board, state.zoom);
                 scheduleImagePump();
                 schedulePresentation();
@@ -378,6 +452,7 @@
             scrollPauses.delete(state);
             for (const token of state.cameraJumps) cameraJumps.delete(token);
             state.cameraJumps.clear();
+            state.cameraMotions.clear();
             for (const stopWaiting of state.waits) stopWaiting();
             state.waits.clear();
             state.nodes = []; state.important = []; state.bossPieces = [];
@@ -441,7 +516,8 @@
         clearTimeout(state.scrollSettleTimer);
         state.scrollSettleTimer = 0;
         state.scrolling = false;
-        scrollPauses.delete(state);
+        updateCameraActivity(board, state);
+        cancelPendingImages(board);
         if (state.frame) cancelAnimationFrame(state.frame);
         state.frame = 0;
         let finishing;
@@ -451,9 +527,11 @@
             finishing = (async () => {
                 state.cameraJumps.delete(token);
                 cameraJumps.delete(token);
+                updateCameraActivity(board, state);
                 if (state.cameraJumps.size) return;
                 let timeout, stopWaiting;
                 state.visibleOnly = true;
+                const deadline = performance.now() + 1500;
                 try {
                     // Rebuild requests only after the destination camera coordinates are final.
                     // Reuse decoded images; cancel only unfinished requests outside the new view.
@@ -463,7 +541,8 @@
                     const visibleLoads = [...pendingImages.values(), ...activeRequests.values()]
                         .filter(request => request.board === board && request.priority === 0).map(request => request.promise);
                     await Promise.race([
-                        Promise.allSettled([overviewReady, ...visibleLoads]),
+                        Promise.allSettled([overviewReady, ...visibleLoads]).then(() =>
+                            waitForPresentation(board, Math.max(0, deadline - performance.now()))),
                         new Promise(resolve => {
                             stopWaiting = () => { clearTimeout(timeout); resolve(); };
                             state.waits.add(stopWaiting);
@@ -503,7 +582,7 @@
                 clearTimeout(state.detailTimer);
                 state.detailTimer = setTimeout(() => {
                     state.detailTimer = 0;
-                    if (state.disposed || !board.isConnected || state.previewing || state.scrolling ||
+                    if (state.disposed || !board.isConnected || state.previewing || state.scrolling || state.cameraMotions.size ||
                         board.classList.contains('map-zoom-interacting') || window.MapScene?.isViewportResizing?.()) return;
                     if (state.lowDetail) prepareNormalPresentation(board);
                     state.lowDetail = false;
@@ -576,7 +655,14 @@
     window.MapDetailLevel = Object.freeze({ refresh, refreshPieces, setZoom, dispose, touchDevice, setTileSources,
         isLowDetail, prepareViewportResize, queuePresentation,
         cancelPresentation: element => presentationJobs.delete(element),
-        loadImage, requestImage: enqueueImage, updateImagePriority, releaseImage, beginCameraJump,
+        loadImage, requestImage: enqueueImage, updateImagePriority, releaseImage, beginCameraJump, beginCameraMotion,
+        resumeWork() {
+            const board = document.getElementById('mapBoard'), state = states.get(board);
+            if (state) updateCameraActivity(board, state);
+            scheduleImagePump();
+            schedulePresentation();
+            state?.schedule();
+        },
         isCameraJumping: board => Boolean(states.get(board)?.cameraJumps.size),
         scheduleViewport: board => stateFor(board)?.schedule() });
 })();

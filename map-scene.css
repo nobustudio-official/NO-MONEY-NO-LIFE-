@@ -27,6 +27,14 @@
 @media (pointer: coarse) {
     /* Avoid hinting Safari to promote the entire 9k × 7k map as one layer. */
     #mapBoard.map-zoom-interacting { will-change: auto; }
+    /* Keep the camera's frames for travel; resume ambient effects after settling. */
+    #mapBoard.map-camera-busy .map-node,
+    #mapBoard.map-camera-busy .map-node::before,
+    #mapBoard.map-camera-busy .map-node::after,
+    #mapBoard.map-camera-busy .map-road-route-highlight,
+    #mapBoard .map-node.map-detail-offscreen,
+    #mapBoard .map-node.map-detail-offscreen::before,
+    #mapBoard .map-node.map-detail-offscreen::after { animation-play-state: paused; }
 }
 #mapBoard .map-background {
     contain: layout paint;

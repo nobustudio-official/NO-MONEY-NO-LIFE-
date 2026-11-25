@@ -10492,6 +10492,7 @@ function animateMapCameraScroll(mapArea, left, top, speed = MAP_TAP_CAMERA_SPEED
     let settled = false;
     let resolvePromise;
     const promise = new Promise(resolve => { resolvePromise = resolve; });
+    const releaseCameraMotion = window.MapDetailLevel?.beginCameraMotion?.(document.getElementById('mapBoard'));
 
     function finish(completed) {
         if (settled) return;
@@ -10500,6 +10501,7 @@ function animateMapCameraScroll(mapArea, left, top, speed = MAP_TAP_CAMERA_SPEED
         controller.abort();
         signal?.removeEventListener('abort', cancel);
         if (activeMapCameraScroll?.cancel === cancel) activeMapCameraScroll = null;
+        releaseCameraMotion?.();
         resolvePromise(completed);
     }
     function cancel() { finish(false); }

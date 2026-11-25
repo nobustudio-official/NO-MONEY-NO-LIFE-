@@ -120,7 +120,7 @@
         state.effectTimer=0;
         if(!board.isConnected)return;
         const active=!document.hidden&&!board.classList.contains('map-overview-active')&&
-            !board.classList.contains('map-zoom-interacting')&&!reducedMotion?.matches;
+            !board.classList.contains('map-zoom-interacting')&&!board.classList.contains('map-camera-busy')&&!reducedMotion?.matches;
         let hasVisibleEffect=false;
         const phase=(now%4000)/4000;
         for(const pair of state.pairs){
