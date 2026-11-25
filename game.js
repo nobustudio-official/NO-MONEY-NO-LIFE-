@@ -2011,12 +2011,6 @@ function showGameScreen(
     localResume = null
 ) {
     let localSave = null;
-    if (window.MapScene?.isPortrait?.()) {
-        return new Promise(resolve => {
-            const resume = () => resolve(Promise.resolve().then(() => showGameScreen(players, maxTurns, localResume)));
-            if (!window.MapScene.deferViewportUpdate(resume)) resume();
-        });
-    }
     let localMugging = null;
     let localEnding = null;
     let resumeResolve, resumeReject;
@@ -4178,7 +4172,6 @@ window.renderMap = renderMap;
 // =========================
 
 function positionHudMarketBadge() {
-    if (window.MapScene?.deferViewportUpdate?.(positionHudMarketBadge)) return;
     const badge = document.querySelector('.game-hud > .hud-market-badge');
     const turnDisplay = document.getElementById('turnDisplay');
     const hud = turnDisplay?.closest('.game-hud');
@@ -10519,10 +10512,7 @@ function animateMapCameraScroll(mapArea, left, top, speed = MAP_TAP_CAMERA_SPEED
         if (window.MapScene?.isViewportResizing?.()) {
             viewportPaused = true;
             lastTick = now;
-            window.MapScene.whenViewportStable(document.getElementById('mapBoard')).then(ready => {
-                if (settled) return;
-                if (ready) frame = requestAnimationFrame(tick); else finish(false);
-            });
+            frame = requestAnimationFrame(tick);
             return;
         }
         if (viewportPaused) {

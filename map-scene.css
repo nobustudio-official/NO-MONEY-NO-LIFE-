@@ -126,33 +126,3 @@
 #mapBoard.map-viewport-active .map-viewport-icon-ready img.map-space-icon { display:none; }
 #mapBoard.map-viewport-active:not(.map-low-detail-active) > .map-background > .map-continent,
 #mapBoard.map-viewport-active:not(.map-low-detail-active) > .map-lines { display:none; }
-
-.game-orientation-notice { display:none; touch-action:none; }
-.game-portrait-message { display:none; }
-html[data-game-viewport-paused] body:has(.game-screen, .game-loading-screen) > :not(script):not(style):not(.game-orientation-notice) { visibility:hidden !important; }
-html[data-game-viewport-paused] body:has(.game-screen, .game-loading-screen) *,
-html[data-game-viewport-paused] body:has(.game-screen, .game-loading-screen) *::before,
-html[data-game-viewport-paused] body:has(.game-screen, .game-loading-screen) *::after { animation-play-state:paused !important; }
-html[data-game-viewport-paused] body:has(.game-screen, .game-loading-screen) > .game-orientation-notice {
-    display:grid; position:fixed; inset:0; z-index:2147483647;
-    place-items:center; background:#101923; color:#fff; font-size:16px;
-}
-@media (pointer:coarse) and (orientation:portrait) {
-    body:has(.game-screen, .game-loading-screen) { overflow:hidden; }
-    /* Keep the last landscape layout and bitmap buffers while native CSS hides it. */
-    .game-container:has(.game-screen, .game-loading-screen) {
-        position:fixed; left:0; top:0; padding:0;
-        width:var(--game-layout-width, 100vw); height:var(--game-layout-height, 100dvh);
-    }
-    .game-container > .game-screen { width:100%; height:100%; }
-    body:has(.game-screen, .game-loading-screen) > :not(script):not(style):not(.game-orientation-notice) { visibility:hidden !important; }
-    body:has(.game-screen, .game-loading-screen) *,
-    body:has(.game-screen, .game-loading-screen) *::before,
-    body:has(.game-screen, .game-loading-screen) *::after { animation-play-state:paused !important; }
-    body:has(.game-screen, .game-loading-screen) > .game-orientation-notice {
-        display:grid; position:fixed; inset:0; z-index:2147483647;
-        place-items:center; background:#101923; color:#fff; font-size:16px;
-    }
-    .game-portrait-message { display:block; }
-    .game-resume-message { display:none; }
-}

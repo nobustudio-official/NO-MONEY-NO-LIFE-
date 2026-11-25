@@ -67,15 +67,8 @@
         function follow(now) {
             if (!area || !piece.isConnected || active.get(board)!==state) return;
             if (window.MapScene?.isViewportResizing?.()) {
-                animation.pause?.();
                 lastCameraTick = now;
-                window.MapScene.whenViewportStable(board).then(ready => {
-                    if (active.get(board) !== state) return;
-                    if (!ready) { state.cancel(); return; }
-                    lastCameraTick = performance.now();
-                    animation.play?.();
-                    frame = requestAnimationFrame(follow);
-                });
+                frame = requestAnimationFrame(follow);
                 return;
             }
             limits = window.MapScene?.getCameraLimits() || limits;

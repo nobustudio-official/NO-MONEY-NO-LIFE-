@@ -58,13 +58,11 @@
             if (frame) cancelAnimationFrame(frame);
             frame = 0;
             if (!panel.isConnected || !card.isConnected || !button.isConnected) return;
-            if (window.MapScene?.deferViewportUpdate?.(update)) return;
             const panelRect = panel.getBoundingClientRect();
             const cardRect = card.getBoundingClientRect();
             button.style.left = `${cardRect.left + cardRect.width / 2 - panelRect.left - panel.clientLeft}px`;
         };
         const schedule = () => {
-            if (window.MapScene?.deferViewportUpdate?.(update)) return;
             if (!frame) frame = requestAnimationFrame(update);
         };
         const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(schedule) : null;

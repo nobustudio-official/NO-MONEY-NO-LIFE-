@@ -15,7 +15,6 @@
 
         const update = () => {
             if (!frame.isConnected || frame.hidden) return;
-            if (window.MapScene?.deferViewportUpdate?.(update)) return;
             const viewport = screen.getBoundingClientRect();
             const header = banner.getBoundingClientRect();
             if (!viewport.width || !viewport.height || !header.width || !header.height) return;
@@ -49,7 +48,6 @@
 
         let raf = 0;
         const schedule = () => {
-            if (window.MapScene?.deferViewportUpdate?.(update)) return;
             if (!raf) raf = requestAnimationFrame(() => { raf = 0; update(); });
         };
         const observer = new ResizeObserver(schedule);

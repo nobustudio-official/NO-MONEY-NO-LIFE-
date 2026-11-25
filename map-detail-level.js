@@ -91,7 +91,7 @@
     }
 
     function schedulePresentation() {
-        if (!window.MapScene?.isViewportResizing?.() && !presentationFrame && presentationJobs.size) presentationFrame = requestAnimationFrame(flushPresentation);
+        if (!presentationFrame && presentationJobs.size) presentationFrame = requestAnimationFrame(flushPresentation);
     }
 
     function queuePresentation(element, apply, request = null) {
@@ -105,7 +105,6 @@
 
     function flushPresentation() {
         presentationFrame = 0;
-        if (window.MapScene?.isViewportResizing?.()) return;
         const available = [];
         for (const [key, job] of presentationJobs) {
             if (!job.element.isConnected || disposedBoards.has(job.board)) {
@@ -263,7 +262,6 @@
 
     function pumpImageLoads() {
         pumpScheduled = false;
-        if (window.MapScene?.isViewportResizing?.()) return;
         while (activeLoads.size < maxConcurrentImageLoads) {
             const request = [...pendingImages.values()].filter(request => {
                 if (request.entry.loading || request.entry.ready) return false;
@@ -282,7 +280,7 @@
     }
 
     function scheduleImagePump() {
-        if (pumpScheduled || !pendingImages.size || window.MapScene?.isViewportResizing?.()) return;
+        if (pumpScheduled || !pendingImages.size) return;
         pumpScheduled = true;
         setTimeout(pumpImageLoads, 32);
     }
@@ -406,7 +404,6 @@
         };
         state.schedule = schedule;
         state.onScroll = () => {
-            if (window.MapScene?.isPortrait?.()) return;
             if (state.disposed || state.cameraJumps.size) return;
             if (state.visibleOnly) { schedule(); return; }
             state.scrolling = true;
@@ -474,7 +471,7 @@
     }
 
     function cull(board, state) {
-        if (state.disposed || !board.isConnected || !state.area || state.cameraJumps.size || window.MapScene?.isPortrait?.()) return;
+        if (state.disposed || !board.isConnected || !state.area || state.cameraJumps.size) return;
         const viewport = window.MapScene.getViewport(board);
         if (!viewport) return;
         const { zoom, left: viewLeft, right: viewRight, top: viewTop, bottom: viewBottom } = viewport;
@@ -640,7 +637,7 @@
         clearTimeout(state.detailTimer);
         state.detailTimer = 0;
         state.detailPending = true;
-        if (!alreadyPending && !window.MapScene?.isPortrait?.()) window.MapBackgroundCache?.showFallback?.(board);
+        if (!alreadyPending) window.MapBackgroundCache?.showFallback?.(board);
     }
 
     function refreshPieces(board, zoom) {

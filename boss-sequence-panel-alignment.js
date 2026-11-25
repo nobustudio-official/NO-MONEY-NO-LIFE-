@@ -17,7 +17,6 @@
         const update = () => {
             raf = 0;
             if (!frame.isConnected || !panel.isConnected || !banner.isConnected) return;
-            if (window.MapScene?.deferViewportUpdate?.(update)) return;
 
             const frameRect = frame.getBoundingClientRect();
             const panelRect = panel.getBoundingClientRect();
@@ -60,7 +59,6 @@
         if (once) { update(); return null; }
 
         const schedule = () => {
-            if (window.MapScene?.deferViewportUpdate?.(update)) return;
             if (!raf) raf = requestAnimationFrame(update);
         };
 

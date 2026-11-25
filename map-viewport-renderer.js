@@ -17,7 +17,7 @@
         if (!state || state.disposed) return;
         if (geometryChanged) window.MapScene.invalidateCameraLimits(board);
         state.contentDirty ||= contentChanged;
-        if (!state.frame && !document.hidden && !window.MapScene.isViewportResizing()) state.frame = requestAnimationFrame(now => paint(state, now));
+        if (!state.frame && !document.hidden) state.frame = requestAnimationFrame(now => paint(state, now));
     }
 
     function source(state, url) {

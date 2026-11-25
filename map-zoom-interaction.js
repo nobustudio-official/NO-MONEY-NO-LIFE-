@@ -36,13 +36,6 @@
   }
   function tick(now){
    if(!board.isConnected){end();return;}
-   if(MapScene.isViewportResizing?.()){
-    const paused=frame;
-    MapScene.whenViewportStable(board).then(ready=>{
-     if(ready&&frame===paused&&target!==null){lastTick=performance.now();frame=requestAnimationFrame(tick);}
-    });
-    return;
-   }
    // A slow first paint must not consume the whole transition before the user
    // sees it. Advance at most two nominal frames after a rendering pause.
    elapsed+=Math.max(0,Math.min(32,now-lastTick));lastTick=now;
@@ -91,7 +84,6 @@
    return clamp(gesture.initialZoom*gesture.input.distance/gesture.initialDistance);
   }
   function finishPinch(preserveView){
-   if(MapScene.isPortrait?.())return;
    const gesture=pinch;
    if(!gesture)return;
    pinch=null;
@@ -101,7 +93,6 @@
    board.classList.remove('map-zoom-interacting');
   }
   area.addEventListener('touchstart',event=>{
-   if(MapScene.isViewportResizing?.())return;
    if(event.touches.length>2)finishPinch(true);
    if(event.touches.length!==2||pinch)return;
    const input=readPinch(event.touches);
@@ -112,7 +103,6 @@
    board.classList.add('map-zoom-interacting');
   },{passive:false});
   area.addEventListener('touchmove',event=>{
-   if(MapScene.isViewportResizing?.())return;
    if(!pinch||event.touches.length!==2)return;
    if(event.cancelable)event.preventDefault();
    pinch.input=readPinch(event.touches);
@@ -128,7 +118,7 @@
   function cancel(preserveView){
    if(pinch)finishPinch(preserveView);
    if(!frame)return;
-   const before=preserveView&&!MapScene.isPortrait?.()&&board.isConnected&&board.getBoundingClientRect();
+   const before=preserveView&&board.isConnected&&board.getBoundingClientRect();
    cancelAnimationFrame(frame);
    end();
    if(before){

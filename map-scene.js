@@ -10,8 +10,6 @@
  const viewportSizes=new WeakMap();let viewportLayoutVersion=0;
  const viewportGeometry=new WeakMap();
  const viewportWaiters=new Set();
- const viewportUpdates=new Set();
- const portraitMedia=window.matchMedia?.('(pointer: coarse) and (orientation: portrait)');
  const continent=window.MapContinentData;
  const oceanImageUrls=['images/map/backgrounds/world/ocean/base-repeat.svg','images/map/backgrounds/world/ocean/ripples-repeat.svg'];
  const assetUrls=[continent.grassTexture,...window.MapRegionBackground.assetUrls];
@@ -28,21 +26,10 @@
   if(area)viewportSizes.delete(area);else viewportLayoutVersion++;
   invalidateCameraLimits();
  }
- function isPortrait(){return portraitMedia?.matches===true;}
- function isViewportResizing(){return isPortrait()||Boolean(resizeTimer||resizeFrame);}
- function deferViewportUpdate(update){
-  if(!isViewportResizing())return false;
-  viewportUpdates.add(update);return true;
- }
+ function isViewportResizing(){return Boolean(resizeTimer||resizeFrame);}
  function finishViewportResize(stable=false){
-  const waiters=[...viewportWaiters];viewportWaiters.clear();
-  if(!isPortrait()){
-   window.dispatchEvent?.(new Event('game-viewport-ready'));
-   const updates=[...viewportUpdates];viewportUpdates.clear();
-   for(const update of updates)update();
-   window.MapDetailLevel?.resumeWork?.();
-  }
-  for(const waiter of waiters)waiter.resolve(stable&&waiter.board.isConnected&&document.getElementById('mapBoard')===waiter.board);
+  for(const waiter of viewportWaiters)waiter.resolve(stable&&waiter.board.isConnected&&document.getElementById('mapBoard')===waiter.board);
+  viewportWaiters.clear();
  }
  function whenViewportStable(board){
   if(!board?.isConnected)return Promise.resolve(false);
@@ -54,22 +41,18 @@
  function scheduleViewportResize(area){
   invalidateViewportSize(area);
   window.MapDetailLevel?.prepareViewportResize?.(document.getElementById('mapBoard'));
-  clearTimeout(resizeTimer);resizeTimer=0;
+  clearTimeout(resizeTimer);
   if(resizeFrame){cancelAnimationFrame(resizeFrame);resizeFrame=0;}
-  window.MapWorkshopScene?.pauseDetail?.(document.getElementById('mapBoard'));
-  if(isPortrait())return;
   // Rotation reports intermediate dimensions. Commit the map once they settle.
   resizeTimer=setTimeout(()=>{
    resizeTimer=0;
    resizeFrame=requestAnimationFrame(()=>{
-    if(isPortrait()){resizeFrame=0;return;}
     const board=document.getElementById('mapBoard');
     const viewport=document.querySelector('.game-screen .map-area');
     if(!board||!viewport){resizeFrame=0;finishViewportResize();return;}
     const width=viewport.clientWidth,height=viewport.clientHeight;
     resizeFrame=requestAnimationFrame(()=>{
      resizeFrame=0;
-     if(isPortrait())return;
      if(!board.isConnected||document.getElementById('mapBoard')!==board){finishViewportResize();return;}
      if(width!==viewport.clientWidth||height!==viewport.clientHeight){scheduleViewportResize(viewport);return;}
      if(!(width>0&&height>0)){if(viewportWaiters.size)scheduleViewportResize(viewport);return;}
@@ -151,7 +134,6 @@
   return limits;
  }
  function clampScroll(){
-  if(isPortrait())return;
   if(document.getElementById('mapBoard')?.classList.contains('map-zoom-interacting'))return;
   const area=document.querySelector('.game-screen .map-area'),limits=getCameraLimits();if(!area||!limits)return;
   const left=area.scrollLeft,top=area.scrollTop;
@@ -211,12 +193,7 @@
   element.style[name]=value;return true;
  }
  function setZoom(zoom){
-  if(isPortrait())return;
   const area=document.querySelector('.game-screen .map-area');if(!area)return;
-  const compact=window.matchMedia?.('(max-width: 700px)').matches;
-  for(const [name,value] of [['--map-node-size',compact?'50px':'58px'],['--map-space-icon-size',compact?'58px':'66px'],['--map-boss-icon-size',compact?'68px':'78px']]){
-   if(area.style.getPropertyValue(name)!==value)area.style.setProperty(name,value);
-  }
   const scale=Math.max(getMinZoom(),Math.min(config.maxZoom,Number(zoom)||1)),changed=activeScale!==scale;activeScale=scale;
   if(!area.classList.contains('map-ocean'))area.classList.add('map-ocean');
   if(scale<.5&&!area.classList.contains('map-ocean-flat'))area.classList.add('map-ocean-flat');
@@ -228,8 +205,8 @@
   // Keep the viewport's padding bounded; oversized padding would enlarge its
   // border box. Enlargement space belongs to the board's content margins.
   let layoutChanged=false;
-  for(const name of ['paddingLeft','paddingRight'])layoutChanged=setStyle(area,name,'calc(var(--game-layout-width, 100vw) / 2)')||layoutChanged;
-  for(const name of ['paddingTop','paddingBottom'])layoutChanged=setStyle(area,name,'calc(var(--game-layout-height, 100vh) / 2)')||layoutChanged;
+  for(const name of ['paddingLeft','paddingRight'])layoutChanged=setStyle(area,name,'50vw')||layoutChanged;
+  for(const name of ['paddingTop','paddingBottom'])layoutChanged=setStyle(area,name,'50vh')||layoutChanged;
   const board=document.getElementById('mapBoard');
   if(board){
    for(const name of ['marginLeft','marginRight'])layoutChanged=setStyle(board,name,extraX+'px')||layoutChanged;
@@ -239,7 +216,7 @@
    if(area.style.getPropertyValue(name)!==value)area.style.setProperty(name,value);
   }
   // Match the board's center-origin zoom, including the scrollable padding.
-  setStyle(area,'backgroundPosition',`calc(var(--game-layout-width, 100vw) / 2 + ${extraX+config.width*(1-scale)/2}px) calc(var(--game-layout-height, 100vh) / 2 + ${extraY+config.height*(1-scale)/2}px)`);
+  setStyle(area,'backgroundPosition',`calc(50vw + ${extraX+config.width*(1-scale)/2}px) calc(50vh + ${extraY+config.height*(1-scale)/2}px)`);
   if(changed||layoutChanged)invalidateCameraLimits();
   clampScroll();
   queueOceanCheck();
@@ -295,7 +272,6 @@
   return background;
  }
  window.addEventListener('resize',()=>scheduleViewportResize());
- portraitMedia?.addEventListener?.('change',()=>scheduleViewportResize());
  document.addEventListener('fullscreenchange',()=>scheduleViewportResize());
- window.MapScene=Object.freeze({config,cameraFrame,assetUrls,createBackground,setZoom,getMinZoom,getCameraLimits,clampScroll,getViewport,createSpatialIndex,invalidateCameraLimits,invalidateViewportSize,scheduleViewportResize,whenViewportStable,isPortrait,isViewportResizing,deferViewportUpdate});
+ window.MapScene=Object.freeze({config,cameraFrame,assetUrls,createBackground,setZoom,getMinZoom,getCameraLimits,clampScroll,getViewport,createSpatialIndex,invalidateCameraLimits,invalidateViewportSize,scheduleViewportResize,whenViewportStable,isViewportResizing});
 })();
