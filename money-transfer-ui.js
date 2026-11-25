@@ -19,6 +19,7 @@
         const target = players[targetIndex];
         const root = node('section', stage === 'result' ? 'mt-result' : ''); root.id = 'moneyTransferScreen';
         root.dataset.stage = stage;
+        if (!isItemTransfer && !isAssetTransfer) root.dataset.transfer = 'money';
         const panel = node('div', `mt-panel${cfg.description ? ' has-description' : ''}`), content = node('div', 'mt-content');
         const sendLabel = isAssetTransfer ? '贈与' : isItemTransfer ? '渡す' : '送金';
         const stealLabel = isAssetTransfer ? '強奪' : isItemTransfer ? '奪う' : '強奪';
@@ -37,6 +38,24 @@
         const person = (player, receiver = false, money = true) => { const e = node('div', `mt-person${receiver ? ' mt-receiver' : ''}`); e.append(portrait(player), node('b', '', player.name)); if (money) e.append(node('strong', '', `${format(player.money)}G`)); return e; };
         const arrow = () => { const img = document.createElement('img'); img.className = 'mt-arrow'; img.src = 'images/ui/icons/interface/yajirushi.webp'; img.alt = 'から'; return img; };
         const route = (from, to, result = false, money = true) => { const e = node('div', 'mt-route'); e.append(person(from, false, money), arrow(), person(to, result, money)); return e; };
+        const moneyRoute = (from, to) => {
+            const e = node('div', 'mt-route mt-money-route');
+            const participant = (player, receiver) => {
+                const slot = node('div', `mt-person mt-money-person${receiver ? ' mt-receiver' : ''}`);
+                const avatar = node('div', 'mt-money-avatar'), image = portrait(player);
+                image.alt = player.name;
+                const balance = node('div', 'mt-money-balance');
+                balance.setAttribute('aria-label', `${player.name}の所持金`);
+                balance.append(node('strong', '', `${(Number(player.money) || 0).toLocaleString('ja-JP')}G`));
+                if (stage === 'result' && Number(cfg.amount) > 0) {
+                    balance.append(node('small', 'mt-money-change', `${receiver ? '+' : '−'}${format(cfg.amount)}G`));
+                }
+                avatar.append(image, balance); slot.append(avatar);
+                return slot;
+            };
+            e.append(participant(from, false), arrow(), participant(to, true));
+            return e;
+        };
         const go = (next, index = targetIndex, direction = type, value = null) => show({...cfg, stage:next, targetIndex:index, type:direction, amount:value});
         if (stage !== 'result') {
             const back = btn('戻る', () => { if (stage === 'target') { close(); cfg.onExit(); } else if (stage === 'type') go('target'); else go('type'); }, 'mt-back item-exit-button');
@@ -97,7 +116,8 @@
             content.append(list);
         } else {
             const from = type === 'send' ? actor : target, to = type === 'send' ? target : actor;
-            panel.append(route(from, to, stage === 'result'));
+            const isMoneyTransfer = !isItemTransfer && !isAssetTransfer;
+            panel.append(isMoneyTransfer ? moneyRoute(from, to) : route(from, to, stage === 'result'));
             if (stage === 'amount') {
                 const max = limit(from), initial = Number.isFinite(Number(cfg.amount)) && cfg.amount != null ? Number(cfg.amount) : Math.min(max, Math.ceil(max / 2000) * 1000);
                 const min = max >= 1000 ? 1000 : 0;
@@ -124,6 +144,10 @@
                 maxButton.setAttribute('aria-label', `指定可能な最高額 ${format(max)}G`);
                 const execute = btn('実行', () => { update(); cfg.onCommit(type, Number(input.value), execute, targetIndex); }, 'mt-button mt-execute', null); execute.disabled = Boolean(remote) || !max;
                 group.append(minButton, stepButton('−', -1000), input, stepButton('＋', 1000), maxButton); form.append(group, execute); panel.append(form);
+            } else if (isMoneyTransfer && stage === 'result') {
+                // Reserve the input form's space so the icons stay put after payment.
+                const spacer = node('div', 'mt-form');
+                spacer.setAttribute('aria-hidden', 'true'); panel.append(spacer);
             }
         }
         document.body.append(root);
