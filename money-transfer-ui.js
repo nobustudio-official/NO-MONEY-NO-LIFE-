@@ -143,10 +143,6 @@
                 maxButton.setAttribute('aria-label', `指定可能な最高額 ${format(max)}G`);
                 const execute = btn('実行', () => { update(); cfg.onCommit(type, Number(input.value), execute, targetIndex); }, 'mt-button mt-execute', null); execute.disabled = Boolean(remote) || !max;
                 group.append(minButton, stepButton('−', -1000), input, stepButton('＋', 1000), maxButton); form.append(group, execute); panel.append(form);
-            } else if (isMoneyTransfer && stage === 'result') {
-                // Reserve the input form's space so the icons stay put after payment.
-                const spacer = node('div', 'mt-form');
-                spacer.setAttribute('aria-hidden', 'true'); panel.append(spacer);
             }
         }
         document.body.append(root);

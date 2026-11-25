@@ -71,6 +71,14 @@
     min-height: var(--item-player-icon-size);
     width: 100%;
 }
+#moneyTransferScreen[data-transfer="money"][data-stage="result"] .mt-money-route {
+    position: absolute;
+    top: 50%;
+    left: 26px;
+    right: 26px;
+    width: auto;
+    transform: translateY(-50%);
+}
 #moneyTransferScreen[data-transfer="money"] .mt-money-icon {
     flex: none;
     display: block;
@@ -84,14 +92,14 @@
     min-width: 0;
     text-align: right;
     white-space: nowrap;
-    font-size: var(--item-player-money-size);
+    font-size: calc(var(--item-player-money-size) + 3pt);
     line-height: normal;
 }
 #moneyTransferScreen[data-transfer="money"] .mt-money-balance.is-receiver { justify-self: start; text-align: left; }
 #moneyTransferScreen[data-transfer="money"].mt-result .mt-money-balance.is-receiver { color: #f2d58d; }
 #moneyTransferScreen[data-transfer="money"] .mt-money-balance > strong { font-size: inherit; }
-#moneyTransferScreen[data-transfer="money"] .mt-money-change { position: absolute; top: 100%; right: 0; color: #ffb6a5; font-size: .8em; }
-#moneyTransferScreen[data-transfer="money"] .mt-money-balance.is-receiver .mt-money-change { right: auto; left: 0; color: #ffdc83; }
+#moneyTransferScreen[data-transfer="money"] .mt-money-change { display: block; color: #ffb6a5; font-size: calc(var(--item-player-money-size) * .8 + 3pt); }
+#moneyTransferScreen[data-transfer="money"] .mt-money-balance.is-receiver .mt-money-change { color: #ffdc83; }
 .mt-items {
     align-self: stretch;
     width: 100%;
