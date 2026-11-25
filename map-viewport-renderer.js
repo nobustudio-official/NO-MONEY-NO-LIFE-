@@ -5,6 +5,8 @@
     const frameInterval = 1000 / 60, maxPixels = 1920 * 1080, maxSide = 2048;
     const padding = 160;
     const cellSize = 512;
+    // Bound inactive rasters by count and by 1 MiB of RGBA pixels.
+    const maxCachedIcons = 16, maxCachedIconPixels = 256 * 1024;
     let stoneArt;
 
     function intersects(a, b, margin = 0) {
@@ -59,10 +61,13 @@
     function measure(state) {
         const viewport = window.MapScene.getViewport(state.board);
         if (!viewport) return false;
-        if (state.sizeDirty || state.width !== viewport.width || state.height !== viewport.height) {
+        const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+        const sizeChanged = state.width !== viewport.width || state.height !== viewport.height || state.pixelRatio !== pixelRatio ||
+            state.layoutWidth !== window.innerWidth || state.layoutHeight !== window.innerHeight;
+        if (state.sizeDirty || sizeChanged) {
             const { width, height } = viewport;
             const bufferWidth = width + padding * 2, bufferHeight = height + padding * 2;
-            const ratio = Math.min(window.devicePixelRatio || 1, 1.5, maxSide / bufferWidth, maxSide / bufferHeight,
+            const ratio = Math.min(pixelRatio, maxSide / bufferWidth, maxSide / bufferHeight,
                 Math.sqrt(maxPixels / (bufferWidth * bufferHeight)));
             const pixelsWide = Math.max(1, Math.floor(bufferWidth * ratio));
             const pixelsHigh = Math.max(1, Math.floor(bufferHeight * ratio));
@@ -75,7 +80,9 @@
             if (state.width !== width || state.height !== height) state.contentDirty = true;
             state.width = width; state.height = height;
             state.pixelX = pixelsWide / bufferWidth; state.pixelY = pixelsHigh / bufferHeight;
-            state.styleVersion++;
+            state.pixelRatio = pixelRatio;
+            state.layoutWidth = window.innerWidth; state.layoutHeight = window.innerHeight;
+            if (sizeChanged) state.styleVersion++;
             state.sizeDirty = false;
         }
         if (state.zoom !== viewport.zoom || state.originX !== viewport.originX || state.originY !== viewport.originY) {
@@ -91,6 +98,28 @@
         entry.canvas.hidden = true;
         entry.canvas.width = entry.canvas.height = 0;
         entry.node.classList.remove('map-viewport-icon-ready');
+    }
+
+    function uncacheIcon(state, entry) {
+        if (state.cachedIcons.delete(entry)) state.cachedIconPixels -= entry.canvas.width * entry.canvas.height;
+    }
+
+    function cacheIcon(state, entry) {
+        if (!entry.canvas?.width || state.cachedIcons.has(entry)) return;
+        entry.canvas.hidden = true;
+        entry.node.classList.remove('map-viewport-icon-ready');
+        state.cachedIcons.add(entry);
+        state.cachedIconPixels += entry.canvas.width * entry.canvas.height;
+        while (state.cachedIcons.size > maxCachedIcons || state.cachedIconPixels > maxCachedIconPixels) {
+            const oldest = state.cachedIcons.values().next().value;
+            uncacheIcon(state, oldest);
+            releaseIcon(oldest);
+        }
+    }
+
+    function clearIconCache(state) {
+        for (const entry of state.cachedIcons) releaseIcon(entry);
+        state.cachedIcons.clear(); state.cachedIconPixels = 0;
     }
 
     function setIcons(state, rows) {
@@ -112,6 +141,7 @@
             state.iconCells.get(key).push(entry);
         }
         for (const [image, entry] of state.icons) if (!icons.has(image)) {
+            uncacheIcon(state, entry);
             releaseIcon(entry); entry.canvas?.remove(); image.removeEventListener('load', entry.onLoad);
             state.activeIcons.delete(entry);
         }
@@ -128,25 +158,33 @@
                 }
             }
         }
-        for (const entry of state.activeIcons) if (!wanted.has(entry)) releaseIcon(entry);
+        for (const entry of state.activeIcons) if (!wanted.has(entry)) cacheIcon(state, entry);
+        for (const entry of wanted) uncacheIcon(state, entry);
         state.activeIcons = wanted;
         let changed = false;
         let budget = 2;
         for (const entry of wanted) {
-            const image = entry.icon;
-            if (entry.unavailable || !image.isConnected || !image.complete || !image.naturalWidth) continue;
+            const element = entry.icon;
+            if (entry.unavailable || !element.isConnected) continue;
+            // Reuse the decoded owner while per-square source binding is queued.
+            const image = element.complete && element.naturalWidth ? element :
+                window.MapDetailLevel.getCachedImage?.(element.dataset.highQualitySrc);
+            if (!image) continue;
             const source = image.currentSrc || image.src;
             // Keep the original illustration visible until its small canvas is
             // ready; a cached viewport must not allocate every icon at once.
             if (!budget && !entry.canvas?.width) { schedule(state.board, false, false); continue; }
             if (entry.styleVersion !== state.styleVersion) {
-                const style = getComputedStyle(image), ratio = Math.min(window.devicePixelRatio || 1, 1.5);
+                const style = getComputedStyle(element), ratio = Math.min(window.devicePixelRatio || 1, 1.5);
                 entry.width = Math.max(1, Math.ceil((parseFloat(style.width) || 66) * ratio));
                 entry.height = Math.max(1, Math.ceil((parseFloat(style.height) || 66) * ratio));
                 entry.styleVersion = state.styleVersion;
             }
             const { width, height } = entry;
             if (entry.canvas?.width === width && entry.canvas.height === height && entry.source === source) {
+                if (entry.canvas.hidden) {
+                    entry.canvas.hidden = false; entry.node.classList.add('map-viewport-icon-ready'); changed = true;
+                }
                 continue;
             }
             if (!budget) { schedule(state.board, false, false); continue; }
@@ -154,7 +192,7 @@
             if (!entry.canvas) {
                 const canvas = document.createElement('canvas');
                 canvas.className = 'map-space-icon map-viewport-square-icon'; canvas.setAttribute('aria-hidden', 'true');
-                canvas.hidden = true; image.parentElement.append(canvas); entry.canvas = canvas;
+                canvas.hidden = true; element.parentElement.append(canvas); entry.canvas = canvas;
             }
             const canvas = entry.canvas;
             const resized = canvas.width !== width || canvas.height !== height;
@@ -245,6 +283,7 @@
         if (state.canvas.hidden !== lowDetail) state.canvas.hidden = lowDetail;
         if (state.board.classList.contains('map-viewport-active') === lowDetail) state.board.classList.toggle('map-viewport-active', !lowDetail);
         if (lowDetail) {
+            clearIconCache(state);
             for (const entry of state.activeIcons) releaseIcon(entry);
             state.activeIcons.clear();
             state.bounds = null;
@@ -321,7 +360,8 @@
         const loader = document.createElement('div'); loader.hidden = true;
         const state = { board, area, background, svg, canvas, ctx, loader, sources: new Map(), roadCells: new Map(),
             frame: 0, lastPaint: -Infinity, sizeDirty: true, contentDirty: true, disposed: false, presented: new Set(),
-            styleVersion: 0, icons: new Map(), iconCells: new Map(), activeIcons: new Set(), bounds: null,
+            styleVersion: 0, icons: new Map(), iconCells: new Map(), activeIcons: new Set(),
+            cachedIcons: new Set(), cachedIconPixels: 0, bounds: null,
             zoom: typeof getMapZoomUI === 'function' ? getMapZoomUI() : 1, collapse: window.bridgeCollapseVisualState };
         background.append(loader);
         state.fallback = source(state, window.MapOverviewRasterData.mobileImage || window.MapOverviewRasterData.image);
@@ -341,7 +381,11 @@
         };
         area.addEventListener('scroll', state.onScroll, { passive: true });
         document.addEventListener('visibilitychange', state.onVisibility);
+        let observedWidth = area.clientWidth, observedHeight = area.clientHeight;
         state.observer = new ResizeObserver(() => {
+            const width = area.clientWidth, height = area.clientHeight;
+            if (width === observedWidth && height === observedHeight) return;
+            observedWidth = width; observedHeight = height;
             window.MapScene.invalidateViewportSize(area);
             state.sizeDirty = true; schedule(board, true, false);
         });
@@ -420,6 +464,7 @@
             releaseIcon(entry); entry.canvas?.remove(); image.removeEventListener('load', entry.onLoad);
         }
         state.icons.clear(); state.iconCells.clear(); state.activeIcons.clear();
+        state.cachedIcons.clear(); state.cachedIconPixels = 0;
         state.sources.clear(); state.roadCells.clear();
         state.canvas.remove(); state.canvas.width = state.canvas.height = 0; state.loader.remove();
         board.classList.remove('map-viewport-active');

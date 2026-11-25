@@ -120,11 +120,12 @@ test('camera autosave ignores the temporary board while recovery locks the conta
 
 function viewportRuntime() {
     let clock = 0, sequence = 0, currentBoard, width = 852, height = 393, areaPresent = true;
-    const timers = new Map(), frames = new Map(), applied = [];
+    const timers = new Map(), frames = new Map(), applied = []; let prepared = 0;
     const area = { get clientWidth() { return width; }, get clientHeight() { return height; } };
     const board = { isConnected: true, closest: () => area }; currentBoard = board;
     const window = { MapContinentData: { grassTexture: 'grass.webp' }, MapRegionBackground: { assetUrls: [] },
-        addEventListener() {}, getMapZoomUI: () => .8, setMapZoomUI: zoom => applied.push(zoom) };
+        addEventListener() {}, getMapZoomUI: () => .8, setMapZoomUI: zoom => applied.push(zoom),
+        MapDetailLevel: { prepareViewportResize: () => prepared++ } };
     const context = { window, document: { documentElement: { style: { setProperty() {} } },
         getElementById: () => currentBoard, querySelector: () => areaPresent ? area : null, addEventListener() {} },
         setTimeout(callback, delay) { const id = ++sequence; timers.set(id, { callback, at: clock + delay }); return id; },
@@ -132,7 +133,7 @@ function viewportRuntime() {
         requestAnimationFrame(callback) { const id = ++sequence; frames.set(id, callback); return id; },
         cancelAnimationFrame: id => frames.delete(id) };
     vm.runInNewContext(fs.readFileSync(require.resolve('../map-scene.js'), 'utf8'), context);
-    return { api: window.MapScene, board, applied,
+    return { api: window.MapScene, board, area, window, applied, get prepared() { return prepared; },
         size(w, h) { width = w; height = h; },
         removeArea() { areaPresent = false; },
         replaceBoard() { board.isConnected = false; currentBoard = { isConnected: true }; },
@@ -162,6 +163,67 @@ test('recovery remains pending while frames are suspended, then continues when f
     const ready = run.api.whenViewportStable(run.board).then(value => { settled = true; return value; });
     await Promise.resolve(); assert.equal(settled, false);
     run.tick(120); run.tick(); assert.equal(await ready, true);
+});
+
+test('duplicate viewport notifications neither restart the wait nor repeat a settled layout', async () => {
+    const run = viewportRuntime();
+    run.api.scheduleViewportResize(); run.tick(60);
+    for (let i = 0; i < 60; i++) run.api.scheduleViewportResize();
+    run.tick(60); run.tick();
+    assert.equal(run.applied.length, 1, 'the original 120ms deadline remains valid');
+    assert.equal(run.prepared, 1, 'pause image presentation only once');
+    for (let i = 0; i < 60; i++) run.api.scheduleViewportResize();
+    assert.equal(run.api.isViewportResizing(), false);
+    assert.equal(await run.api.whenViewportStable(run.board), true, 'resume can reuse the stable viewport');
+    run.tick(200); run.tick();
+    assert.equal(run.applied.length, 1); assert.equal(run.prepared, 1);
+});
+
+test('real viewport, CSS viewport and pixel-density changes still update the map', () => {
+    const run = viewportRuntime();
+    const settle = () => { run.api.scheduleViewportResize(); run.tick(120); run.tick(); };
+    settle();
+    run.size(393, 852); settle();
+    run.window.innerHeight = 900; settle();
+    run.window.devicePixelRatio = 2; settle();
+    assert.equal(run.applied.length, 4);
+    assert.equal(run.prepared, 4);
+});
+
+test('viewport changes ignore a retired scroll area', () => {
+    const run = viewportRuntime();
+    run.api.scheduleViewportResize({ clientWidth: 100, clientHeight: 100 });
+    assert.equal(run.api.isViewportResizing(), false);
+    assert.equal(run.prepared, 0);
+});
+
+test('mobile viewport positioning leaves map size notifications to its ResizeObserver', () => {
+    let frame, maps = 0, observer;
+    const styles = new Map(), windowEvents = {}, visualEvents = {}, mediaEvents = {};
+    const screen = { isConnected: true }, container = { querySelector: () => screen };
+    const media = { matches: true, addEventListener: (name, fn) => { mediaEvents[name] = fn; } };
+    const visualViewport = { offsetTop: 0, height: 393, scale: 1,
+        addEventListener: (name, fn) => { visualEvents[name] = fn; } };
+    const window = { visualViewport, matchMedia: () => media,
+        requestAnimationFrame(fn) { frame = fn; return 1; },
+        addEventListener: (name, fn) => { windowEvents[name] = fn; },
+        MapScene: { scheduleViewportResize: () => maps++ } };
+    vm.runInNewContext(fs.readFileSync(require.resolve('../mobile-viewport-sync.js'), 'utf8'), {
+        window, document: { querySelector: () => container,
+            documentElement: { style: { setProperty: (key, value) => styles.set(key, value), removeProperty: key => styles.delete(key) } } },
+        MutationObserver: class { constructor(fn) { observer = fn; } observe() {} }
+    });
+    const flush = () => { const fn = frame; frame = null; fn?.(); };
+    flush();
+    for (let i = 0; i < 60; i++) { visualViewport.offsetTop = i / 4; visualEvents.scroll(); flush(); }
+    assert.equal(styles.get('--game-visible-top'), '14.75px');
+    visualViewport.height = 390; visualEvents.resize(); flush();
+    assert.equal(styles.get('--game-visible-height'), '390px');
+    media.matches = false; mediaEvents.change(); flush();
+    assert.equal(styles.size, 0, 'portrait clears the landscape overrides');
+    media.matches = true; windowEvents.resize(); observer(); flush();
+    assert.equal(styles.get('--game-visible-height'), '390px');
+    assert.equal(maps, 0, 'position and size writes never duplicate the actual area resize notification');
 });
 
 test('a zero-size viewport cannot start map restoration', async () => {

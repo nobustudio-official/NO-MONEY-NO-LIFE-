@@ -11,7 +11,6 @@
     let appliedHeight = null;
 
     function clearViewportSize() {
-        const changed = appliedTop !== null || appliedHeight !== null;
         if (appliedTop !== null) {
             root.style.removeProperty('--game-visible-top');
             appliedTop = null;
@@ -20,7 +19,6 @@
             root.style.removeProperty('--game-visible-height');
             appliedHeight = null;
         }
-        if (changed) window.MapScene?.scheduleViewportResize?.();
     }
 
     function syncViewportSize() {
@@ -39,7 +37,8 @@
         // Read both dimensions before a style write can invalidate layout.
         const top = Math.max(0, visualViewport.offsetTop);
         const height = Math.max(1, visualViewport.height);
-        const changed = top !== appliedTop || height !== appliedHeight;
+        // Map sizing belongs to the area's ResizeObserver. Moving this fixed
+        // container alone must not restart map layout or image presentation.
         if (top !== appliedTop) {
             root.style.setProperty('--game-visible-top', `${top}px`);
             appliedTop = top;
@@ -48,7 +47,6 @@
             root.style.setProperty('--game-visible-height', `${height}px`);
             appliedHeight = height;
         }
-        if (changed) window.MapScene?.scheduleViewportResize?.();
     }
 
     function scheduleSync() {

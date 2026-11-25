@@ -121,6 +121,9 @@
         }
         if (!available.length) { notifyPresentationWaiters(); return; }
         const group = available.some(([, job]) => job.group === 1) ? 1 : Math.min(...available.map(([, job]) => job.group));
+        if (group === 1) available.sort(([, a], [, b]) =>
+            (a.request?.priority ?? 0) - (b.request?.priority ?? 0) ||
+            (a.request?.distance ?? 0) - (b.request?.distance ?? 0));
         // Prioritize square illustrations, one at a time, without a stop-time burst.
         let budget = [1, 1, 2][group];
         for (const [key, job] of available) {
@@ -236,7 +239,12 @@
                 entry.ready = true;
                 entry.width = image.naturalWidth;
                 entry.height = image.naturalHeight;
-                for (const request of [...entry.requests]) queuePresentation(request.element, () => attachImage(request), request);
+                for (const request of [...entry.requests]) {
+                    queuePresentation(request.element, () => attachImage(request), request);
+                    if (request.element.classList.contains('map-space-icon')) {
+                        window.MapViewportRenderer?.schedule(request.board, false, false);
+                    }
+                }
             }
             scheduleImagePump();
         };
@@ -334,6 +342,12 @@
 
     function loadImage(element, image, priority = 1) {
         return enqueueImage(element, image, priority, 0);
+    }
+
+    function getCachedImage(image) {
+        if (!image) return null;
+        const entry = imageCache.get(new URL(image, document.baseURI).href);
+        return entry?.ready && entry.image.complete && entry.image.naturalWidth ? entry.image : null;
     }
 
     function updateImagePriority(element, priority, distance = 0) {
@@ -669,7 +683,7 @@
     window.MapDetailLevel = Object.freeze({ refresh, refreshPieces, setZoom, dispose, touchDevice, setTileSources,
         isLowDetail, prepareViewportResize, queuePresentation,
         cancelPresentation: element => presentationJobs.delete(element),
-        loadImage, requestImage: enqueueImage, updateImagePriority, releaseImage, beginCameraJump, beginCameraMotion,
+        loadImage, getCachedImage, requestImage: enqueueImage, updateImagePriority, releaseImage, beginCameraJump, beginCameraMotion,
         resumeWork() {
             const board = document.getElementById('mapBoard'), state = states.get(board);
             if (state) updateCameraActivity(board, state);

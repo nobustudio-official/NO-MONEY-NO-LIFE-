@@ -6,7 +6,8 @@ const read = name => fs.readFileSync(require.resolve('../' + name), 'utf8');
 
 function runtime() {
     let clock = 0, sequence = 0;
-    const timers = new Map(), frames = new Map(), images = [], drawn = [], fallback = [];
+    const timers = new Map(), frames = new Map(), images = [], drawn = [], fallback = [], observers = [];
+    let styleReads = 0;
     class Element extends EventTarget {
         constructor(tag = 'div') {
             super(); this.tagName = tag; this.style = { getPropertyValue: () => '', setProperty() {}, removeProperty() {} };
@@ -56,9 +57,10 @@ function runtime() {
     const area = new Element(), board = new Element(), background = new Element(), svg = new Element('svg');
     board.id = 'mapBoard'; background.className = 'map-background'; area.append(board); board.append(background); board.append(svg);
     const viewport = { width: 852, height: 393, zoom: 1, originX: 0, originY: 0, left: 0, top: 0, right: 852, bottom: 393 };
+    Object.defineProperties(area, { clientWidth: { get: () => viewport.width }, clientHeight: { get: () => viewport.height } });
     const window = { matchMedia: () => ({ matches: true }), mapViewportRendering: true, devicePixelRatio: 1,
         MapScene: { config: { width: 9216, height: 7424 }, getViewport: () => viewport,
-            isViewportResizing: () => false, invalidateCameraLimits() {} },
+            isViewportResizing: () => false, invalidateCameraLimits() {}, invalidateViewportSize() {} },
         MapOverviewRasterData: { mobileImage: 'overview.webp' },
         MapRoadRasterData: { bridges: [{ key: '144:145', from: 144, to: 145, image: 'bridge.webp', x: 80, y: 60, width: 240, height: 80 }] },
         BridgeCollapseRules: require('../bridge-collapse-rules.js'),
@@ -70,10 +72,12 @@ function runtime() {
         requestAnimationFrame(callback) { const id = ++sequence; frames.set(id, callback); return id; },
         cancelAnimationFrame: id => frames.delete(id),
         setTimeout(callback, delay) { const id = ++sequence; timers.set(id, { callback, at: clock + delay }); return id; },
-        clearTimeout: id => timers.delete(id), ResizeObserver: class { observe() {} disconnect() {} } };
+        clearTimeout: id => timers.delete(id), ResizeObserver: class { constructor(fn) { observers.push(fn); } observe() {} disconnect() {} },
+        getComputedStyle: element => { styleReads++; return { width: element.style.width || '66px', height: element.style.height || '66px' }; } };
     vm.createContext(context);
     const load = file => vm.runInContext(read(file), context, { filename: file });
-    return { area, board, background, svg, images, drawn, fallback, window, Element, Image, load,
+    return { area, board, background, svg, viewport, images, drawn, fallback, window, Element, Image, load, observers,
+        get styleReads() { return styleReads; },
         tick(ms = 32) {
             clock += ms;
             for (const [id, timer] of [...timers]) if (timer.at <= clock) { timers.delete(id); timer.callback(); }
@@ -97,6 +101,121 @@ test('bridge loading and presentation continue during camera motion while terrai
     assert.equal(await bridgeReady, bridge);
     assert.ok(bridge.src, 'bridge presentation finishes before the camera stops');
     assert.ok(!terrain.src); stop();
+});
+
+function squareCanvases(count = 1, size = 66) {
+    const run = runtime();
+    run.viewport.width = run.viewport.right = run.viewport.height = run.viewport.bottom = 200;
+    run.window.MapDetailLevel = { isLowDetail: () => false, releaseImage() {},
+        requestImage: () => Promise.resolve(), updateImagePriority() {} };
+    run.load('map-viewport-renderer.js');
+    const api = run.window.MapViewportRenderer; api.mount(run.background, run.svg);
+    const rows = Array.from({ length: count }, (_, i) => {
+        const node = new run.Element(), icon = new run.Image();
+        node.className = 'map-node'; icon.className = 'map-space-icon'; icon.src = 'square.webp';
+        icon.style.width = icon.style.height = size + 'px';
+        node.append(icon); run.board.append(node);
+        return { node, icon, x: 100 + i * 1024, y: 100 };
+    });
+    return { ...run, rows, api, visit(index) {
+        run.viewport.left = index * 1024; run.viewport.right = run.viewport.left + run.viewport.width;
+        api.setViewport(run.board, run.viewport, run.viewport, rows); run.tick();
+    }, get styleReads() { return run.styleReads; } };
+}
+
+test('returning to a recently visible square reuses its raster without drawing it again', () => {
+    const run = squareCanvases(); run.visit(0);
+    const canvas = run.rows[0].node.querySelector('canvas');
+    const draws = run.drawn.filter(image => image === run.rows[0].icon).length;
+    run.visit(2);
+    assert.equal(canvas.hidden, true); assert.ok(canvas.width > 0);
+    run.visit(0);
+    assert.equal(run.rows[0].node.querySelector('canvas'), canvas);
+    assert.equal(canvas.hidden, false);
+    assert.equal(run.drawn.filter(image => image === run.rows[0].icon).length, draws);
+    assert.equal(run.styleReads, 1, 'scrolling alone retains icon dimension measurements');
+});
+
+test('offscreen square rasters have count and pixel limits and are cleared in lightweight mode', () => {
+    for (const [size, retained] of [[66, 16], [200, 6]]) {
+        const run = squareCanvases(20, size);
+        for (let i = 0; i < 20; i++) run.visit(i);
+        const canvases = run.rows.map(row => row.node.querySelector('canvas'));
+        const hidden = canvases.filter(canvas => canvas.hidden && canvas.width);
+        assert.equal(hidden.length, retained);
+        assert.ok(hidden.reduce((sum, canvas) => sum + canvas.width * canvas.height, 0) <= 256 * 1024);
+        assert.equal(canvases[0].width, 0, 'evict the oldest offscreen square');
+        run.window.MapDetailLevel.isLowDetail = () => true;
+        run.api.schedule(run.board); run.tick();
+        assert.ok(canvases.every(canvas => canvas.width === 0));
+    }
+});
+
+test('removed squares and disposed maps release cached raster surfaces', () => {
+    const run = squareCanvases(2); run.visit(0); run.visit(1);
+    const canvases = run.rows.map(row => row.node.querySelector('canvas'));
+    run.api.setViewport(run.board, run.viewport, run.viewport, [run.rows[1]]); run.tick();
+    assert.equal(canvases[0].width, 0);
+    run.api.dispose(run.board);
+    assert.ok(canvases.every(canvas => canvas.width === 0));
+});
+
+test('unchanged resize notifications retain icon measurements while real resizing refreshes them', () => {
+    const run = squareCanvases(); run.visit(0);
+    const canvas = run.rows[0].node.querySelector('canvas');
+    for (let i = 0; i < 60; i++) run.observers[0]();
+    run.tick(); assert.equal(run.styleReads, 1);
+    run.visit(2); run.rows[0].icon.style.width = '58px';
+    run.viewport.width = 220; run.observers[0](); run.visit(0);
+    assert.equal(canvas.width, 58);
+    assert.equal(run.styleReads, 2);
+});
+
+test('cached square illustrations render during travel before per-square image binding finishes', async () => {
+    const run = runtime(); run.load('map-detail-level.js');
+    const detail = run.window.MapDetailLevel;
+    detail.setZoom(run.board, 1); run.tick(200);
+    const seed = new run.Image(), ready = detail.loadImage(seed, 'square.webp', 0);
+    run.tick();
+    const owner = run.images.find(image => image !== seed && image.src.endsWith('/square.webp'));
+    await owner.onload(); await ready;
+    run.load('map-viewport-renderer.js');
+    const renderer = run.window.MapViewportRenderer;
+    renderer.mount(run.background, run.svg);
+    const rows = Array.from({ length: 4 }, (_, i) => {
+        const node = new run.Element(), icon = new run.Image();
+        node.className = 'map-node'; icon.className = 'map-space-icon';
+        icon.dataset.highQualitySrc = 'square.webp'; node.append(icon); run.board.append(node);
+        return { node, icon, x: 100 + i * 100, y: 100 };
+    });
+    const stop = detail.beginCameraMotion(run.board);
+    renderer.setViewport(run.board, run.viewport, run.viewport, rows); run.tick();
+    assert.equal(rows.filter(row => row.node.classList.contains('map-viewport-icon-ready')).length, 2,
+        'keep the two-canvas-per-frame budget');
+    run.tick();
+    assert.ok(rows.every(row => row.node.classList.contains('map-viewport-icon-ready')));
+    assert.ok(run.drawn.includes(owner), 'draw the already-decoded shared illustration');
+    assert.ok(rows.every(row => !row.icon.src), 'no additional display image loads are required');
+    detail.setZoom(run.board, .4); run.tick();
+    assert.ok(rows.every(row => !row.node.classList.contains('map-viewport-icon-ready')), 'preserve lightweight mode');
+    stop();
+});
+
+test('visible square bindings take priority over earlier offscreen requests during travel', async () => {
+    const run = runtime(); run.load('map-detail-level.js');
+    const api = run.window.MapDetailLevel;
+    api.setZoom(run.board, 1); run.tick(200);
+    const seed = new run.Image(), ready = api.loadImage(seed, 'square.webp', 0);
+    run.tick();
+    await run.images.find(image => image !== seed && image.src.endsWith('/square.webp')).onload(); await ready;
+    const stop = api.beginCameraMotion(run.board), near = new run.Image(), visible = new run.Image();
+    for (const image of [near, visible]) { image.className = 'map-space-icon'; run.board.append(image); }
+    const nearReady = api.requestImage(near, 'square.webp', 1, 0);
+    const visibleReady = api.requestImage(visible, 'square.webp', 0, 1000);
+    run.tick();
+    assert.ok(visible.src, 'visible square appears first even when queued later');
+    assert.ok(!near.src, 'retain the one-binding-per-frame budget');
+    run.tick(); await Promise.all([nearReady, visibleReady]); stop();
 });
 
 test('bridge placeholder persists until its illustration is ready, and collapsed bridges remain absent', () => {

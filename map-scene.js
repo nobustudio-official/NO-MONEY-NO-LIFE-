@@ -10,6 +10,7 @@
  const viewportSizes=new WeakMap();let viewportLayoutVersion=0;
  const viewportGeometry=new WeakMap();
  const viewportWaiters=new Set();
+ const settledViewports=new WeakMap();let resizeRequest=null;
  const continent=window.MapContinentData;
  const oceanImageUrls=['images/map/backgrounds/world/ocean/base-repeat.svg','images/map/backgrounds/world/ocean/ripples-repeat.svg'];
  const assetUrls=[continent.grassTexture,...window.MapRegionBackground.assetUrls];
@@ -28,6 +29,7 @@
  }
  function isViewportResizing(){return Boolean(resizeTimer||resizeFrame);}
  function finishViewportResize(stable=false){
+  resizeRequest=null;
   for(const waiter of viewportWaiters)waiter.resolve(stable&&waiter.board.isConnected&&document.getElementById('mapBoard')===waiter.board);
   viewportWaiters.clear();
  }
@@ -39,8 +41,24 @@
   });
  }
  function scheduleViewportResize(area){
-  invalidateViewportSize(area);
-  window.MapDetailLevel?.prepareViewportResize?.(document.getElementById('mapBoard'));
+  const board=document.getElementById('mapBoard'),viewport=document.querySelector('.game-screen .map-area');
+  if(area&&area!==viewport)return;
+  if(!board||!viewport){
+   clearTimeout(resizeTimer);cancelAnimationFrame(resizeFrame);resizeTimer=resizeFrame=0;
+   finishViewportResize();return;
+  }
+  const size={board,width:viewport.clientWidth,height:viewport.clientHeight,pixelRatio:window.devicePixelRatio||1,
+   layoutWidth:window.innerWidth,layoutHeight:window.innerHeight};
+  const previous=resizeRequest?.area===viewport?resizeRequest:settledViewports.get(viewport);
+  if(size.width>0&&size.height>0&&previous?.board===board&&previous.width===size.width&&
+   previous.height===size.height&&previous.pixelRatio===size.pixelRatio&&
+   previous.layoutWidth===size.layoutWidth&&previous.layoutHeight===size.layoutHeight){
+   if(!isViewportResizing())finishViewportResize(true);
+   return;
+  }
+  resizeRequest={area:viewport,...size};
+  invalidateViewportSize(viewport);
+  window.MapDetailLevel?.prepareViewportResize?.(board);
   clearTimeout(resizeTimer);
   if(resizeFrame){cancelAnimationFrame(resizeFrame);resizeFrame=0;}
   // Rotation reports intermediate dimensions. Commit the map once they settle.
@@ -56,6 +74,8 @@
      if(!board.isConnected||document.getElementById('mapBoard')!==board){finishViewportResize();return;}
      if(width!==viewport.clientWidth||height!==viewport.clientHeight){scheduleViewportResize(viewport);return;}
      if(!(width>0&&height>0)){if(viewportWaiters.size)scheduleViewportResize(viewport);return;}
+     settledViewports.set(viewport,{board,width,height,pixelRatio:window.devicePixelRatio||1,
+      layoutWidth:window.innerWidth,layoutHeight:window.innerHeight});
      const zoom=typeof window.getMapZoomUI==='function'?window.getMapZoomUI():activeScale;
      if(typeof window.setMapZoomUI==='function')window.setMapZoomUI(zoom);
      else{setZoom(zoom);window.MapDetailLevel?.setZoom(board,zoom);}
