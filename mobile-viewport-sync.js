@@ -11,6 +11,7 @@
     let appliedHeight = null;
 
     function clearViewportSize() {
+        const changed = appliedTop !== null || appliedHeight !== null;
         if (appliedTop !== null) {
             root.style.removeProperty('--game-visible-top');
             appliedTop = null;
@@ -19,6 +20,7 @@
             root.style.removeProperty('--game-visible-height');
             appliedHeight = null;
         }
+        if (changed) window.MapScene?.invalidateCameraLimits?.();
     }
 
     function syncViewportSize() {
@@ -37,6 +39,7 @@
         // Read both dimensions before a style write can invalidate layout.
         const top = Math.max(0, visualViewport.offsetTop);
         const height = Math.max(1, visualViewport.height);
+        const changed = top !== appliedTop || height !== appliedHeight;
         if (top !== appliedTop) {
             root.style.setProperty('--game-visible-top', `${top}px`);
             appliedTop = top;
@@ -45,6 +48,7 @@
             root.style.setProperty('--game-visible-height', `${height}px`);
             appliedHeight = height;
         }
+        if (changed) window.MapScene?.invalidateCameraLimits?.();
     }
 
     function scheduleSync() {

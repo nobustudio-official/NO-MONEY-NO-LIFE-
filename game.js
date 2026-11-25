@@ -3381,7 +3381,21 @@ playSharedSE(buttonSound)
     // マップ表示
     // =========================
 
-    let renderedMobileMap;
+    let renderedMap;
+    const activeMapPresses = new Set();
+    function captureMapSquares() {
+        return mapData.map(square => ({ square, id: square.id, type: square.type,
+            x: square.x, y: square.y, name: square.name, icon: square.icon,
+            next: [...(square.next || [])] }));
+    }
+    function mapSquaresMatch(snapshot) {
+        return snapshot?.length === mapData.length && snapshot.every((saved, index) => {
+            const square = mapData[index], next = square.next || [];
+            return saved.square === square && saved.id === square.id && saved.type === square.type &&
+                saved.x === square.x && saved.y === square.y && saved.name === square.name && saved.icon === square.icon &&
+                saved.next.length === next.length && saved.next.every((id, i) => id === next[i]);
+        });
+    }
     function renderMapPieces(mapBoard) {
         mapBoard.querySelectorAll(".player-piece").forEach(piece => piece.remove());
         const occupants = new Map();
@@ -3430,19 +3444,20 @@ playSharedSE(buttonSound)
         const background = mapBoard.querySelector(':scope > .map-background');
         const existingRoads = mapBoard.querySelector(':scope > .map-lines');
         const existingObjects=mapBoard.querySelector(':scope > .map-workshop-objects');
-        const reuseMobile = window.mobileRuntimeTuning === true && background?.classList.contains('map-static-background') &&
-            renderedMobileMap?.board === mapBoard && renderedMobileMap.squares === mapData && renderedMobileMap.boss === currentBossSquareId;
+        const sameSquares = renderedMap?.board === mapBoard && mapSquaresMatch(renderedMap.squares);
+        const reuseNodes = Boolean(background) && sameSquares && renderedMap.boss === currentBossSquareId;
         const bridgeClosed = Number(window.bridgeCollapseVisualState?.remainingActions) > 0;
-        if (existingRoads && (reuseMobile || (window.mobilePerformanceEnabled !== false && movingPlayer !== null && mapBoard.querySelector(".map-node")))) {
-            clearReachableHighlights();
-            clearDiceMovementArrows();
+        clearReachableHighlights();
+        clearDiceMovementArrows();
+        for (const reset of activeMapPresses) reset();
+        if (existingRoads && reuseNodes) {
             mapBoard.querySelectorAll(".observer-reachable-highlight, .square-detail-highlight").forEach(node => {
                 node.classList.remove("observer-reachable-highlight", "square-detail-highlight");
             });
             renderMapPieces(mapBoard);
             window.MapDetailLevel.refreshPieces(mapBoard, getMapZoomUI());
-            if (reuseMobile && renderedMobileMap.bridgeClosed !== bridgeClosed) {
-                renderedMobileMap.bridgeClosed = bridgeClosed;
+            if (renderedMap.bridgeClosed !== bridgeClosed) {
+                renderedMap.bridgeClosed = bridgeClosed;
                 window.MapRoadRenderer.setBridgeCollapse(existingRoads, mapData, window.bridgeCollapseVisualState);
             }
             if (movingPlayer !== null) return MapMovementPresentation.play(mapBoard, movingPlayer, previousPiece, options.movementSpeed || 1);
@@ -3494,7 +3509,7 @@ playSharedSE(buttonSound)
         // マス同士を線でつなぐ
         // =========================
 
-        if (!existingRoads) window.MapRoadRenderer.draw(svg, mapData);
+        if (!existingRoads || !sameSquares) window.MapRoadRenderer.draw(svg, mapData);
         window.MapRoadRenderer.setBridgeCollapse(svg, mapData, window.bridgeCollapseVisualState);
 
 drawShortestPathToBoss(
@@ -3564,9 +3579,20 @@ const clearLongPress = function () {
     if (longPressTimer) window.clearTimeout(longPressTimer);
     longPressTimer = 0;
 };
+const resetMapPress = function () {
+    clearLongPress();
+    window.clearTimeout(suppressClickResetTimer);
+    suppressClickResetTimer = 0;
+    touchPointerActive = false;
+    touchPointerId = null;
+    longPressTriggered = false;
+    suppressNextMapClick = false;
+    activeMapPresses.delete(resetMapPress);
+};
 node.addEventListener("pointerdown", function (event) {
     if (event.pointerType !== "touch" || event.isPrimary === false) return;
-    clearLongPress();
+    resetMapPress();
+    activeMapPresses.add(resetMapPress);
     touchPointerActive = true;
     touchPointerId = event.pointerId;
     longPressStartX = event.clientX;
@@ -3576,6 +3602,7 @@ node.addEventListener("pointerdown", function (event) {
     window.clearTimeout(suppressClickResetTimer);
     longPressTimer = window.setTimeout(function () {
         longPressTimer = 0;
+        if (!node.isConnected) { resetMapPress(); return; }
         if (!touchPointerActive || window.isSquareMovementInProgress) return;
         longPressTriggered = true;
         suppressNextMapClick = true;
@@ -3593,16 +3620,15 @@ const finishLongPress = function (event) {
         touchPointerId = null;
         if (longPressTriggered) {
             window.clearTimeout(suppressClickResetTimer);
-            suppressClickResetTimer = window.setTimeout(function () { suppressNextMapClick = false; }, 1000);
-        }
+            suppressClickResetTimer = window.setTimeout(resetMapPress, 1000);
+        } else resetMapPress();
     }
 };
 node.addEventListener("pointerup", finishLongPress);
 node.addEventListener("pointercancel", finishLongPress);
 node.addEventListener("click", function (event) {
     if (!suppressNextMapClick) return;
-    suppressNextMapClick = false;
-    window.clearTimeout(suppressClickResetTimer);
+    resetMapPress();
     event.preventDefault();
     event.stopImmediatePropagation();
 }, true);
@@ -3747,7 +3773,8 @@ node.appendChild(
 
         renderMapPieces(mapBoard);
         window.MapDetailLevel.refresh(mapBoard, getMapZoomUI());
-        renderedMobileMap = { board:mapBoard, squares:mapData, boss:currentBossSquareId, bridgeClosed };
+        renderedMap = { board:mapBoard, squares:captureMapSquares(), boss:currentBossSquareId, bridgeClosed };
+        window.MapScene?.invalidateCameraLimits(mapBoard);
         if (movingPlayer !== null) {
             return MapMovementPresentation.play(mapBoard, movingPlayer, previousPiece, options.movementSpeed || 1);
         }
@@ -5042,6 +5069,8 @@ function highlightReachableSquaresWithin(
     maxSteps
 ) {
 
+    clearReachableHighlights();
+
     const reachable =
         getReachableStopSquaresWithin(
             player.position,
@@ -5084,9 +5113,8 @@ function highlightReachableSquaresWithin(
             // タップ
             // =========================
 
-           node.addEventListener(
-    "click",
-    function () {
+           const clickHandler = function () {
+        if (diceReachableClickHandlers.get(node) !== clickHandler) return;
 
         // =========================
         // マス詳細を閉じる
@@ -5139,11 +5167,9 @@ function highlightReachableSquaresWithin(
             path
         );
 
-    },
-    {
-        once: true
-    }
-);
+    };
+    node.addEventListener("click", clickHandler, { once: true });
+    diceReachableClickHandlers.set(node, clickHandler);
 
         }
     );

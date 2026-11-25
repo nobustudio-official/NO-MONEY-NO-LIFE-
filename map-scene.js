@@ -5,6 +5,7 @@
  // World rectangle inferred from the approved 1920x952 overview framing.
  const cameraFrame=Object.freeze({left:-4992,top:-1560,width:19200,height:9520});
  const observedAreas=new WeakSet();let activeScale=1,oceanCheckFrame=0;
+ const cameraLimits=new WeakMap();let cameraLayoutVersion=0;
  const continent=window.MapContinentData;
  const oceanImageUrls=['images/map/backgrounds/world/ocean/base-repeat.svg','images/map/backgrounds/world/ocean/ripples-repeat.svg'];
  const assetUrls=[continent.grassTexture,...window.MapRegionBackground.assetUrls];
@@ -16,19 +17,33 @@
   const touchDevice=window.matchMedia?.('(pointer: coarse)').matches;
   return Math.max(touchDevice ? .02 : config.minZoom,fitZoom);
  }
+ function invalidateCameraLimits(board){
+  if(board)cameraLimits.delete(board);else cameraLayoutVersion++;
+ }
  function getCameraLimits(){
   const area=document.querySelector('.game-screen .map-area'),board=document.getElementById('mapBoard');if(!area||!board)return null;
+  const preview=board.classList.contains('map-zoom-interacting'),saved=cameraLimits.get(board);
+  if(!preview&&saved?.area===area&&saved.zoom===activeScale&&saved.version===cameraLayoutVersion)return saved.limits;
+  // Read layout once after invalidation; ordinary scrolling only reads its position.
+  const width=area.clientWidth,height=area.clientHeight;
+  if(!(width>0&&height>0))return null;
   const originX=board.offsetLeft+config.width*(1-activeScale)/2,originY=board.offsetTop+config.height*(1-activeScale)/2;
-  const nativeX=Math.max(0,area.scrollWidth-area.clientWidth),nativeY=Math.max(0,area.scrollHeight-area.clientHeight);
+  const nativeX=Math.max(0,area.scrollWidth-width),nativeY=Math.max(0,area.scrollHeight-height);
   const bound=(value,max)=>Math.max(0,Math.min(max,value));
-  if(activeScale<=getMinZoom()+1e-7){const x=bound(originX+(cameraFrame.left+cameraFrame.width/2)*activeScale-area.clientWidth/2,nativeX),y=bound(originY+(cameraFrame.top+cameraFrame.height/2)*activeScale-area.clientHeight/2,nativeY);return {minLeft:x,maxLeft:x,minTop:y,maxTop:y};}
-  return {minLeft:bound(originX+cameraFrame.left*activeScale,nativeX),maxLeft:bound(originX+(cameraFrame.left+cameraFrame.width)*activeScale-area.clientWidth,nativeX),minTop:bound(originY+cameraFrame.top*activeScale,nativeY),maxTop:bound(originY+(cameraFrame.top+cameraFrame.height)*activeScale-area.clientHeight,nativeY)};
+  const fitZoom=Math.max(width/cameraFrame.width,height/cameraFrame.height);
+  const minZoom=Math.max(window.matchMedia?.('(pointer: coarse)').matches ? .02 : config.minZoom,fitZoom);
+  let limits;
+  if(activeScale<=minZoom+1e-7){const x=bound(originX+(cameraFrame.left+cameraFrame.width/2)*activeScale-width/2,nativeX),y=bound(originY+(cameraFrame.top+cameraFrame.height/2)*activeScale-height/2,nativeY);limits={minLeft:x,maxLeft:x,minTop:y,maxTop:y};}
+  else limits={minLeft:bound(originX+cameraFrame.left*activeScale,nativeX),maxLeft:bound(originX+(cameraFrame.left+cameraFrame.width)*activeScale-width,nativeX),minTop:bound(originY+cameraFrame.top*activeScale,nativeY),maxTop:bound(originY+(cameraFrame.top+cameraFrame.height)*activeScale-height,nativeY)};
+  if(!preview)cameraLimits.set(board,{area,zoom:activeScale,version:cameraLayoutVersion,limits:Object.freeze(limits)});
+  return limits;
  }
  function clampScroll(){
   if(document.getElementById('mapBoard')?.classList.contains('map-zoom-interacting'))return;
   const area=document.querySelector('.game-screen .map-area'),limits=getCameraLimits();if(!area||!limits)return;
-  const x=Math.max(limits.minLeft,Math.min(limits.maxLeft,area.scrollLeft)),y=Math.max(limits.minTop,Math.min(limits.maxTop,area.scrollTop));
-  if(Math.abs(x-area.scrollLeft)>.51)area.scrollLeft=x;if(Math.abs(y-area.scrollTop)>.51)area.scrollTop=y;
+  const left=area.scrollLeft,top=area.scrollTop;
+  const x=Math.max(limits.minLeft,Math.min(limits.maxLeft,left)),y=Math.max(limits.minTop,Math.min(limits.maxTop,top));
+  if(Math.abs(x-left)>.51)area.scrollLeft=x;if(Math.abs(y-top)>.51)area.scrollTop=y;
  }
  function pointInCoast(x,y){
   let inside=false;const points=continent.coast;
@@ -100,6 +115,7 @@
   // Match the board's center-origin zoom, including the scrollable padding.
   const padding=getComputedStyle(area);
   area.style.backgroundPosition=`calc(${padding.paddingLeft} + ${extraX+config.width*(1-scale)/2}px) calc(${padding.paddingTop} + ${extraY+config.height*(1-scale)/2}px)`;
+  invalidateCameraLimits();
   clampScroll();
   queueOceanCheck();
  }
@@ -153,6 +169,7 @@
   queueMicrotask(()=>MapBackgroundCache.prepare(background,svg));
   return background;
  }
- window.addEventListener('resize',()=>{const zoom=typeof window.getMapZoomUI==='function'?window.getMapZoomUI():1;if(typeof window.setMapZoomUI==='function')window.setMapZoomUI(zoom);else setZoom(zoom);});
- window.MapScene=Object.freeze({config,cameraFrame,assetUrls,createBackground,setZoom,getMinZoom,getCameraLimits,clampScroll});
+ window.addEventListener('resize',()=>{invalidateCameraLimits();const zoom=typeof window.getMapZoomUI==='function'?window.getMapZoomUI():1;if(typeof window.setMapZoomUI==='function')window.setMapZoomUI(zoom);else setZoom(zoom);});
+ document.addEventListener('fullscreenchange',()=>invalidateCameraLimits());
+ window.MapScene=Object.freeze({config,cameraFrame,assetUrls,createBackground,setZoom,getMinZoom,getCameraLimits,clampScroll,invalidateCameraLimits});
 })();

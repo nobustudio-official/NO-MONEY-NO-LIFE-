@@ -238,14 +238,19 @@
             schedule();
         };
         area?.addEventListener('scroll', state.onScroll, { passive: true });
-        state.observer = new ResizeObserver(schedule);
+        state.observer = new ResizeObserver(() => {
+            window.MapScene?.invalidateCameraLimits?.(board);
+            schedule();
+        });
         state.observer.observe(area || board);
+        if (area) state.observer.observe(board);
         return state;
     }
 
     function dispose(board) {
         if (!board || disposedBoards.has(board)) return;
         disposedBoards.add(board);
+        window.MapScene?.invalidateCameraLimits?.(board);
         const state = states.get(board);
         if (state) {
             state.disposed = true;
