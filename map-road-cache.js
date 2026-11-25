@@ -168,6 +168,7 @@
             const bridges = (data.bridges || []).map(bridge => {
                 const element = document.createElement('img');
                 element.alt = ''; element.draggable = false;
+                element.classList.add('map-bridge-image');
                 element.dataset.bridgeEdge = bridge.key;
                 for (const key of ['x', 'y', 'width', 'height']) element.setAttribute(key, bridge[key]);
                 Object.assign(element.style, { position:'absolute', left:bridge.x+'px', top:bridge.y+'px',

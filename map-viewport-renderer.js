@@ -275,7 +275,12 @@
                 for (const tile of state.tiles) drawImage(ctx, tile.source.image, tile, bounds);
                 const patterns = state.patterns ||= stonePatterns(ctx);
                 for (const edge of visibleRoads(state, bounds)) {
-                    if (edge.bridge) continue;
+                    if (edge.bridge) {
+                        if (window.BridgeCollapseRules?.isClosed(state.collapse, edge.from, edge.to)) continue;
+                        const image = edge.bridgeImage?.source.image;
+                        if (!image?.complete || !image.naturalWidth) window.MapWorkshopScene.drawRoad(ctx, edge.points, edge.style);
+                        continue;
+                    }
                     if (edge.style === 'stone') drawStone(ctx, edge.points, patterns);
                     else window.MapWorkshopScene.drawRoad(ctx, edge.points, edge.style);
                 }
@@ -321,7 +326,11 @@
         background.append(loader);
         state.fallback = source(state, window.MapOverviewRasterData.mobileImage || window.MapOverviewRasterData.image);
         state.tiles = (window.MapBackgroundRasterData?.tiles || []).map(tile => ({ ...tile, source: source(state, tile.image) }));
-        state.bridges = (window.MapRoadRasterData?.bridges || []).map(tile => ({ ...tile, source: source(state, tile.image) }));
+        state.bridges = (window.MapRoadRasterData?.bridges || []).map(tile => {
+            const entry = source(state, tile.image);
+            entry.image.classList.add('map-bridge-image');
+            return { ...tile, source: entry };
+        });
         scenes.set(board, state);
         board.append(canvas);
         board.classList.add('map-viewport-active');
@@ -348,6 +357,7 @@
         state.squares = squares;
         state.roadCells.clear();
         const byId = new Map(squares.map(square => [Number(square.id), square])), seen = new Set();
+        const bridgeImages = new Map(state.bridges.map(bridge => [bridge.key, bridge]));
         for (const from of squares) for (const id of from.next || []) {
             const to = byId.get(Number(id)); if (!to) continue;
             const key = [Number(from.id), Number(to.id)].sort((a, b) => a - b).join(':');
@@ -355,7 +365,8 @@
             const points = window.MapWorkshopScene.roadPoints(from.id, to.id) || [from, to];
             const style = window.MapWorkshopScene.roadStyle(from.id, to.id);
             const left = Math.min(...points.map(p => p.x)) - 64, top = Math.min(...points.map(p => p.y)) - 64;
-            const edge = { points, style, bridge: window.MapBridgeRoads.isBridge(style), x: left, y: top,
+            const edge = { points, style, bridge: window.MapBridgeRoads.isBridge(style), from: Number(from.id), to: Number(to.id),
+                bridgeImage: bridgeImages.get(key), x: left, y: top,
                 width: Math.max(...points.map(p => p.x)) + 64 - left, height: Math.max(...points.map(p => p.y)) + 64 - top };
             for (let y = Math.floor(top / cellSize); y <= Math.floor((top + edge.height) / cellSize); y++) {
                 for (let x = Math.floor(left / cellSize); x <= Math.floor((left + edge.width) / cellSize); x++) {

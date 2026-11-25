@@ -71,7 +71,7 @@
   for(const [key,edge] of edges){
    const [a,b]=key.split(':').map(Number),style=window.MapWorkshopScene?.roadStyle(a,b);
    if(!window.MapBridgeRoads?.isBridge(style))continue;
-   edge.group.classList.add('map-road-bridge-edge');edge.group.style.display='none';
+   edge.group.classList.add('map-road-bridge-edge');
    const shadow=svg.querySelector(`[data-shadow-edge="${key}"]`);if(shadow)shadow.style.display='none';
   }
   const routeSurface=document.createElementNS(ns,'svg');
@@ -115,7 +115,9 @@
    const [aId,bId]=key.split(':').map(Number);
    const closed=Boolean(scene.collapseState&&window.BridgeCollapseRules?.isClosed(scene.collapseState,aId,bId));
    edge.group.classList.toggle('is-collapsed',closed);
-   edge.group.style.display=scene.simpleMode&&!closed?'':'none';
+   // Keep the connecting road visible until bridge artwork replaces it.
+   const replaced=edge.group.classList.contains('map-road-material-replaced');
+   edge.group.style.display=!closed&&(scene.simpleMode||!replaced)?'':'none';
   }
  }
  function setSimpleMode(svg,enabled){
@@ -131,8 +133,7 @@
   for(const [aId,bId] of window.BridgeCollapseRules?.edges||[]){
    const key=edgeKey(aId,bId),closed=Boolean(state&&window.BridgeCollapseRules.isClosed(state,aId,bId));
    for(const element of svg.querySelectorAll(`[data-road-edge="${key}"]`)){
-    if(element.classList.contains('map-road-bridge-edge'))element.style.display=scene?.simpleMode&&!closed?'':'none';
-    else element.style.display=closed?'none':'';
+    if(!element.classList.contains('map-road-bridge-edge'))element.style.display=closed?'none':'';
    }
   }
   window.MapRoadCache?.setBridgeCollapse(svg,state);

@@ -21,7 +21,7 @@
     let presentationFrame = 0;
 
     function imageGroup(element) {
-        if (element.classList.contains('map-space-icon')) return 1;
+        if (element.classList.contains('map-space-icon') || element.classList.contains('map-bridge-image')) return 1;
         return element.closest?.('.map-workshop-objects') ? 2 : 0;
     }
 
