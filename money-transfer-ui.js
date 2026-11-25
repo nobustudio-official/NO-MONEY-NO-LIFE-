@@ -3,7 +3,32 @@
     const limit = player => Math.floor(Math.max(0, Number(player?.money) || 0) / 2000) * 1000;
     const format = n => Math.max(0, Number(n) || 0).toLocaleString('ja-JP');
     const node = (tag, className, text) => { const e = document.createElement(tag); e.className = className; if (text != null) e.textContent = text; return e; };
-    function close() { const root = document.getElementById('moneyTransferScreen'); if (root) { window.PlayerCardSize?.release(root); window.Plane02Layout?.release(root.querySelector('.mt-panel')); root.remove(); } }
+    let releaseListLayout = null;
+    function close() {
+        releaseListLayout?.(); releaseListLayout = null;
+        const root = document.getElementById('moneyTransferScreen');
+        if (root) { window.PlayerCardSize?.release(root); window.Plane02Layout?.release(root.querySelector('.mt-panel')); root.remove(); }
+    }
+    function fitTransferList(root, panel, content) {
+        const list = content.querySelector('.mt-items');
+        const fit = () => {
+            const height = window.GamePanels?.inventoryRowHeight(list.clientHeight);
+            if (height != null) {
+                const value = `${height}px`;
+                if (list.style.getPropertyValue('--mt-row-height') !== value) list.style.setProperty('--mt-row-height', value);
+            }
+        };
+        const observer = new ResizeObserver(fit);
+        observer.observe(list);
+        const releaseFrame = window.GamePanels?.anchorFrame(root.id, ({left, width}) => {
+            // Match the inventory panel's responsive horizontal padding and borders.
+            const padding = Math.max(14, Math.min(24, window.innerWidth * .02));
+            const values = {left: `${left + padding - panel.getBoundingClientRect().left}px`, width: `${Math.max(0, width - 2 - padding * 2)}px`};
+            for (const [key, value] of Object.entries(values)) if (content.style[key] !== value) content.style[key] = value;
+        });
+        fit();
+        return () => { observer.disconnect(); releaseFrame?.(); };
+    }
     function show(cfg) {
         close();
         const { players, actor, stage, targetIndex, type, remote } = cfg;
@@ -150,6 +175,7 @@
             if (stage === 'type') window.Plane02Layout?.apply(panel, { once: true });
             window.Plane02Layout?.apply(panel);
         }
+        if (stage === 'items' || stage === 'assets') releaseListLayout = fitTransferList(root, panel, content);
         window.PlayerCardSize?.watch(root);
         if (!remote) cfg.onSync(stage, targetIndex, type, stage === 'amount' ? Number(root.querySelector('.mt-amount').value) : cfg.amount);
     }

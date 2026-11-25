@@ -105,8 +105,10 @@
     width: 100%;
     min-width: 0;
     margin: 0;
-    padding: 2px 7px 4px 2px;
+    padding: 6px 0;
     overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
     scrollbar-color: #ccae7b99 #102b4366;
     scrollbar-width: thin;
     list-style: none;
@@ -116,22 +118,36 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    min-height: 56px;
-    padding: 7px 14px;
-    border: 1px solid #a9c8df2b;
-    border-radius: 11px;
-    background: #54708925;
-    font-size: 18px;
+    min-height: var(--mt-row-height, 45px);
+    padding: 0 0 0 18px;
+    border: 1px solid #a9c8df18;
+    border-radius: 9px;
+    background: #54708920;
+    font-size: clamp(14px, 1.6vw, 20px);
+    line-height: 1.2;
 }
-.mt-item-row + .mt-item-row { margin-top: 8px; }
+.mt-item-row + .mt-item-row { margin-top: 6px; }
 .mt-item-row:is(:hover, :focus-within) { background: #547a954b; border-color: #ccae7b7a; }
-.mt-item-row b { min-width: 0; overflow-wrap: anywhere; }
-.mt-item-copy { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.mt-item-row b { display: block; min-width: 0; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mt-item-copy { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 4px; }
 .mt-item-copy small { color: #ffdc83; font-size: 15px; }
-.mt-item-row button { flex: none; width: 104px; }
+.mt-item-row button {
+    flex: none;
+    width: 68px;
+    height: 35px;
+    min-height: 35px;
+    padding: 0 2px;
+    border: 1px solid #ccae7b;
+    border-radius: 8px;
+    background: linear-gradient(#47718a, #2c4e6d);
+    color: #fff4dc;
+    font: 700 clamp(12px, 1.3vw, 15px)/1.1 'Yu Gothic', Meiryo, sans-serif;
+    white-space: nowrap;
+}
 .mt-items-empty { padding: 16px; text-align: center; }
-@media(max-width:1550px){.mt-title{font-size:24px}}
-@media(max-height:850px){.mt-target-card{min-height:190px;gap:6px}.mt-person img,.mt-target-card img{width:60px;height:60px}.mt-form{top:calc(28% + 130px)}.mt-execute{min-height:38px}}
+#moneyTransferScreen:is([data-stage="items"], [data-stage="assets"]) .mt-content { right: auto; width: calc(100% - 52px); }
+@media(max-width:1550px){.mt-title{font-size:24px}.mt-item-row{font-size:clamp(14px,1.6vw,18px)}}
+@media(max-height:850px){.mt-target-card{min-height:190px;gap:6px}.mt-person img,.mt-target-card img{width:60px;height:60px}.mt-form{top:calc(28% + 130px)}.mt-execute{min-height:38px}.mt-item-row{font-size:clamp(14px,1.6vw,17px)}}
 @media (max-height:850px) {
     #moneyTransferScreen[data-transfer="money"] .mt-form { grid-template-rows: 48px max(38px, calc(1lh + 20px)); }
 }

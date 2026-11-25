@@ -5,7 +5,7 @@
     const clock=()=>window.onlineGame?.sync?.serverNow?.() ?? Date.now();
     const node=(tag,cls,text)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el;};
     const anchorCleanups=new WeakMap();
-    function anchorFrame(root) {
+    function anchorFrame(root, onUpdate) {
         anchorCleanups.get(root)?.();
         if(root.id==='soundSettingsPopup')root.style.display='flex';
         const screen=document.querySelector('.game-screen'),banner=screen?.querySelector('.game-hud'),dice=screen?.querySelector('#rouletteButton');
@@ -22,6 +22,7 @@
             root.style.setProperty('--gp-inv-width',`${right-left}px`);
             root.style.setProperty('--gp-inv-height',`${bottom-top}px`);
             root.setAttribute('data-anchored','');
+            onUpdate?.({left,width:right-left});
         };
         let frame=0;
         const schedule=()=>{if(!frame)frame=requestAnimationFrame(()=>{frame=0;update();});};
@@ -105,10 +106,11 @@
             if(v.titleBranch.scrollWidth<=available+1)break;
         }
     }
+    const baseRowHeight=height=>Math.max(36,Math.min(62,Math.floor((height-5)/10)-5));
+    const inventoryRowHeight=height=>Math.round(45+(baseRowHeight(height)-36)*(80-45)/(62-36));
     function fit(v) {
         if(v.root.style.display==='none'||!v.config)return;
-        const baseRowHeight=Math.max(36,Math.min(62,Math.floor((v.scroll.clientHeight-5)/10)-5));
-        const rowHeight=v.config.kind==='inventory'?Math.round(45+(baseRowHeight-36)*(80-45)/(62-36)):baseRowHeight;
+        const rowHeight=v.config.kind==='inventory'?inventoryRowHeight(v.scroll.clientHeight):baseRowHeight(v.scroll.clientHeight);
         v.scroll.style.setProperty('--gp-row-height',rowHeight+'px');
         const gutter=v.scroll.offsetWidth-v.scroll.clientWidth;v.columns.style.marginRight=gutter+'px';
         if(['assets','sale-assets'].includes(v.config.kind)){
@@ -246,5 +248,5 @@
     }
     function refresh(){for(const v of views.values())if(v.root.style.display==='block'){if(v.config.rebuild)v.config.rebuild();else draw(v);}}
     function resetScroll(id){const v=views.get(id);if(!v)return false;v.scroll.scrollTop=0;return true;}
-    window.GamePanels=Object.freeze({show,remote,refresh,resetScroll,anchorFrame:id=>{const root=document.getElementById(id);return root?anchorFrame(root):null;},releaseFrame:id=>{const root=document.getElementById(id);if(root)anchorCleanups.get(root)?.();},fade:(id,key,row)=>{const v=views.get(id);if(v)fade(v,key,row);},setNotice:(id,name)=>{const v=views.get(id);if(v)setNotice(v,name);},isOpen:id=>views.get(id)?.root.style.display==='block',get:id=>views.get(id),snapshot:id=>snapshot(views.get(id))});
+    window.GamePanels=Object.freeze({show,remote,refresh,resetScroll,inventoryRowHeight,anchorFrame:(id,onUpdate)=>{const root=document.getElementById(id);return root?anchorFrame(root,onUpdate):null;},releaseFrame:id=>{const root=document.getElementById(id);if(root)anchorCleanups.get(root)?.();},fade:(id,key,row)=>{const v=views.get(id);if(v)fade(v,key,row);},setNotice:(id,name)=>{const v=views.get(id);if(v)setNotice(v,name);},isOpen:id=>views.get(id)?.root.style.display==='block',get:id=>views.get(id),snapshot:id=>snapshot(views.get(id))});
 })();
