@@ -1,8 +1,25 @@
-/* Request immersive landscape mode from the game's start-button gesture.
+/* Gate phone startup by orientation and provide optional immersive mode.
  * Browsers that do not support either API simply keep the existing layout.
  */
 (() => {
     'use strict';
+
+    const title = document.querySelector('.title-screen');
+    const startButtons = document.querySelectorAll('#startButton, #localGameButton');
+    if (title && startButtons.length) {
+        const portraitPhone = window.matchMedia('(pointer: coarse) and (max-width: 700px) and (orientation: portrait)');
+        const updateStartAvailability = () => {
+            if (!title.isConnected) return;
+            const blocked = portraitPhone.matches && !title.classList.contains('is-setup');
+            for (const button of startButtons) {
+                button.disabled = blocked;
+                button.title = blocked ? 'スマホを横向きにすると開始できます。' : '';
+            }
+        };
+        portraitPhone.addEventListener('change', updateStartAvailability);
+        new MutationObserver(updateStartAvailability).observe(title, { attributes: true, attributeFilter: ['class'] });
+        updateStartAvailability();
+    }
 
     async function startLandscapeMode() {
         const isTouchDevice = window.matchMedia?.('(pointer: coarse)').matches ||

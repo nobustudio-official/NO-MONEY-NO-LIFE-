@@ -6,7 +6,7 @@ const read = name => fs.readFileSync(require.resolve('../' + name), 'utf8');
 
 function runtime() {
     let clock = 0, sequence = 0;
-    const timers = new Map(), frames = new Map(), images = [], drawn = [], fallback = [], observers = [];
+    const timers = new Map(), frames = new Map(), images = [], drawn = [], fallback = [], observers = [], transforms = [];
     let styleReads = 0;
     class Element extends EventTarget {
         constructor(tag = 'div') {
@@ -45,7 +45,10 @@ function runtime() {
             return selector === '*' ? all : all.filter(child => selector.split(',').some(s => child.matches(s.trim())));
         }
         querySelector(selector) { return this.querySelectorAll(selector)[0] || null; }
-        getContext() { return new Proxy({ createPattern: () => ({}) }, { get: (o, k) => k in o ? o[k] : (...args) => { if (k === 'drawImage') drawn.push(args[0]); } }); }
+        getContext() { return new Proxy({ createPattern: () => ({}) }, { get: (o, k) => k in o ? o[k] : (...args) => {
+            if (k === 'drawImage') drawn.push(args[0]);
+            if (k === 'setTransform') transforms.push({ canvas: this, args });
+        } }); }
     }
     class Image extends Element {
         constructor() { super('img'); images.push(this); }
@@ -76,7 +79,7 @@ function runtime() {
         getComputedStyle: element => { styleReads++; return { width: element.style.width || '66px', height: element.style.height || '66px' }; } };
     vm.createContext(context);
     const load = file => vm.runInContext(read(file), context, { filename: file });
-    return { area, board, background, svg, viewport, images, drawn, fallback, window, Element, Image, load, observers,
+    return { area, board, background, svg, viewport, images, drawn, fallback, transforms, window, Element, Image, load, observers,
         get styleReads() { return styleReads; },
         tick(ms = 32) {
             clock += ms;
@@ -169,6 +172,53 @@ test('unchanged resize notifications retain icon measurements while real resizin
     run.viewport.width = 220; run.observers[0](); run.visit(0);
     assert.equal(canvas.width, 58);
     assert.equal(run.styleReads, 2);
+});
+
+function watchCanvasSize(canvas) {
+    const changes = [];
+    for (const name of ['width', 'height']) {
+        let value = canvas[name];
+        Object.defineProperty(canvas, name, { get: () => value, set(next) { value = next; changes.push([name, next]); } });
+    }
+    return changes;
+}
+
+test('toolbar collapse and rotation keep the first background buffer and map the full expanded viewport', () => {
+    const run = squareCanvases(); run.window.devicePixelRatio = 3;
+    run.viewport.width = 852; run.viewport.height = run.viewport.bottom = 273; run.visit(0);
+    const canvas = run.board.querySelector('.map-viewport-surface');
+    const initial = [canvas.width, canvas.height], changes = watchCanvasSize(canvas);
+    assert.ok(initial[0] * initial[1] <= 1920 * 1080);
+    assert.ok(initial.every(size => size <= 2048));
+    for (const [width, height] of [[852, 393], [393, 852], [852, 273], [852, 393]]) {
+        run.viewport.width = width; run.viewport.height = run.viewport.bottom = height;
+        run.observers[0](); run.visit(0);
+        assert.deepEqual([canvas.width, canvas.height], initial);
+        assert.equal(canvas.style.width, width + 320 + 'px');
+        assert.equal(canvas.style.height, height + 320 + 'px');
+        const transform = run.transforms.filter(item => item.canvas === canvas).at(-1).args;
+        assert.equal(transform[0], initial[0] / (width + 320));
+        assert.equal(transform[3], initial[1] / (height + 320));
+    }
+    assert.deepEqual(changes, [], 'no backing-store resets during size changes');
+});
+
+test('dynamic comparison mode retains the original viewport-dependent background allocation', () => {
+    const run = squareCanvases(); run.window.mapFixedCanvasSize = false;
+    run.viewport.width = 852; run.viewport.height = run.viewport.bottom = 273; run.visit(0);
+    const canvas = run.board.querySelector('.map-viewport-surface');
+    const initialHeight = canvas.height, changes = watchCanvasSize(canvas);
+    run.viewport.height = run.viewport.bottom = 393; run.observers[0](); run.visit(0);
+    assert.ok(canvas.height > initialHeight);
+    assert.ok(changes.length > 0);
+});
+
+test('a zero-size viewport cannot lock in an invalid first background buffer', () => {
+    const run = squareCanvases(); run.viewport.width = run.viewport.height = 0; run.visit(0);
+    const canvas = run.board.querySelector('.map-viewport-surface');
+    assert.equal(canvas.width, 0);
+    run.viewport.width = 852; run.viewport.height = run.viewport.bottom = 393; run.visit(0);
+    assert.equal(canvas.width, 1172); assert.equal(canvas.height, 713);
 });
 
 test('cached square illustrations render during travel before per-square image binding finishes', async () => {

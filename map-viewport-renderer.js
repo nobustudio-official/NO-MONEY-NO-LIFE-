@@ -60,26 +60,30 @@
 
     function measure(state) {
         const viewport = window.MapScene.getViewport(state.board);
-        if (!viewport) return false;
+        if (!viewport || !(viewport.width > 0 && viewport.height > 0)) return false;
         const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
         const sizeChanged = state.width !== viewport.width || state.height !== viewport.height || state.pixelRatio !== pixelRatio ||
             state.layoutWidth !== window.innerWidth || state.layoutHeight !== window.innerHeight;
         if (state.sizeDirty || sizeChanged) {
             const { width, height } = viewport;
             const bufferWidth = width + padding * 2, bufferHeight = height + padding * 2;
-            const ratio = Math.min(pixelRatio, maxSide / bufferWidth, maxSide / bufferHeight,
-                Math.sqrt(maxPixels / (bufferWidth * bufferHeight)));
-            const pixelsWide = Math.max(1, Math.floor(bufferWidth * ratio));
-            const pixelsHigh = Math.max(1, Math.floor(bufferHeight * ratio));
-            if (state.canvas.width !== pixelsWide || state.canvas.height !== pixelsHigh) {
-                // Rotation must not allocate new width × old height temporarily.
-                state.canvas.width = state.canvas.height = 0;
-                state.canvas.width = pixelsWide; state.canvas.height = pixelsHigh;
-                state.contentDirty = true;
+            // Keep the first backing store through toolbar changes and rotation.
+            // ?map-canvas-size=dynamic restores viewport-sized allocation for comparison.
+            if (!state.bufferReady || window.mapFixedCanvasSize === false) {
+                const ratio = Math.min(pixelRatio, maxSide / bufferWidth, maxSide / bufferHeight,
+                    Math.sqrt(maxPixels / (bufferWidth * bufferHeight)));
+                const pixelsWide = Math.max(1, Math.floor(bufferWidth * ratio));
+                const pixelsHigh = Math.max(1, Math.floor(bufferHeight * ratio));
+                if (state.canvas.width !== pixelsWide || state.canvas.height !== pixelsHigh) {
+                    state.canvas.width = state.canvas.height = 0;
+                    state.canvas.width = pixelsWide; state.canvas.height = pixelsHigh;
+                    state.contentDirty = true;
+                }
+                state.bufferReady = true;
             }
             if (state.width !== width || state.height !== height) state.contentDirty = true;
             state.width = width; state.height = height;
-            state.pixelX = pixelsWide / bufferWidth; state.pixelY = pixelsHigh / bufferHeight;
+            state.pixelX = state.canvas.width / bufferWidth; state.pixelY = state.canvas.height / bufferHeight;
             state.pixelRatio = pixelRatio;
             state.layoutWidth = window.innerWidth; state.layoutHeight = window.innerHeight;
             if (sizeChanged) state.styleVersion++;
@@ -359,7 +363,7 @@
         canvas.className = 'map-viewport-surface'; canvas.setAttribute('aria-hidden', 'true'); canvas.hidden = true;
         const loader = document.createElement('div'); loader.hidden = true;
         const state = { board, area, background, svg, canvas, ctx, loader, sources: new Map(), roadCells: new Map(),
-            frame: 0, lastPaint: -Infinity, sizeDirty: true, contentDirty: true, disposed: false, presented: new Set(),
+            frame: 0, lastPaint: -Infinity, sizeDirty: true, bufferReady: false, contentDirty: true, disposed: false, presented: new Set(),
             styleVersion: 0, icons: new Map(), iconCells: new Map(), activeIcons: new Set(),
             cachedIcons: new Set(), cachedIconPixels: 0, bounds: null,
             zoom: typeof getMapZoomUI === 'function' ? getMapZoomUI() : 1, collapse: window.bridgeCollapseVisualState };

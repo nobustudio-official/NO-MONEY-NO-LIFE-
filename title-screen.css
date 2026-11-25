@@ -312,13 +312,19 @@
     transition: transform .18s ease, filter .18s ease, box-shadow .18s ease;
 }
 
-.title-screen #startButton:hover {
+.title-screen #startButton:enabled:hover {
     transform: translateY(-2px);
     filter: brightness(1.08);
     box-shadow: 0 0 0 4px #2818339c, 0 0 0 5px #ffe0a8, 0 14px 40px #130c25c9, 0 0 36px #f6ca78b5;
 }
 
-.title-screen #startButton:active { transform: translateY(1px) scale(.99); }
+.title-screen #startButton:enabled:active { transform: translateY(1px) scale(.99); }
+
+.title-screen #startButton:disabled,
+.title-screen #localGameButton:disabled {
+    cursor: not-allowed;
+    opacity: .5;
+}
 
 .title-screen [hidden] { display: none !important; }
 
@@ -348,7 +354,7 @@
     transition: transform .16s ease, border-color .16s ease, background .16s ease;
 }
 
-.title-screen__mode-button:hover {
+.title-screen__mode-button:enabled:hover {
     transform: translateY(-2px);
     border-color: #fff0bd;
     background: linear-gradient(100deg, #273751f2, #58385cf2 54%, #2a3b58f2);

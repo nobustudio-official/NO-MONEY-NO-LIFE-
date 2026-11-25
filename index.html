@@ -18,7 +18,7 @@
         rel="stylesheet"
         href="style.css?v=shop-close-design-20261124-1"
     >
-    <link rel="stylesheet" href="title-screen.css?v=title-setup-horizontal-center-20261124-1">
+    <link rel="stylesheet" href="title-screen.css?v=phone-landscape-start-20261125-1">
     <link rel="stylesheet" href="shop-presentation.css">
     <link rel="stylesheet" href="game-panels.css?v=inventory-row-size-20261124-2">
     <link rel="stylesheet" href="common-announcements.css?v=underground-centered-telop-20261124-1">
@@ -79,11 +79,11 @@
                 <p class="game-subtitle">ようこそ、資本至上主義異世界へ</p>
 
                 <div class="title-screen__actions">
-                <button id="startButton" type="button">
+                <button id="startButton" type="button" disabled>
                     <span>ゲームを始める</span>
                 </button>
                 <div id="titleModeMenu" class="title-screen__mode-menu" hidden>
-                    <button id="localGameButton" class="title-screen__mode-button" type="button">
+                    <button id="localGameButton" class="title-screen__mode-button" type="button" disabled>
                         <span>ローカル対戦</span>
                     </button>
                     <button id="backToTitleButton" class="title-screen__back-button" type="button">タイトルに戻る</button>
@@ -1763,6 +1763,7 @@
         window.mobileRuntimeTuning = !compatibilityMode && settings.get('mobile-runtime') !== 'off' && phoneViewport;
         // Immediate rollback: append ?map-renderer=legacy (or &map-renderer=legacy).
         window.mapViewportRendering = window.mobileRuntimeTuning && settings.get('map-renderer') !== 'legacy';
+        window.mapFixedCanvasSize = settings.get('map-canvas-size') !== 'dynamic';
     }
 </script>
 <script src="data.js?v=shopkeeper-voice-20261122"></script>
@@ -1845,7 +1846,7 @@
 <script src="map-authoring/bridge-roads.js?v=shared-map-image-cache-20261124-1"></script>
 <script src="map-authoring/region-roads.js?v=shared-map-image-cache-20261124-1"></script>
 <script src="map-workshop-scene.js?v=map-update-dedup-20261125-1"></script>
-<script src="map-viewport-renderer.js?v=viewport-resize-icon-cache-20261125-1"></script>
+<script src="map-viewport-renderer.js?v=fixed-map-canvas-buffer-20261125-1"></script>
 <script src="map-road-renderer.js?v=bridge-motion-low-detail-fix-20261125-1"></script>
 <script src="vertical-slot.js"></script>
 <script src="slot-presentation.js?v=slot-spacing-and-item-font-20261121"></script>
@@ -1876,7 +1877,7 @@
 <script src="local-match-recovery.js?v=local-resume-camera-stable-20261125-1"></script>
 <script src="game-action-input.js?v=local-match-resume-1"></script>
 <script src="player-card-size.js?v=icon-only-transfer-choices-20261124-1"></script>
-<script src="game-orientation.js?v=fullscreen-landscape-on-start-20261124-1"></script>
+<script src="game-orientation.js?v=phone-landscape-start-20261125-1"></script>
 <script src="game.js?v=local-resume-camera-stable-20261125-1"></script>
 <script src="battle-effects.js?v=mobile-global-image-budget-1"></script>
 <script src="battle-effects/common.js"></script>
