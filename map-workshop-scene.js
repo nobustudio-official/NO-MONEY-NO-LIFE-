@@ -12,13 +12,7 @@
     const targetTemplate = 'imported-small-0a0014a28f28';
     const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
     const streamImages = Boolean(window.MapDetailLevel?.touchDevice);
-    // Match the shared scroll settle window. A longer object-only delay let
-    // the baked low-resolution scenery disappear before its sharp image arrived.
-    const objectImageDwellMs = 160;
     const objectImageMargin = 48;
-    function sameViewport(a, b) {
-        return Boolean(a && b && ['left', 'right', 'top', 'bottom'].every(key => Math.abs(a[key] - b[key]) < .5));
-    }
     function cancelObjectLoad(state, row) {
         const token = state.pendingObjectImages.get(row);
         if (token === undefined) return;
@@ -146,23 +140,11 @@
         }
         if(hasVisibleEffect)state.effectTimer=window.setTimeout(()=>updateMagicEffects(board,state),50);
     }
-    function setViewport(board,bounds,visibleBounds=bounds,{immediateImages=false}={}) {
+    function setViewport(board,bounds,visibleBounds=bounds) {
         if(window.MapDetailLevel?.isCameraJumping?.(board))return;
         const state=boards.get(board);if(!state)return;
-        const viewportChanged=!sameViewport(state.visibleBounds,visibleBounds);
         state.bounds=bounds;
         state.visibleBounds=visibleBounds;
-        const needsImages=!state.objectImagesReady&&(!state.objectImageTimer||immediateImages);
-        if(state.streamImages&&(viewportChanged||needsImages)){
-            state.objectImagesReady=immediateImages;
-            clearTimeout(state.objectImageTimer);
-            state.objectImageTimer=immediateImages?0:window.setTimeout(()=>{
-                state.objectImageTimer=0;
-                if(!board.isConnected||!state.bounds||!state.visibleBounds)return;
-                state.objectImagesReady=true;
-                setViewport(board,state.bounds,state.visibleBounds);
-            },objectImageDwellMs);
-        }
         const overview=board.classList.contains('map-overview-active');
         const lowDetail=window.MapDetailLevel?.isLowDetail(board);
         const zooming=board.classList.contains('map-zoom-interacting');
@@ -190,7 +172,7 @@
                     if(onScreen&&(!image.classList.contains('is-ready')||image.style.visibility==='hidden'))window.MapDetailLevel.queuePresentation(image,()=>{
                         if(row.onScreen){image.style.visibility='';image.classList.add('is-ready');}
                     });
-                }else if(onScreen&&!zooming&&state.objectImagesReady&&!state.pendingObjectImages.has(row)){
+                }else if(onScreen&&!zooming&&!state.pendingObjectImages.has(row)){
                     const centerX=(visibleBounds.left+visibleBounds.right)/2,centerY=(visibleBounds.top+visibleBounds.bottom)/2;
                     const distance=(row.object.x-centerX)**2+(row.object.y-centerY)**2;
                     const token=(row.objectImageToken||0)+1;
@@ -206,16 +188,11 @@
     }
     function pauseDetail(board) {
         const state=boards.get(board);if(!state)return;
-        clearTimeout(state.objectImageTimer);
         clearTimeout(state.effectTimer);
-        state.objectImageTimer=state.effectTimer=0;
-        state.objectImagesReady=false;
+        state.effectTimer=0;
     }
     function releaseDetail(board) {
         const state=boards.get(board);if(!state?.streamImages)return;
-        clearTimeout(state.objectImageTimer);
-        state.objectImageTimer=0;
-        state.objectImagesReady=false;
         for(const row of [...state.pendingObjectImages.keys()])cancelObjectLoad(state,row);
         for(const row of state.rows){
             if(!row.image)continue;
@@ -275,7 +252,7 @@
             if(!board)return;
             board.append(layer);
             boards.set(board,{rows,bounds:null,visibleBounds:null,pairs:effects.pairs,effectTimer:0,streamImages:useStreaming,
-                objectImageTimer:0,objectImagesReady:false,pendingObjectImages:new Map()});
+                pendingObjectImages:new Map()});
             if(!useStreaming)for(const row of rows){
                 if(row.image)window.MapDetailLevel.loadImage(row.image,row.asset,1).catch(()=>{});
             }

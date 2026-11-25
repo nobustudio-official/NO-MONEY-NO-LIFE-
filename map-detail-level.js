@@ -106,12 +106,6 @@
     function flushPresentation() {
         presentationFrame = 0;
         const available = [];
-        const waitingGroups = new Map();
-        for (const request of [...pendingImages.values(), ...activeRequests.values()]) {
-            if (request.priority !== 0 || request.settled) continue;
-            const group = imageGroup(request.element);
-            waitingGroups.set(request.board, Math.min(group, waitingGroups.get(request.board) ?? Infinity));
-        }
         for (const [key, job] of presentationJobs) {
             if (!job.element.isConnected || disposedBoards.has(job.board)) {
                 presentationJobs.delete(key);
@@ -120,10 +114,10 @@
             }
             if (presentationPaused(job.board)) continue;
             const state = states.get(job.board);
-            // Square illustrations stay available during travel. Background
-            // bindings and decorative objects can wait for the camera to settle.
-            if ((state?.scrolling || state?.cameraMotions.size) && job.group !== 1 && (job.request || job.group > 0)) continue;
-            if (job.group === 1 || !(waitingGroups.get(job.board) < job.group)) available.push([key, job]);
+            // Squares and objects may appear during travel. Only new scenery
+            // bindings wait; object visibility does not depend on terrain loads.
+            if ((state?.scrolling || state?.cameraMotions.size) && job.group === 0 && job.request) continue;
+            available.push([key, job]);
         }
         if (!available.length) { notifyPresentationWaiters(); return; }
         const group = available.some(([, job]) => job.group === 1) ? 1 : Math.min(...available.map(([, job]) => job.group));
@@ -273,7 +267,7 @@
                 if (request.entry.loading || request.entry.ready) return false;
                 if (!request.board) return true;
                 if (cameraJumps.size || window.MapScene?.isViewportResizing?.()) return false;
-                if (scrollPauses.size && imageGroup(request.element) !== 1) return false;
+                if (scrollPauses.size && imageGroup(request.element) === 0) return false;
                 if (states.get(request.board)?.detailPending || (touchDevice && isLowDetail(request.board))) return false;
                 if (touchDevice && request.board.classList.contains('map-zoom-interacting')) return false;
                 return true;
@@ -413,8 +407,8 @@
             if (state.disposed || state.cameraJumps.size) return;
             if (state.visibleOnly) { schedule(); return; }
             state.scrolling = true;
-            // Keep decoded tiles visible; defer new scenery decodes during travel.
-            // Square illustrations use the same single load slot, without waiting.
+            // Defer scenery decodes; squares and objects share the single load
+            // slot without waiting for the camera to stop.
             updateCameraActivity(board, state);
             clearTimeout(state.scrollSettleTimer);
             state.scrollSettleTimer = setTimeout(() => {
@@ -491,7 +485,7 @@
                 window.MapBackgroundCache?.setViewport(board, near, visible);
                 window.MapRoadCache?.setViewport(board, near, visible);
             }
-            window.MapWorkshopScene?.setViewport(board, near, visible, { immediateImages: state.visibleOnly });
+            window.MapWorkshopScene?.setViewport(board, near, visible);
         }
         for (const row of state.nodes) {
             const outside = row.x < left || row.x > right || row.y < top || row.y > bottom;
