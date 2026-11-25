@@ -8,7 +8,7 @@
 .game-screen .map-node:has(.player-piece) { z-index: 6; }
 .game-screen .map-node:has(.player-piece.map-piece-moving) { z-index: 7; }
 #mapBoard .map-node.map-detail-offscreen:not(.boss-node):not(:has(.player-piece)) { visibility:hidden; }
-#mapBoard .map-space-icon:not([src]) { visibility:hidden; }
+#mapBoard img.map-space-icon:not([src]) { visibility:hidden; }
 .game-screen .map-node .player-piece.player-sprite {
     /* Small per-character surfaces preserve detail after wheel compositing ends. */
     will-change:transform;
@@ -115,12 +115,14 @@
     #mapBoard .map-workshop-objects img.map-object-sharp { will-change: auto; }
 }
 
-/* The experimental surface is a sibling of the scroll viewport, never a world-sized layer. */
-.game-screen > .map-viewport-surface {
-    position:absolute; inset:0; width:100%; height:100%; z-index:9;
+/* Bounded canvases move in the same scroll/zoom space as square hit targets. */
+#mapBoard > .map-viewport-surface {
+    position:absolute; left:0; top:0; max-width:none; z-index:1;
     pointer-events:none; contain:strict;
 }
-.game-screen > .map-viewport-surface[hidden] { display:none; }
-.game-screen > .map-area.map-ocean.map-viewport-active { background:transparent; }
+#mapBoard > .map-viewport-surface[hidden],
+#mapBoard .map-viewport-square-icon[hidden],
+#mapBoard:not(.map-viewport-active) .map-viewport-square-icon { display:none !important; }
+#mapBoard.map-viewport-active .map-viewport-icon-ready img.map-space-icon { display:none; }
 #mapBoard.map-viewport-active:not(.map-low-detail-active) > .map-background > .map-continent,
 #mapBoard.map-viewport-active:not(.map-low-detail-active) > .map-lines { display:none; }

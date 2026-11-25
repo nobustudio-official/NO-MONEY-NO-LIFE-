@@ -3444,6 +3444,7 @@ playSharedSE(buttonSound)
         const background = mapBoard.querySelector(':scope > .map-background');
         const existingRoads = mapBoard.querySelector(':scope > .map-lines');
         const existingObjects=mapBoard.querySelector(':scope > .map-workshop-objects');
+        const existingViewport=mapBoard.querySelector(':scope > .map-viewport-surface');
         const sameSquares = renderedMap?.board === mapBoard && mapSquaresMatch(renderedMap.squares);
         const reuseNodes = Boolean(background) && sameSquares && renderedMap.boss === currentBossSquareId;
         const bridgeClosed = Number(window.bridgeCollapseVisualState?.remainingActions) > 0;
@@ -3466,7 +3467,7 @@ playSharedSE(buttonSound)
             return;
         }
         for (const child of Array.from(mapBoard.children)) {
-            if (child !== background && child !== existingRoads && child !== existingObjects) child.remove();
+            if (child !== background && child !== existingRoads && child !== existingObjects && child !== existingViewport) child.remove();
         }
 
 

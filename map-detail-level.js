@@ -487,7 +487,7 @@
             top: visible.top - margin, bottom: visible.bottom + margin };
         const near = state.visibleOnly ? visible : { left, right, top, bottom };
         if (!state.lowDetail) {
-            if (!window.MapViewportRenderer?.setViewport(board, near, visible)) {
+            if (!window.MapViewportRenderer?.setViewport(board, near, visible, state.nodes)) {
                 window.MapBackgroundCache?.setViewport(board, near, visible);
                 window.MapRoadCache?.setViewport(board, near, visible);
             }

@@ -121,8 +121,6 @@
   if(isViewportResizing()||document.getElementById('mapBoard')?.classList.contains('map-zoom-interacting'))return;
   clampScroll();
   const area=document.querySelector('.game-screen .map-area');if(!area)return;
-  // The fixed viewport surface owns ocean painting in the mobile experiment.
-  if(area.classList.contains('map-viewport-active'))return;
   const useTexture=activeScale>=.5&&viewportShowsOcean();
   if(oceanTextureStates.get(area)===useTexture)return;
   oceanTextureStates.set(area,useTexture);

@@ -1,8 +1,9 @@
-/* Mobile background/roads experiment. ?map-renderer=legacy restores 2663bd5's renderer. */
+/* Mobile map canvases. ?map-renderer=legacy restores 2663bd5's renderer. */
 (function () {
     'use strict';
     const scenes = new WeakMap(), disabled = new WeakSet();
-    const frameInterval = 1000 / 30, maxPixels = 1920 * 1080, maxSide = 2048;
+    const frameInterval = 1000 / 60, maxPixels = 1920 * 1080, maxSide = 2048;
+    const padding = 160;
     const cellSize = 512;
     let stoneArt;
 
@@ -11,10 +12,11 @@
             a.y < b.bottom + margin && a.y + a.height > b.top - margin;
     }
 
-    function schedule(board, geometryChanged = false) {
+    function schedule(board, geometryChanged = false, contentChanged = true) {
         const state = scenes.get(board);
         if (!state || state.disposed) return;
         state.geometryDirty ||= geometryChanged;
+        state.contentDirty ||= contentChanged;
         if (!state.frame && !document.hidden) state.frame = requestAnimationFrame(now => paint(state, now));
     }
 
@@ -52,24 +54,25 @@
                 window.MapDetailLevel.releaseImage(tile.source.image);
             }
         }
-        for (const entry of state.ocean) request(state, entry, 1);
     }
 
     function measure(state) {
         if (state.sizeDirty) {
             const width = state.area.clientWidth, height = state.area.clientHeight;
             if (!(width > 0 && height > 0)) return false;
-            const ratio = Math.min(window.devicePixelRatio || 1, 1.5, maxSide / width, maxSide / height,
-                Math.sqrt(maxPixels / (width * height)));
-            const pixelsWide = Math.max(1, Math.floor(width * ratio));
-            const pixelsHigh = Math.max(1, Math.floor(height * ratio));
+            const bufferWidth = width + padding * 2, bufferHeight = height + padding * 2;
+            const ratio = Math.min(window.devicePixelRatio || 1, 1.5, maxSide / bufferWidth, maxSide / bufferHeight,
+                Math.sqrt(maxPixels / (bufferWidth * bufferHeight)));
+            const pixelsWide = Math.max(1, Math.floor(bufferWidth * ratio));
+            const pixelsHigh = Math.max(1, Math.floor(bufferHeight * ratio));
             if (state.canvas.width !== pixelsWide || state.canvas.height !== pixelsHigh) {
                 // Rotation must not allocate new width × old height temporarily.
                 state.canvas.width = state.canvas.height = 0;
                 state.canvas.width = pixelsWide; state.canvas.height = pixelsHigh;
             }
             state.width = width; state.height = height;
-            state.pixelX = pixelsWide / width; state.pixelY = pixelsHigh / height;
+            state.pixelX = pixelsWide / bufferWidth; state.pixelY = pixelsHigh / bufferHeight;
+            state.styleVersion++;
             state.sizeDirty = false; state.geometryDirty = true;
         }
         if (state.geometryDirty) {
@@ -80,8 +83,86 @@
             state.originX = (map.left - view.left) / scale + state.area.scrollLeft;
             state.originY = (map.top - view.top) / scale + state.area.scrollTop;
             state.geometryDirty = false;
+            state.contentDirty = true;
         }
         return true;
+    }
+
+    function releaseIcon(entry) {
+        if (!entry.canvas) return;
+        entry.canvas.hidden = true;
+        entry.canvas.width = entry.canvas.height = 0;
+        entry.node.classList.remove('map-viewport-icon-ready');
+    }
+
+    function setIcons(state, rows) {
+        if (!rows || state.rows === rows) return;
+        const icons = new Map();
+        state.iconCells.clear();
+        for (const row of rows) {
+            if (!row.icon) continue;
+            let entry = state.icons.get(row.icon);
+            if (!entry) {
+                entry = { ...row, canvas: null, styleVersion: -1, source: null };
+                entry.onLoad = () => schedule(state.board, false, false);
+                row.icon.addEventListener('load', entry.onLoad);
+            }
+            entry.x = row.x; entry.y = row.y;
+            icons.set(row.icon, entry);
+            const key = Math.floor(row.x / cellSize) + ':' + Math.floor(row.y / cellSize);
+            if (!state.iconCells.has(key)) state.iconCells.set(key, []);
+            state.iconCells.get(key).push(entry);
+        }
+        for (const [image, entry] of state.icons) if (!icons.has(image)) {
+            releaseIcon(entry); entry.canvas?.remove(); image.removeEventListener('load', entry.onLoad);
+            state.activeIcons.delete(entry);
+        }
+        state.icons = icons; state.rows = rows;
+    }
+
+    function drawIcons(state, bounds) {
+        const wanted = new Set(), margin = 128;
+        for (let y = Math.floor((bounds.top - margin) / cellSize); y <= Math.floor((bounds.bottom + margin) / cellSize); y++) {
+            for (let x = Math.floor((bounds.left - margin) / cellSize); x <= Math.floor((bounds.right + margin) / cellSize); x++) {
+                for (const entry of state.iconCells.get(x + ':' + y) || []) {
+                    if (entry.x >= bounds.left - margin && entry.x <= bounds.right + margin &&
+                        entry.y >= bounds.top - margin && entry.y <= bounds.bottom + margin) wanted.add(entry);
+                }
+            }
+        }
+        for (const entry of state.activeIcons) if (!wanted.has(entry)) releaseIcon(entry);
+        state.activeIcons = wanted;
+        let changed = false;
+        let budget = 2;
+        for (const entry of wanted) {
+            const image = entry.icon;
+            if (entry.unavailable || !image.isConnected || !image.complete || !image.naturalWidth) continue;
+            const source = image.currentSrc || image.src;
+            if (entry.canvas?.width && entry.source === source && entry.styleVersion === state.styleVersion) continue;
+            // Keep the original illustration visible until its small canvas is
+            // ready; a cached viewport must not allocate every icon at once.
+            if (!budget) { schedule(state.board, false, false); continue; }
+            budget--;
+            if (!entry.canvas) {
+                const canvas = document.createElement('canvas');
+                canvas.className = 'map-space-icon map-viewport-square-icon'; canvas.setAttribute('aria-hidden', 'true');
+                canvas.hidden = true; image.parentElement.append(canvas); entry.canvas = canvas;
+            }
+            const style = getComputedStyle(image), ratio = Math.min(window.devicePixelRatio || 1, 1.5);
+            const width = Math.max(1, Math.ceil((parseFloat(style.width) || 66) * ratio));
+            const height = Math.max(1, Math.ceil((parseFloat(style.height) || 66) * ratio));
+            const canvas = entry.canvas;
+            canvas.width = canvas.height = 0; canvas.width = width; canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) { entry.unavailable = true; releaseIcon(entry); continue; }
+            const scale = Math.min(width / image.naturalWidth, height / image.naturalHeight);
+            const drawWidth = image.naturalWidth * scale, drawHeight = image.naturalHeight * scale;
+            ctx.drawImage(image, (width - drawWidth) / 2, (height - drawHeight) / 2, drawWidth, drawHeight);
+            entry.source = source; entry.styleVersion = state.styleVersion;
+            canvas.hidden = false; entry.node.classList.add('map-viewport-icon-ready');
+            changed = true;
+        }
+        return changed;
     }
 
     // Crop in source coordinates too: never draw a whole-world bitmap surface.
@@ -154,43 +235,52 @@
         const lowDetail = window.MapDetailLevel.isLowDetail(state.board);
         state.canvas.hidden = lowDetail;
         state.board.classList.toggle('map-viewport-active', !lowDetail);
-        state.area.classList.toggle('map-viewport-active', !lowDetail);
         if (lowDetail) {
+            for (const entry of state.activeIcons) releaseIcon(entry);
+            state.activeIcons.clear();
+            state.bounds = null;
             for (const resolve of state.presented) resolve();
             state.presented.clear();
             return;
         }
-        if (now - state.lastPaint < frameInterval) { schedule(state.board); return; }
+        // Tolerate timestamp rounding: a nominal 60 Hz frame must not be skipped.
+        if (now - state.lastPaint < frameInterval - 1) { schedule(state.board, false, false); return; }
         try {
             if (!measure(state)) return;
-            state.lastPaint = now;
             const x = state.originX - state.area.scrollLeft, y = state.originY - state.area.scrollTop;
-            const bounds = { left: -x / state.zoom, top: -y / state.zoom,
+            const visible = { left: -x / state.zoom, top: -y / state.zoom,
                 right: (state.width - x) / state.zoom, bottom: (state.height - y) / state.zoom };
-            const ctx = state.ctx;
-            ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1;
-            ctx.fillStyle = '#178bbb'; ctx.fillRect(0, 0, state.canvas.width, state.canvas.height);
-            ctx.setTransform(state.pixelX * state.zoom, 0, 0, state.pixelY * state.zoom, state.pixelX * x, state.pixelY * y);
-            ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-            for (const entry of state.ocean) if (entry.image.complete && entry.image.naturalWidth) {
-                ctx.save(); const scale = entry === state.ocean[0] ? 1024 : 768;
-                ctx.scale(scale / entry.image.naturalWidth, scale / entry.image.naturalHeight);
-                ctx.fillStyle = ctx.createPattern(entry.image, 'repeat');
-                ctx.fillRect(bounds.left * entry.image.naturalWidth / scale, bounds.top * entry.image.naturalHeight / scale,
-                    (bounds.right - bounds.left) * entry.image.naturalWidth / scale, (bounds.bottom - bounds.top) * entry.image.naturalHeight / scale);
-                ctx.restore();
+            const guard = padding / 2 / state.zoom;
+            const previous = state.bounds;
+            const redraw = state.contentDirty || !previous || visible.left < previous.left + guard ||
+                visible.right > previous.right - guard || visible.top < previous.top + guard || visible.bottom > previous.bottom - guard;
+            if (redraw) {
+                const pad = padding / state.zoom;
+                const bounds = { left: visible.left - pad, top: visible.top - pad,
+                    right: visible.right + pad, bottom: visible.bottom + pad };
+                const ctx = state.ctx;
+                ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1;
+                ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
+                ctx.setTransform(state.pixelX * state.zoom, 0, 0, state.pixelY * state.zoom,
+                    -bounds.left * state.pixelX * state.zoom, -bounds.top * state.pixelY * state.zoom);
+                ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+                drawImage(ctx, state.fallback.image, { x: 0, y: 0, ...window.MapScene.config }, bounds);
+                for (const tile of state.tiles) drawImage(ctx, tile.source.image, tile, bounds);
+                const patterns = state.patterns ||= stonePatterns(ctx);
+                for (const edge of visibleRoads(state, bounds)) {
+                    if (edge.bridge) continue;
+                    if (edge.style === 'stone') drawStone(ctx, edge.points, patterns);
+                    else window.MapWorkshopScene.drawRoad(ctx, edge.points, edge.style);
+                }
+                for (const bridge of state.bridges) {
+                    if (!window.BridgeCollapseRules?.isClosed(state.collapse, bridge.from, bridge.to)) drawImage(ctx, bridge.source.image, bridge, bounds);
+                }
+                Object.assign(state.canvas.style, { left: bounds.left + 'px', top: bounds.top + 'px',
+                    width: (bounds.right - bounds.left) + 'px', height: (bounds.bottom - bounds.top) + 'px' });
+                state.bounds = bounds; state.contentDirty = false;
             }
-            drawImage(ctx, state.fallback.image, { x: 0, y: 0, ...window.MapScene.config }, bounds);
-            for (const tile of state.tiles) drawImage(ctx, tile.source.image, tile, bounds);
-            const patterns = state.patterns ||= stonePatterns(ctx);
-            for (const edge of visibleRoads(state, bounds)) {
-                if (edge.bridge) continue;
-                if (edge.style === 'stone') drawStone(ctx, edge.points, patterns);
-                else window.MapWorkshopScene.drawRoad(ctx, edge.points, edge.style);
-            }
-            for (const bridge of state.bridges) {
-                if (!window.BridgeCollapseRules?.isClosed(state.collapse, bridge.from, bridge.to)) drawImage(ctx, bridge.source.image, bridge, bounds);
-            }
+            const iconsChanged = drawIcons(state, visible);
+            if (redraw || iconsChanged) state.lastPaint = now;
             for (const resolve of state.presented) resolve();
             state.presented.clear();
         } catch (error) {
@@ -211,22 +301,22 @@
         if (scenes.has(board)) return true;
         const canvas = document.createElement('canvas');
         let ctx;
-        try { ctx = canvas.getContext('2d', { alpha: false }); } catch { return false; }
+        try { ctx = canvas.getContext('2d'); } catch { return false; }
         if (!ctx) return false;
         canvas.className = 'map-viewport-surface'; canvas.setAttribute('aria-hidden', 'true'); canvas.hidden = true;
         const loader = document.createElement('div'); loader.hidden = true;
         const state = { board, area, background, svg, canvas, ctx, loader, sources: new Map(), roadCells: new Map(),
-            frame: 0, lastPaint: -Infinity, geometryDirty: true, sizeDirty: true, disposed: false, presented: new Set(),
+            frame: 0, lastPaint: -Infinity, geometryDirty: true, sizeDirty: true, contentDirty: true, disposed: false, presented: new Set(),
+            styleVersion: 0, icons: new Map(), iconCells: new Map(), activeIcons: new Set(), bounds: null,
             zoom: typeof getMapZoomUI === 'function' ? getMapZoomUI() : 1, collapse: window.bridgeCollapseVisualState };
         background.append(loader);
         state.fallback = source(state, window.MapOverviewRasterData.mobileImage || window.MapOverviewRasterData.image);
         state.tiles = (window.MapBackgroundRasterData?.tiles || []).map(tile => ({ ...tile, source: source(state, tile.image) }));
         state.bridges = (window.MapRoadRasterData?.bridges || []).map(tile => ({ ...tile, source: source(state, tile.image) }));
-        state.ocean = ['base-repeat.svg', 'ripples-repeat.svg'].map(name => source(state, 'images/map/backgrounds/world/ocean/' + name));
         scenes.set(board, state);
-        area.parentElement.insertBefore(canvas, area);
+        board.append(canvas);
         board.classList.add('map-viewport-active');
-        state.onScroll = () => schedule(board);
+        state.onScroll = () => schedule(board, false, false);
         state.onVisibility = () => schedule(board, true);
         area.addEventListener('scroll', state.onScroll, { passive: true });
         document.addEventListener('visibilitychange', state.onVisibility);
@@ -266,13 +356,14 @@
         return true;
     }
 
-    function setViewport(board, near, visible = near) {
+    function setViewport(board, near, visible = near, rows) {
         const state = scenes.get(board);
         if (!state) return false;
+        setIcons(state, rows);
         // Register visible requests synchronously, including under the turn
         // handoff. The shared queue keeps them inside its existing load budget.
         if (visible && !window.MapDetailLevel.isLowDetail(board)) requestTiles(state, visible);
-        schedule(board);
+        schedule(board, false, false);
         return true;
     }
 
@@ -299,9 +390,13 @@
         state.area.removeEventListener('scroll', state.onScroll);
         document.removeEventListener('visibilitychange', state.onVisibility);
         for (const entry of state.sources.values()) window.MapDetailLevel.releaseImage(entry.image);
+        for (const [image, entry] of state.icons) {
+            releaseIcon(entry); entry.canvas?.remove(); image.removeEventListener('load', entry.onLoad);
+        }
+        state.icons.clear(); state.iconCells.clear(); state.activeIcons.clear();
         state.sources.clear(); state.roadCells.clear();
         state.canvas.remove(); state.canvas.width = state.canvas.height = 0; state.loader.remove();
-        state.area.classList.remove('map-viewport-active'); board.classList.remove('map-viewport-active');
+        board.classList.remove('map-viewport-active');
         scenes.delete(board);
     }
 
