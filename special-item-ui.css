@@ -27,8 +27,8 @@
 .special-item-announcement img { width:80px; height:80px; object-fit:contain; flex:none; }
 .special-item-announcement-name { color:#ffdc83; }
 .special-item-choices.is-areas button { background:linear-gradient(155deg,#344b5fef,#172b40f7); }
-.special-item-choices.is-areas img { width:clamp(58px,6.5vw,96px); height:clamp(58px,8.5vh,96px); }
-.special-item-choices.is-areas button span { font-size:22px; font-weight:700; }
+.special-item-choices.is-areas img { flex:none; width:clamp(58px,6.5vw,96px); height:clamp(58px,8.5vh,96px); }
+.special-item-choices.is-areas button span { flex:0 0 2em; text-align:center; font-size:22px; font-weight:700; }
 .special-item-destination-prompt { white-space:pre-line; text-align:center; font-size:24px; }
 .special-item-choices:not(.is-areas):not(.is-equalize) > .special-item-card { flex:1 1 0; width:100%; max-width:230px; }
 .special-equalize-cards { width:100%; }
