@@ -13,6 +13,7 @@
   releaseChoices(scene);
   const update=()=>{
    if(!root.isConnected||panel.hidden||scene.popup.style.display==='none')return;
+   if(window.MapScene?.deferViewportUpdate?.(update))return;
    const frame=root.getBoundingClientRect(),person=staff.getBoundingClientRect(),telop=panel.getBoundingClientRect();
    if(!frame.height||!person.height||!telop.height)return;
    const center=(person.top+person.bottom)/2,bottom=telop.top-8;
@@ -20,7 +21,7 @@
    cards.style.left=(telop.left-frame.left)+'px';cards.style.right=(frame.right-telop.right)+'px';cards.style.top=(top-frame.top)+'px';cards.style.bottom='auto';cards.style.height=height+'px';
   };
   let frameId=0;
-  const schedule=()=>{if(!frameId)frameId=requestAnimationFrame(()=>{frameId=0;update();});};
+   const schedule=()=>{if(window.MapScene?.deferViewportUpdate?.(update))return;if(!frameId)frameId=requestAnimationFrame(()=>{frameId=0;update();});};
   const observer=new ResizeObserver(schedule);[root,panel,staff].forEach(node=>observer.observe(node));
   window.addEventListener('resize',schedule,{passive:true});
   window.visualViewport?.addEventListener('resize',schedule,{passive:true});

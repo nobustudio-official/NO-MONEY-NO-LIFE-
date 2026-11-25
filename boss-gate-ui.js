@@ -25,6 +25,7 @@
         let frameId = 0;
         const update = () => {
             if (!frame.isConnected || popup.style.display === 'none') return;
+            if (window.MapScene?.deferViewportUpdate?.(update)) return;
             const frameRect = frame.getBoundingClientRect();
             const artRect = art.getBoundingClientRect();
             const bannerRect = banner.getBoundingClientRect();
@@ -43,6 +44,7 @@
         };
 
         const schedule = () => {
+            if (window.MapScene?.deferViewportUpdate?.(update)) return;
             if (!frameId) frameId = requestAnimationFrame(() => {
                 frameId = 0;
                 update();

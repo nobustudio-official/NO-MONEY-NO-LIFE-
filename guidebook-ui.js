@@ -45,6 +45,7 @@
     function trackHud(root, hud) {
         const update = () => {
             if (layer !== root) return;
+            if (window.MapScene?.deferViewportUpdate?.(update)) return;
             const bottom = hud.getBoundingClientRect().bottom - root.getBoundingClientRect().top;
             root.style.setProperty('--guidebook-hud-bottom', Math.max(0, Math.ceil(bottom)) + 'px');
         };

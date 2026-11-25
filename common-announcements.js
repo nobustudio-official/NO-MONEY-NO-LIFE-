@@ -34,14 +34,16 @@
         }
         message.style.fontSize = `${size}px`;
     }
+    function flushFits() {
+        fitFrame = 0;
+        if (window.MapScene?.deferViewportUpdate?.(flushFits)) return;
+        pendingFits.forEach(fitMessage);
+        pendingFits.clear();
+    }
     function queueFit(message) {
         pendingFits.add(message);
-        if (fitFrame) return;
-        fitFrame = requestAnimationFrame(() => {
-            fitFrame = 0;
-            pendingFits.forEach(fitMessage);
-            pendingFits.clear();
-        });
+        if (fitFrame || window.MapScene?.deferViewportUpdate?.(flushFits)) return;
+        fitFrame = requestAnimationFrame(flushFits);
     }
     function fitText(message) {
         if (!message) return;

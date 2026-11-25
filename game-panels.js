@@ -12,6 +12,7 @@
         if(!screen||!banner||!dice)return null;
         const update=()=>{
             if(root.style.display==='none'||!root.isConnected)return;
+            if(window.MapScene?.deferViewportUpdate?.(update))return;
             const bounds=screen.getBoundingClientRect(),header=banner.getBoundingClientRect(),button=dice.getBoundingClientRect();
             if(!bounds.width||!bounds.height||!header.height||!button.width)return;
             const gap=17,top=header.bottom+gap,left=button.right+gap;
@@ -24,7 +25,7 @@
             root.setAttribute('data-anchored','');
         };
         let frame=0;
-        const schedule=()=>{if(!frame)frame=requestAnimationFrame(()=>{frame=0;update();});};
+        const schedule=()=>{if(window.MapScene?.deferViewportUpdate?.(update))return;if(!frame)frame=requestAnimationFrame(()=>{frame=0;update();});};
         const observer=new ResizeObserver(schedule);[screen,banner,dice].forEach(el=>observer.observe(el));
         window.addEventListener('resize',schedule,{passive:true});
         window.visualViewport?.addEventListener('resize',schedule,{passive:true});
@@ -74,7 +75,8 @@
         scroll.onpointerleave=()=>{view.hovered=null;describe(view);publish(view);};
         scroll.addEventListener('scroll',()=>{if(!view.remote&&view.config?.canAct())publish(view);},{passive:true});
         root.addEventListener('click',e=>{if(!view.config?.canAct()||e.target.closest('tr[data-key]'))return;view.selected=null;view.hovered=null;describe(view);publish(view);});
-        const resizeObserver=new ResizeObserver(()=>{fit(view);fitHeading(view);});
+        const updateSize=()=>{if(window.MapScene?.deferViewportUpdate?.(updateSize))return;fit(view);fitHeading(view);};
+        const resizeObserver=new ResizeObserver(updateSize);
         resizeObserver.observe(scroll);resizeObserver.observe(heading);
         return view;
     }

@@ -22,9 +22,10 @@ function runtime() {
         animate(_, options) {
             let resolve, reject;
             const animation = { currentTime: 0, duration: options.duration, done: false,
+                paused: false, pause() { this.paused = true; }, play() { this.paused = false; },
                 finished: new Promise((yes, no) => { resolve = yes; reject = no; }),
                 cancel() { if (!this.done) { this.done = true; reject(Error('cancelled')); } },
-                advance(delta) { if (this.done) return; this.currentTime += delta; if (this.currentTime >= this.duration) { this.done = true; resolve(); } }
+                advance(delta) { if (this.done || this.paused) return; this.currentTime += delta; if (this.currentTime >= this.duration) { this.done = true; resolve(); } }
             };
             animations.push(animation); return animation;
         }
@@ -46,6 +47,7 @@ function runtime() {
     run('window.centerPlayerOnMap = centerPlayerOnMap;');
     run(game.slice(game.indexOf('function centerOnWarpPlayer('), game.indexOf('async function playWarpMotion(')));
     return { context, area, board, node, piece, animations, run,
+        get pendingFrames() { return frames.size; },
         get now() { return now; },
         async step(delta = 16, visible = true) {
             const before = [area.scrollLeft, area.scrollTop]; now += delta;
@@ -65,6 +67,45 @@ test('reachable-square movement is halfway between normal and the former 2x spee
     assert.equal(normal, 280);
     assert.ok(Math.abs(200 / fast - (200 / normal + 200 / 140) / 2) < 1e-9);
     assert.equal(movement.durationForDistance(400, 2), fast * 2);
+});
+
+test('a paused camera parks its frame loop and resumes without a jump', async () => {
+    const f = runtime(); let resizing = false, resume, done = false;
+    f.context.MapScene.isViewportResizing = () => resizing;
+    f.context.MapScene.whenViewportStable = () => new Promise(resolve => { resume = resolve; });
+    f.context.panMapCameraTo(f.area, 1200, 0).then(() => { done = true; });
+    await f.step(); resizing = true; await f.step();
+    const left = f.area.scrollLeft;
+    assert.equal(f.pendingFrames, 0);
+    await f.step(1000); assert.equal(f.area.scrollLeft, left); assert.equal(done, false);
+    resizing = false; resume(true); await Promise.resolve();
+    await f.step(); assert.equal(f.area.scrollLeft, left);
+    await f.until(() => done); assert.equal(f.area.scrollLeft, 1200);
+});
+
+test('cancelling a paused camera cannot restart its old animation on rotation back', async () => {
+    const f = runtime(); let resume;
+    f.context.MapScene.isViewportResizing = () => true;
+    f.context.MapScene.whenViewportStable = () => new Promise(resolve => { resume = resolve; });
+    const done = f.context.panMapCameraTo(f.area, 1200, 0);
+    await f.step(); f.context.cancelMapCameraScroll(); resume(true); await Promise.resolve();
+    assert.equal(await done, false); assert.equal(f.pendingFrames, 0);
+});
+
+test('player movement pauses its animation clock and camera until the viewport is ready', async () => {
+    const f = runtime(); let resizing = false, resume, done = false;
+    f.context.MapScene.isViewportResizing = () => resizing;
+    f.context.MapScene.whenViewportStable = () => new Promise(resolve => { resume = resolve; });
+    f.node.style = { left: '5000px', top: '0px' };
+    f.context.MapMovementPresentation.play(f.board, 0, { left: 4800, top: 0, worldX: 4800, worldY: 0, squareId: 0 })
+        .then(() => { done = true; });
+    await f.step(); resizing = true; await f.step();
+    const time = f.animations[0].currentTime, left = f.area.scrollLeft;
+    assert.equal(f.animations[0].paused, true); assert.equal(f.pendingFrames, 0);
+    await f.step(1000); assert.equal(f.animations[0].currentTime, time); assert.equal(f.area.scrollLeft, left);
+    resizing = false; resume(true); await Promise.resolve();
+    await f.until(() => done);
+    assert.equal(f.context.MapMovementPresentation.isMoving(f.board), false);
 });
 test('automatic pans clamp faster requests to the boss-icon speed and retain slower requests', async () => {
     for (const [requested, expected] of [[9999, 1200], [600, 600]]) {

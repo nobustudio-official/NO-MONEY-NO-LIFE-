@@ -3,6 +3,7 @@
     'use strict';
     let frame = 0;
     const cleanups = new WeakMap();
+    let measuredLayout = '';
     const layouts = [
         ['#moneyTransferScreen .mt-target-card', '.mt-content'],
         ['#moneyTransferScreen .mt-person', '.mt-content, .mt-panel'],
@@ -26,7 +27,9 @@
     ].join(',');
 
     function fitItemAmounts(scope = document) {
+        if (window.MapScene?.deferViewportUpdate?.(refresh)) return;
         requestAnimationFrame(() => {
+            if (window.MapScene?.deferViewportUpdate?.(refresh)) return;
             scope.querySelectorAll(itemAmounts).forEach(element => {
                 if (!element.isConnected || !element.getClientRects().length) return;
                 element.style.removeProperty('font-size');
@@ -45,6 +48,9 @@
     function refresh() {
         if (frame) cancelAnimationFrame(frame);
         frame = 0;
+        if (window.MapScene?.deferViewportUpdate?.(refresh)) return;
+        // No reference frame is needed until a card screen actually uses it.
+        if (![...document.querySelectorAll(layouts.map(([selector]) => selector).join(','))].some(card => card.getClientRects().length)) return;
         const screen = document.querySelector('.game-screen');
         const header = screen?.querySelector('.game-hud');
         const viewport = screen?.getBoundingClientRect();
@@ -52,6 +58,8 @@
         if (!viewport?.width || !viewport.height || !hud?.height) return;
         const availableHeight = viewport.bottom - hud.bottom - 16;
         if (availableHeight <= 0) return;
+        const key = `${viewport.width}:${viewport.height}:${hud.height}`;
+        if (key === measuredLayout) { fitItemAmounts(); return; }
         const size = window.BossAftermath?.measureGuidebookCard();
         // The reference has a single column capped at 244px. Never retain a
         // transient measurement larger than its column or the event viewport.
@@ -63,9 +71,11 @@
         const style = document.documentElement.style;
         style.setProperty('--player-card-width', `${width}px`);
         style.setProperty('--player-card-height', `${height}px`);
+        measuredLayout = key;
         fitItemAmounts();
     }
     function schedule() {
+        if (window.MapScene?.deferViewportUpdate?.(refresh)) return;
         if (!frame) frame = requestAnimationFrame(refresh);
     }
 
@@ -95,6 +105,7 @@
         const update = () => {
             pending = 0;
             if (disposed || !scope.isConnected) return;
+            if (window.MapScene?.deferViewportUpdate?.(update)) return;
             for (const { card, region } of rows) {
                 observe(region);
                 if (!region.clientHeight || !card.isConnected) continue;
@@ -137,6 +148,7 @@
             fitItemAmounts(scope);
         };
         const scheduleFit = () => {
+            if (window.MapScene?.deferViewportUpdate?.(update)) return;
             if (!disposed && !pending) pending = requestAnimationFrame(update);
         };
         const observer = new ResizeObserver(scheduleFit);

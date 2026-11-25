@@ -16,6 +16,7 @@
     const saves = LocalMatchSave.controller({ store: LocalMatchSave.indexedDBStore(window.indexedDB),
         online: () => Boolean(window.onlineGame?.isOnline), onError: warn });
     function camera() {
+        if (window.MapScene?.isViewportResizing?.()) return null;
         // The empty board's temporary coordinates must not replace the saved camera.
         if (document.querySelector('.game-container')?.inert) return null;
         const area = document.querySelector('.game-screen .map-area');

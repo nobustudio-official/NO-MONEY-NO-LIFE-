@@ -11,6 +11,7 @@
   return panel;
  }
  function layout(panel){
+   if(window.MapScene?.deferViewportUpdate?.(updateLayout))return;
   const hud=document.querySelector('.game-hud'),destination=document.querySelector('.game-hud .hud-destination');
   const action=document.querySelector('.action-menu-button'),name=document.querySelector('.game-hud .hud-player-name');
   const hudBox=hud?.getBoundingClientRect(),destinationBox=destination?.getBoundingClientRect(),actionBox=action?.getBoundingClientRect();
@@ -29,6 +30,7 @@
   panel.hidden=false;layout(panel);
  }
  function hide(observerOnly=false){const panel=document.getElementById('diceMovementPanel');if(panel&&(!observerOnly||panel.classList.contains('observer-dice-movement-counter')))panel.remove();}
- addEventListener('resize',()=>{const panel=document.getElementById('diceMovementPanel');if(panel&&!panel.hidden)layout(panel);});
+  function updateLayout(){const panel=document.getElementById('diceMovementPanel');if(panel&&!panel.hidden)layout(panel);}
+  addEventListener('resize',updateLayout);
  window.DiceMovementCounter={ensure,show,hide};
 })();

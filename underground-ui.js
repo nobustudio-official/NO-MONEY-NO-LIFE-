@@ -30,6 +30,7 @@
     let immunitySound;
     let menuPlaceholder, menuNode, hudPlaceholder, hudNode, returnButtonState;
     function updateHudBoundary() {
+        if (window.MapScene?.deferViewportUpdate?.(updateHudBoundary)) return;
         if (!root || root.hidden) return;
         root.style.setProperty('--ug-hud-bottom', Math.ceil(document.querySelector('.game-hud')?.getBoundingClientRect().bottom || 80) + 'px');
     }

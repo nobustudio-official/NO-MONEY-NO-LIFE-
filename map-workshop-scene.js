@@ -112,6 +112,7 @@
     }
     function updateMagicEffects(board,state,now=performance.now()) {
         state.effectTimer=0;
+        if(window.MapScene?.isViewportResizing?.())return;
         if(!board.isConnected)return;
         const active=!document.hidden&&!board.classList.contains('map-overview-active')&&
             !board.classList.contains('map-zoom-interacting')&&!board.classList.contains('map-camera-busy')&&!reducedMotion?.matches;

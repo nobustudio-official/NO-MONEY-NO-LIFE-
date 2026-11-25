@@ -347,6 +347,7 @@ function updateMapZoomUI(zoom, options = {}) {
         );
 
     if (options.preview) {
+        if (window.MapScene?.isPortrait?.()) return;
         const board = document.getElementById('mapBoard');
         const translation = options.translateX || options.translateY
             ? `translate(${options.translateX || 0}px,${options.translateY || 0}px) ` : '';
@@ -380,6 +381,7 @@ function animateMapZoomResetUI(square, focus) {
 // =========================
 
 function applyMapZoomUI() {
+    if (window.MapScene?.isPortrait?.()) return;
 
     const mapBoard =
         document.getElementById(
