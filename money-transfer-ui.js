@@ -115,13 +115,11 @@
         } else if (stage === 'items' || stage === 'assets') {
             const list = node('ul', 'mt-items');
             const description = stage === 'items' ? node('p', 'mt-item-description') : null;
-            let pinnedDescription = '', selectedRow = null;
+            let selectedRow = null;
             if (description) {
                 description.id = 'mt-item-description';
                 description.setAttribute('aria-live', 'polite');
                 panel.append(description);
-                list.onpointerleave = () => { description.textContent = pinnedDescription; };
-                list.onfocusout = event => { if (!list.contains(event.relatedTarget)) description.textContent = pinnedDescription; };
             }
             const entries = (isAssetTransfer ? cfg.getAssets : cfg.getItems)(type === 'send' ? actor : target, type);
             if (!entries.length) list.append(node('li', 'mt-items-empty', isAssetTransfer ? '移転できる資産はありません。' : '選べるアイテムがありません。'));
@@ -140,13 +138,17 @@
                 } else row.append(name, action);
                 if (description) {
                     const text = ITEM_CONTENTS[entry.id]?.effect || '';
+                    const describe = () => { if (description.textContent !== text) description.textContent = text; };
                     const select = () => {
-                        selectedRow?.removeAttribute('data-selected'); selectedRow = row;
-                        row.dataset.selected = ''; pinnedDescription = text; description.textContent = text;
+                        if (selectedRow !== row) {
+                            selectedRow?.removeAttribute('data-selected'); selectedRow = row;
+                            row.dataset.selected = '';
+                        }
+                        describe();
                     };
                     row.tabIndex = 0;
                     row.setAttribute('aria-describedby', description.id);
-                    row.onpointerenter = row.onfocusin = () => { description.textContent = text; };
+                    row.onpointerenter = row.onfocusin = describe;
                     row.onclick = event => { if (!event.target.closest('button')) select(); };
                     row.onkeydown = event => {
                         if (!event.target.closest('button') && ['Enter', ' '].includes(event.key)) { event.preventDefault(); select(); }
