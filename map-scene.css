@@ -131,5 +131,6 @@
 #mapBoard .map-viewport-square-icon[hidden],
 #mapBoard:not(.map-viewport-active) .map-viewport-square-icon { display:none !important; }
 #mapBoard.map-viewport-active .map-viewport-icon-ready img.map-space-icon { display:none; }
+#mapBoard.map-viewport-active .map-node:not(.boss-node):not(.map-viewport-icon-fallback) img.map-space-icon { display:none; }
 #mapBoard.map-viewport-active:not(.map-low-detail-active) > .map-background > .map-continent,
 #mapBoard.map-viewport-active:not(.map-low-detail-active) > .map-lines { display:none; }

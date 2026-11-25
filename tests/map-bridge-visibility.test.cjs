@@ -139,7 +139,7 @@ test('returning to a recently visible square reuses its raster without drawing i
     assert.equal(run.styleReads, 1, 'scrolling alone retains icon dimension measurements');
 });
 
-test('offscreen square rasters have count and pixel limits and are cleared in lightweight mode', () => {
+test('offscreen and lightweight square rasters stay inside the same count and pixel limits', () => {
     for (const [size, retained] of [[66, 16], [200, 6]]) {
         const run = squareCanvases(20, size);
         for (let i = 0; i < 20; i++) run.visit(i);
@@ -150,8 +150,68 @@ test('offscreen square rasters have count and pixel limits and are cleared in li
         assert.equal(canvases[0].width, 0, 'evict the oldest offscreen square');
         run.window.MapDetailLevel.isLowDetail = () => true;
         run.api.schedule(run.board); run.tick();
-        assert.ok(canvases.every(canvas => canvas.width === 0));
+        assert.ok(canvases.every(canvas => canvas.hidden));
+        assert.ok(canvases.filter(canvas => canvas.width).length <= 16);
+        assert.ok(canvases.reduce((sum, canvas) => sum + canvas.width * canvas.height, 0) <= 256 * 1024);
     }
+});
+
+test('normal restoration retains Canvas ownership and reveals at most two cached squares per frame', () => {
+    const run = squareCanvases(6), css = read('map-scene.css');
+    run.rows.forEach((row, i) => { row.x = 40 + i * 20; });
+    run.api.setViewport(run.board, run.viewport, run.viewport, run.rows);
+    for (let i = 0; i < 3; i++) run.tick();
+    const canvases = run.rows.map(row => row.node.querySelector('canvas'));
+    const background = run.board.querySelector('.map-viewport-surface');
+    const changes = watchCanvasSize(background), initialDraws = run.drawn.length;
+    const terrain = new run.Element('svg'); terrain.className = 'map-continent'; run.background.append(terrain);
+    run.svg.className = 'map-lines';
+    let low = true;
+    run.window.MapDetailLevel.isLowDetail = () => low;
+    run.api.schedule(run.board); run.tick();
+    assert.ok(run.board.classList.contains('map-viewport-active'));
+    assert.ok(canvases.every(canvas => canvas.hidden && canvas.width));
+
+    // The detail controller removes lightweight CSS before the next paint.
+    low = false;
+    assert.equal(displayFromCss(terrain, css), 'none');
+    assert.equal(displayFromCss(run.svg, css), 'none');
+    assert.ok(run.rows.every(row => displayFromCss(row.icon, css) === 'none'));
+    run.api.schedule(run.board, false, false);
+    for (const count of [2, 4, 6]) {
+        run.tick();
+        assert.equal(canvases.filter(canvas => !canvas.hidden).length, count);
+    }
+    assert.deepEqual(changes, [], 'restoration never reallocates the background buffer');
+    assert.equal(run.drawn.length, initialDraws, 'cached squares return without drawing their images again');
+});
+
+test('normal original square images remain hidden until their paced Canvas presentation', () => {
+    const run = squareCanvases(5), css = read('map-scene.css');
+    run.rows.forEach((row, i) => { row.x = 40 + i * 20; });
+    run.api.setViewport(run.board, run.viewport, run.viewport, run.rows); run.tick();
+    assert.equal(run.rows.filter(row => row.node.classList.contains('map-viewport-icon-ready')).length, 2);
+    assert.ok(run.rows.every(row => displayFromCss(row.icon, css) === 'none'));
+    const boss = new run.Element(), bossIcon = new run.Image();
+    boss.className = 'map-node boss-node'; bossIcon.className = 'map-space-icon'; boss.append(bossIcon); run.board.append(boss);
+    assert.notEqual(displayFromCss(bossIcon, css), 'none', 'boss presentation is independent of normal square pacing');
+    run.tick(); run.tick();
+    assert.ok(run.rows.every(row => row.node.classList.contains('map-viewport-icon-ready')));
+    run.api.dispose(run.board);
+    assert.ok(run.rows.every(row => displayFromCss(row.icon, css) !== 'none'), 'legacy mode can use original images');
+});
+
+test('an unavailable square Canvas retains its original illustration as a local fallback', () => {
+    const run = squareCanvases(), css = read('map-scene.css');
+    const getContext = run.Element.prototype.getContext;
+    run.Element.prototype.getContext = function () {
+        return this.classList.contains('map-viewport-square-icon') ? null : getContext.call(this);
+    };
+    run.visit(0);
+    assert.ok(run.rows[0].node.classList.contains('map-viewport-icon-fallback'));
+    assert.notEqual(displayFromCss(run.rows[0].icon, css), 'none');
+    run.api.dispose(run.board);
+    assert.ok(!run.rows[0].node.classList.contains('map-viewport-icon-fallback'));
 });
 
 test('removed squares and disposed maps release cached raster surfaces', () => {

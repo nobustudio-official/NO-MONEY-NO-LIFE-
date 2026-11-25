@@ -121,11 +121,6 @@
         }
     }
 
-    function clearIconCache(state) {
-        for (const entry of state.cachedIcons) releaseIcon(entry);
-        state.cachedIcons.clear(); state.cachedIconPixels = 0;
-    }
-
     function setIcons(state, rows) {
         if (!rows || state.rows === rows) return;
         const icons = new Map();
@@ -147,6 +142,7 @@
         for (const [image, entry] of state.icons) if (!icons.has(image)) {
             uncacheIcon(state, entry);
             releaseIcon(entry); entry.canvas?.remove(); image.removeEventListener('load', entry.onLoad);
+            entry.node.classList.remove('map-viewport-icon-fallback');
             state.activeIcons.delete(entry);
         }
         state.icons = icons; state.rows = rows;
@@ -175,9 +171,11 @@
                 window.MapDetailLevel.getCachedImage?.(element.dataset.highQualitySrc);
             if (!image) continue;
             const source = image.currentSrc || image.src;
-            // Keep the original illustration visible until its small canvas is
-            // ready; a cached viewport must not allocate every icon at once.
-            if (!budget && !entry.canvas?.width) { schedule(state.board, false, false); continue; }
+            // Both new rasters and retained rasters return through this budget.
+            // CSS keeps original square images hidden while Canvas owns the map.
+            if (!budget && (!entry.canvas?.width || entry.canvas.hidden || entry.styleVersion !== state.styleVersion)) {
+                schedule(state.board, false, false); continue;
+            }
             if (entry.styleVersion !== state.styleVersion) {
                 const style = getComputedStyle(element), ratio = Math.min(window.devicePixelRatio || 1, 1.5);
                 entry.width = Math.max(1, Math.ceil((parseFloat(style.width) || 66) * ratio));
@@ -187,6 +185,7 @@
             const { width, height } = entry;
             if (entry.canvas?.width === width && entry.canvas.height === height && entry.source === source) {
                 if (entry.canvas.hidden) {
+                    budget--;
                     entry.canvas.hidden = false; entry.node.classList.add('map-viewport-icon-ready'); changed = true;
                 }
                 continue;
@@ -204,7 +203,11 @@
                 canvas.width = canvas.height = 0; canvas.width = width; canvas.height = height;
             }
             const ctx = canvas.getContext('2d');
-            if (!ctx) { entry.unavailable = true; releaseIcon(entry); continue; }
+            if (!ctx) {
+                entry.unavailable = true; releaseIcon(entry);
+                entry.node.classList.add('map-viewport-icon-fallback');
+                continue;
+            }
             if (!resized) ctx.clearRect(0, 0, width, height);
             const scale = Math.min(width / image.naturalWidth, height / image.naturalHeight);
             const drawWidth = image.naturalWidth * scale, drawHeight = image.naturalHeight * scale;
@@ -285,10 +288,11 @@
         if (document.hidden || window.MapScene.isViewportResizing()) return;
         const lowDetail = window.MapDetailLevel.isLowDetail(state.board);
         if (state.canvas.hidden !== lowDetail) state.canvas.hidden = lowDetail;
-        if (state.board.classList.contains('map-viewport-active') === lowDetail) state.board.classList.toggle('map-viewport-active', !lowDetail);
+        // Ownership survives lightweight mode: removing its CSS must never
+        // expose the full background/SVG roads before our next painted frame.
+        if (!state.board.classList.contains('map-viewport-active')) state.board.classList.add('map-viewport-active');
         if (lowDetail) {
-            clearIconCache(state);
-            for (const entry of state.activeIcons) releaseIcon(entry);
+            for (const entry of state.activeIcons) cacheIcon(state, entry);
             state.activeIcons.clear();
             state.bounds = null;
             for (const resolve of state.presented) resolve();
@@ -466,6 +470,7 @@
         for (const entry of state.sources.values()) window.MapDetailLevel.releaseImage(entry.image);
         for (const [image, entry] of state.icons) {
             releaseIcon(entry); entry.canvas?.remove(); image.removeEventListener('load', entry.onLoad);
+            entry.node.classList.remove('map-viewport-icon-fallback');
         }
         state.icons.clear(); state.iconCells.clear(); state.activeIcons.clear();
         state.cachedIcons.clear(); state.cachedIconPixels = 0;
