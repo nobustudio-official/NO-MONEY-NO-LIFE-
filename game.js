@@ -10467,9 +10467,9 @@ window.finishTurn =
 window.centerCurrentPlayerOnMap =
     centerCurrentPlayerOnMap;
 
-// Tap-triggered camera pans use a fixed screen-space speed. Longer jumps
+// Tap and warp camera pans use a fixed screen-space speed. Longer jumps
 // therefore take proportionally longer instead of feeling abrupt.
-const MAP_TAP_CAMERA_SPEED = MapMovementPresentation.cameraSpeedLimit;
+const MAP_TAP_CAMERA_SPEED = MapMovementPresentation.cameraSpeedLimit * 2;
 let activeMapCameraScroll = null;
 
 function animateMapCameraScroll(mapArea, left, top, speed = MAP_TAP_CAMERA_SPEED, signal) {

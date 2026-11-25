@@ -45,7 +45,7 @@ function runtime() {
     run(game.slice(game.indexOf('function centerPlayerOnMap('), game.indexOf('// 指定プレイヤー用のカメラ移動関数を公開')));
     run('window.centerPlayerOnMap = centerPlayerOnMap;');
     run(game.slice(game.indexOf('function centerOnWarpPlayer('), game.indexOf('async function playWarpMotion(')));
-    return { context, area, board, node, piece, animations, run,
+    return { context, area, board, node, piece, animations, run, speedLimit: 2400,
         get now() { return now; },
         async step(delta = 16, visible = true) {
             const before = [area.scrollLeft, area.scrollTop]; now += delta;
@@ -53,7 +53,7 @@ function runtime() {
             const pending = [...frames.values()]; frames.clear(); pending.forEach(callback => callback(now));
             await new Promise(resolve => setImmediate(resolve));
             const distance = Math.hypot(area.scrollLeft - before[0], area.scrollTop - before[1]);
-            if (visible) assert.ok(distance <= 1200 * Math.min(delta, 32) / 1000 + .001, 'camera exceeded boss-icon speed');
+            if (visible) assert.ok(distance <= this.speedLimit * Math.min(delta, 32) / 1000 + .001, 'camera exceeded its speed limit');
         },
         async until(predicate) { for (let i = 0; i < 1000; i++) { if (predicate()) return; await this.step(); } throw Error('camera did not finish'); }
     };
@@ -67,12 +67,12 @@ test('reachable-square movement is halfway between normal and the former 2x spee
     assert.equal(movement.durationForDistance(400, 2), fast * 2);
 });
 test('automatic pans clamp faster requests to the boss-icon speed and retain slower requests', async () => {
-    for (const [requested, expected] of [[9999, 1200], [600, 600]]) {
-        const f = runtime();
+    for (const [requested, expected] of [[9999, 2400], [600, 600]]) {
+        const f = runtime(); f.speedLimit = expected;
         let done = false;
         f.context.panMapCameraTo(f.area, 1200, 0, requested).then(() => { done = true; });
         await f.step(); assert.ok(Math.abs(f.area.scrollLeft - expected * .016) < .001);
-        while (f.now < 704) await f.step();
+        while (f.now < 1200 / expected * 500) await f.step();
         assert.equal(done, false); assert.ok(f.area.scrollLeft < 1200);
         await f.until(() => done); assert.equal(f.area.scrollLeft, 1200);
         assert.ok(f.now >= 1200 / expected * 1000);
@@ -80,7 +80,7 @@ test('automatic pans clamp faster requests to the boss-icon speed and retain slo
 });
 test('resuming after a delayed frame does not jump through the missed camera distance', async () => {
     const f = runtime(); f.context.panMapCameraTo(f.area, 1200, 0);
-    await f.step(1000); assert.ok(f.area.scrollLeft <= 38.401);
+    await f.step(1000); assert.ok(f.area.scrollLeft <= 76.801);
     f.context.cancelMapCameraScroll();
 });
 test('default player focus waits for the complete capped pan without the old 700ms snap', async () => {
@@ -89,7 +89,7 @@ test('default player focus waits for the complete capped pan without the old 700
     while (f.now < 912) await f.step();
     assert.equal(calls, 0); assert.ok(f.area.scrollLeft < f.node.x);
     await f.until(() => calls === 1); assert.equal(f.area.scrollLeft, f.node.x);
-    assert.ok(f.now >= 5000 / 1200 * 1000);
+    assert.ok(f.now >= 5000 / 2400 * 1000);
 });
 test('warp choreography waits for arrival and settles when a pan is cancelled', async () => {
     const f = runtime(); let done = false;
@@ -111,7 +111,7 @@ test('dark handoff positioning remains instant and stops a previous visible pan'
     assert.equal(f.area.scrollLeft, f.node.x); assert.equal(calls, 1); assert.equal(oldFinished, false);
 });
 test('movement camera catches up at the cap instead of snapping when the sprite finishes', async () => {
-    const f = runtime(); let done = false;
+    const f = runtime(); f.speedLimit = 1200; let done = false;
     const before = { left: 4800, top: 0, worldX: 4800, worldY: 0, squareId: 0 };
     f.node.style = { left: '5000px', top: '0px' };
     f.context.MapMovementPresentation.play(f.board, 0, before, 2).then(() => { done = true; });
