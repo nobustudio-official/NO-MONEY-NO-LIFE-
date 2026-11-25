@@ -33,3 +33,28 @@
 .special-item-choices:not(.is-areas):not(.is-equalize) > .special-item-card { flex:1 1 0; width:100%; max-width:230px; }
 .special-equalize-cards { width:100%; }
 .special-equalize-cards > .special-item-card { flex:1 1 0; width:100%; max-width:230px; }
+/* Equalize uses the job event frame; other special item panels keep their styling. */
+#specialItemPopup[data-item-id="25"] .special-item-panel {
+    --equalize-back-bottom: 18px;
+    --equalize-back-height: 30px;
+    --equalize-action-height: 45px;
+    border: 2px solid rgba(255, 218, 105, .82);
+    border-radius: 16px;
+    background: #141423;
+    box-shadow: 0 10px 34px rgba(0, 0, 0, .55),
+        0 0 0 1px rgba(50, 170, 255, .7),
+        inset 0 0 0 1px rgba(255, 255, 255, .25);
+}
+#specialItemPopup[data-item-id="25"] .special-item-back { bottom: var(--equalize-back-bottom); }
+#specialItemPopup[data-item-id="25"] .special-equalize-execute {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--equalize-back-bottom) + (var(--equalize-back-height) - var(--equalize-action-height)) / 2 - 10px);
+    transform: translateX(-50%);
+    box-sizing: border-box;
+    height: var(--equalize-action-height);
+    min-height: var(--equalize-action-height);
+    max-height: var(--equalize-action-height);
+    margin: 0;
+    padding-block: 0;
+}

@@ -8,6 +8,7 @@
         window.PlayerCardSize?.release(popup);
         window.Plane02Layout?.release(popup.querySelector('.special-item-panel'));
         popup.replaceChildren(); popup.hidden=false;
+        popup.dataset.itemId = String(itemId);
         popup.dataset.itemSelection = String(stage !== 'result');
         const panel=document.createElement('section'); panel.className='special-item-panel';
         const header=document.createElement('header'), title=document.createElement('h2'), back=document.createElement('button');
@@ -33,14 +34,14 @@
             const value=SpecialItemRules.average(players);
             projected.textContent=(stage==='preview'?'実行後の平均：':'平均化後：')+(value===null?'—':Number(value).toLocaleString('ja-JP')+'G');
             const action=stage==='preview'?makeButton('平均化する',button=>onExecute?.(button)):makeButton('終了',button=>onExecute?.(button));
-            if(stage!=='preview')action.classList.add('item-exit-button');
+            action.classList.add(stage==='preview'?'special-equalize-execute':'item-exit-button');
             choices.append(cards,projected,action);
         } else {
             players.forEach((player,index)=>{if(index===actorIndex || player.underground)return;const el=card(player,index);el.append(makeButton('選ぶ',button=>onSelect?.(index,button)));choices.append(el);});
         }
         panel.append(choices);popup.append(panel);
         window.PlayerCardSize?.watch(popup);
-        if ([24,26].includes(Number(itemId))) window.Plane02Layout?.apply(panel);
+        if ([24,25,26].includes(Number(itemId))) window.Plane02Layout?.apply(panel);
         if (stage === 'result') {
             const announcement=document.createElement('div');announcement.className='special-item-announcement';
             const portrait=document.createElement('img');portrait.src=options.icon(actorIndex);portrait.alt='';
