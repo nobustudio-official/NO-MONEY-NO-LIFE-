@@ -36,6 +36,13 @@
     #mapBoard .map-node.map-detail-offscreen::before,
     #mapBoard .map-node.map-detail-offscreen::after { animation-play-state: paused; }
 }
+/* Home Screen apps do not need back-face culling on the flat map board. */
+@media (pointer: coarse) and (display-mode: standalone) {
+    #mapBoard {
+        -webkit-backface-visibility: visible;
+        backface-visibility: visible;
+    }
+}
 #mapBoard .map-background {
     contain: layout paint;
     transform: none;
