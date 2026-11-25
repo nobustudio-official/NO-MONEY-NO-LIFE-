@@ -145,7 +145,6 @@
     white-space: nowrap;
 }
 .mt-items-empty { padding: 16px; text-align: center; }
-#moneyTransferScreen:is([data-stage="items"], [data-stage="assets"]) .mt-content { right: auto; width: calc(100% - 52px); }
 @media(max-width:1550px){.mt-title{font-size:24px}.mt-item-row{font-size:clamp(14px,1.6vw,18px)}}
 @media(max-height:850px){.mt-target-card{min-height:190px;gap:6px}.mt-person img,.mt-target-card img{width:60px;height:60px}.mt-form{top:calc(28% + 130px)}.mt-execute{min-height:38px}.mt-item-row{font-size:clamp(14px,1.6vw,17px)}}
 @media (max-height:850px) {

@@ -9,7 +9,7 @@
         const root = document.getElementById('moneyTransferScreen');
         if (root) { window.PlayerCardSize?.release(root); window.Plane02Layout?.release(root.querySelector('.mt-panel')); root.remove(); }
     }
-    function fitTransferList(root, panel, content) {
+    function fitTransferList(content) {
         const list = content.querySelector('.mt-items');
         const fit = () => {
             const height = window.GamePanels?.inventoryRowHeight(list.clientHeight);
@@ -20,14 +20,8 @@
         };
         const observer = new ResizeObserver(fit);
         observer.observe(list);
-        const releaseFrame = window.GamePanels?.anchorFrame(root.id, ({left, width}) => {
-            // Match the inventory panel's responsive horizontal padding and borders.
-            const padding = Math.max(14, Math.min(24, window.innerWidth * .02));
-            const values = {left: `${left + padding - panel.getBoundingClientRect().left}px`, width: `${Math.max(0, width - 2 - padding * 2)}px`};
-            for (const [key, value] of Object.entries(values)) if (content.style[key] !== value) content.style[key] = value;
-        });
         fit();
-        return () => { observer.disconnect(); releaseFrame?.(); };
+        return () => observer.disconnect();
     }
     function show(cfg) {
         close();
@@ -175,7 +169,7 @@
             if (stage === 'type') window.Plane02Layout?.apply(panel, { once: true });
             window.Plane02Layout?.apply(panel);
         }
-        if (stage === 'items' || stage === 'assets') releaseListLayout = fitTransferList(root, panel, content);
+        if (stage === 'items' || stage === 'assets') releaseListLayout = fitTransferList(content);
         window.PlayerCardSize?.watch(root);
         if (!remote) cfg.onSync(stage, targetIndex, type, stage === 'amount' ? Number(root.querySelector('.mt-amount').value) : cfg.amount);
     }

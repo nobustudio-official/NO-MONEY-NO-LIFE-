@@ -5,7 +5,7 @@
     const clock=()=>window.onlineGame?.sync?.serverNow?.() ?? Date.now();
     const node=(tag,cls,text)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el;};
     const anchorCleanups=new WeakMap();
-    function anchorFrame(root, onUpdate) {
+    function anchorFrame(root) {
         anchorCleanups.get(root)?.();
         if(root.id==='soundSettingsPopup')root.style.display='flex';
         const screen=document.querySelector('.game-screen'),banner=screen?.querySelector('.game-hud'),dice=screen?.querySelector('#rouletteButton');
@@ -22,7 +22,6 @@
             root.style.setProperty('--gp-inv-width',`${right-left}px`);
             root.style.setProperty('--gp-inv-height',`${bottom-top}px`);
             root.setAttribute('data-anchored','');
-            onUpdate?.({left,width:right-left});
         };
         let frame=0;
         const schedule=()=>{if(!frame)frame=requestAnimationFrame(()=>{frame=0;update();});};
@@ -248,5 +247,5 @@
     }
     function refresh(){for(const v of views.values())if(v.root.style.display==='block'){if(v.config.rebuild)v.config.rebuild();else draw(v);}}
     function resetScroll(id){const v=views.get(id);if(!v)return false;v.scroll.scrollTop=0;return true;}
-    window.GamePanels=Object.freeze({show,remote,refresh,resetScroll,inventoryRowHeight,anchorFrame:(id,onUpdate)=>{const root=document.getElementById(id);return root?anchorFrame(root,onUpdate):null;},releaseFrame:id=>{const root=document.getElementById(id);if(root)anchorCleanups.get(root)?.();},fade:(id,key,row)=>{const v=views.get(id);if(v)fade(v,key,row);},setNotice:(id,name)=>{const v=views.get(id);if(v)setNotice(v,name);},isOpen:id=>views.get(id)?.root.style.display==='block',get:id=>views.get(id),snapshot:id=>snapshot(views.get(id))});
+    window.GamePanels=Object.freeze({show,remote,refresh,resetScroll,inventoryRowHeight,anchorFrame:id=>{const root=document.getElementById(id);return root?anchorFrame(root):null;},releaseFrame:id=>{const root=document.getElementById(id);if(root)anchorCleanups.get(root)?.();},fade:(id,key,row)=>{const v=views.get(id);if(v)fade(v,key,row);},setNotice:(id,name)=>{const v=views.get(id);if(v)setNotice(v,name);},isOpen:id=>views.get(id)?.root.style.display==='block',get:id=>views.get(id),snapshot:id=>snapshot(views.get(id))});
 })();
