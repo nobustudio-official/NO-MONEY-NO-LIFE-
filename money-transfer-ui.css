@@ -53,43 +53,45 @@
     padding-bottom: 0;
 }
 #moneyTransferScreen[data-transfer="money"] .mt-execute { width: 68px; padding-inline: 0; }
-#moneyTransferScreen[data-transfer="money"] .mt-money-person {
-    border-color: transparent;
-    background: none;
-    box-shadow: none;
-    overflow: visible;
+#moneyTransferScreen[data-transfer="money"] .mt-panel:has(> .mt-money-route) {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 65px;
+    overflow: auto;
 }
-/* Blank line boxes preserve the old portrait position without rendering a name or card. */
-#moneyTransferScreen[data-transfer="money"] .mt-money-person::before,
-#moneyTransferScreen[data-transfer="money"] .mt-money-person::after {
-    content: '\00a0';
-    flex: none;
-    font-weight: 700;
-    line-height: normal;
+#moneyTransferScreen[data-transfer="money"] .mt-panel:has(> .mt-money-route) > .mt-title { flex: none; }
+#moneyTransferScreen[data-transfer="money"] .mt-money-route {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--item-player-icon-size) 42px var(--item-player-icon-size) minmax(0, 1fr);
+    align-items: center;
+    align-content: center;
+    column-gap: clamp(12px, 6vw, 56px);
+    flex: 1;
+    min-height: var(--item-player-icon-size);
+    width: 100%;
 }
-#moneyTransferScreen[data-transfer="money"] .mt-money-person::before { order: 1; font-size: var(--item-player-name-size); }
-#moneyTransferScreen[data-transfer="money"] .mt-money-person::after { order: 2; font-size: var(--item-player-money-size); }
-#moneyTransferScreen[data-transfer="money"] .mt-money-avatar {
-    position: relative;
+#moneyTransferScreen[data-transfer="money"] .mt-money-icon {
     flex: none;
+    display: block;
     width: var(--item-player-icon-size);
     height: var(--item-player-icon-size);
+    object-fit: contain;
 }
-#moneyTransferScreen[data-transfer="money"] .mt-money-avatar > img { display: block; width: 100%; height: 100%; object-fit: contain; }
 #moneyTransferScreen[data-transfer="money"] .mt-money-balance {
-    position: absolute;
-    right: calc(100% + 12px);
-    top: 50%;
-    transform: translateY(-50%);
+    position: relative;
+    justify-self: end;
+    min-width: 0;
     text-align: right;
     white-space: nowrap;
     font-size: var(--item-player-money-size);
     line-height: normal;
 }
-#moneyTransferScreen[data-transfer="money"] .mt-receiver .mt-money-balance { right: auto; left: calc(100% + 12px); text-align: left; }
+#moneyTransferScreen[data-transfer="money"] .mt-money-balance.is-receiver { justify-self: start; text-align: left; }
+#moneyTransferScreen[data-transfer="money"].mt-result .mt-money-balance.is-receiver { color: #f2d58d; }
 #moneyTransferScreen[data-transfer="money"] .mt-money-balance > strong { font-size: inherit; }
 #moneyTransferScreen[data-transfer="money"] .mt-money-change { position: absolute; top: 100%; right: 0; color: #ffb6a5; font-size: .8em; }
-#moneyTransferScreen[data-transfer="money"] .mt-receiver .mt-money-change { right: auto; left: 0; color: #ffdc83; }
+#moneyTransferScreen[data-transfer="money"] .mt-money-balance.is-receiver .mt-money-change { right: auto; left: 0; color: #ffdc83; }
 .mt-items {
     align-self: stretch;
     width: 100%;

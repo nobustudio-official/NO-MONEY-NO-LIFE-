@@ -39,21 +39,20 @@
         const arrow = () => { const img = document.createElement('img'); img.className = 'mt-arrow'; img.src = 'images/ui/icons/interface/yajirushi.webp'; img.alt = 'から'; return img; };
         const route = (from, to, result = false, money = true) => { const e = node('div', 'mt-route'); e.append(person(from, false, money), arrow(), person(to, result, money)); return e; };
         const moneyRoute = (from, to) => {
-            const e = node('div', 'mt-route mt-money-route');
+            const e = node('div', 'mt-money-route');
             const participant = (player, receiver) => {
-                const slot = node('div', `mt-person mt-money-person${receiver ? ' mt-receiver' : ''}`);
-                const avatar = node('div', 'mt-money-avatar'), image = portrait(player);
+                const image = portrait(player);
+                image.className = 'mt-money-icon';
                 image.alt = player.name;
-                const balance = node('div', 'mt-money-balance');
+                const balance = node('div', `mt-money-balance${receiver ? ' is-receiver' : ''}`);
                 balance.setAttribute('aria-label', `${player.name}の所持金`);
                 balance.append(node('strong', '', `${(Number(player.money) || 0).toLocaleString('ja-JP')}G`));
                 if (stage === 'result' && Number(cfg.amount) > 0) {
                     balance.append(node('small', 'mt-money-change', `${receiver ? '+' : '−'}${format(cfg.amount)}G`));
                 }
-                avatar.append(image, balance); slot.append(avatar);
-                return slot;
+                return receiver ? [image, balance] : [balance, image];
             };
-            e.append(participant(from, false), arrow(), participant(to, true));
+            e.append(...participant(from, false), arrow(), ...participant(to, true));
             return e;
         };
         const go = (next, index = targetIndex, direction = type, value = null) => show({...cfg, stage:next, targetIndex:index, type:direction, amount:value});
