@@ -6,14 +6,27 @@
  const cameraFrame=Object.freeze({left:-4992,top:-1560,width:19200,height:9520});
  const observedAreas=new WeakSet();let activeScale=1,oceanCheckFrame=0;
  const cameraLimits=new WeakMap();let cameraLayoutVersion=0;
+ const viewportSizes=new WeakMap();let viewportLayoutVersion=0;
  const continent=window.MapContinentData;
  const oceanImageUrls=['images/map/backgrounds/world/ocean/base-repeat.svg','images/map/backgrounds/world/ocean/ripples-repeat.svg'];
  const assetUrls=[continent.grassTexture,...window.MapRegionBackground.assetUrls];
  document.documentElement.style.setProperty('--map-world-width',config.width+'px');
  document.documentElement.style.setProperty('--map-world-height',config.height+'px');
+ function getViewportSize(area){
+  const saved=viewportSizes.get(area);
+  if(saved?.version===viewportLayoutVersion)return saved;
+  const size={width:area.clientWidth,height:area.clientHeight,version:viewportLayoutVersion};
+  if(size.width>0&&size.height>0)viewportSizes.set(area,size);
+  return size;
+ }
+ function invalidateViewportSize(area){
+  if(area)viewportSizes.delete(area);else viewportLayoutVersion++;
+  invalidateCameraLimits();
+ }
  function getMinZoom(){
   const area=document.querySelector('.game-screen .map-area');if(!area)return config.minZoom;
-  const fitZoom=Math.max(area.clientWidth/cameraFrame.width,area.clientHeight/cameraFrame.height);
+  const {width,height}=getViewportSize(area);
+  const fitZoom=Math.max(width/cameraFrame.width,height/cameraFrame.height);
   const touchDevice=window.matchMedia?.('(pointer: coarse)').matches;
   return Math.max(touchDevice ? .02 : config.minZoom,fitZoom);
  }
@@ -25,7 +38,7 @@
   const preview=board.classList.contains('map-zoom-interacting'),saved=cameraLimits.get(board);
   if(!preview&&saved?.area===area&&saved.zoom===activeScale&&saved.version===cameraLayoutVersion)return saved.limits;
   // Read layout once after invalidation; ordinary scrolling only reads its position.
-  const width=area.clientWidth,height=area.clientHeight;
+  const {width,height}=getViewportSize(area);
   if(!(width>0&&height>0))return null;
   const originX=board.offsetLeft+config.width*(1-activeScale)/2,originY=board.offsetTop+config.height*(1-activeScale)/2;
   const nativeX=Math.max(0,area.scrollWidth-width),nativeY=Math.max(0,area.scrollHeight-height);
@@ -95,9 +108,6 @@
  function setZoom(zoom){
   const area=document.querySelector('.game-screen .map-area');if(!area)return;
   const scale=Math.max(getMinZoom(),Math.min(config.maxZoom,Number(zoom)||1));activeScale=scale;
-  // Board zoom uses a CSS transform outside the SVG; compensate the guide
-  // width here so it stays thin but visible at the full-continent overview.
-  document.documentElement.style.setProperty('--map-boundary-width',1.2/scale+'px');
   area.classList.add('map-ocean');
   area.classList.toggle('map-ocean-flat',scale<.5);
   if(!observedAreas.has(area)){observedAreas.add(area);area.addEventListener('scroll',()=>{clampScroll();queueOceanCheck();},{passive:true});}
@@ -169,7 +179,7 @@
   queueMicrotask(()=>MapBackgroundCache.prepare(background,svg));
   return background;
  }
- window.addEventListener('resize',()=>{invalidateCameraLimits();const zoom=typeof window.getMapZoomUI==='function'?window.getMapZoomUI():1;if(typeof window.setMapZoomUI==='function')window.setMapZoomUI(zoom);else setZoom(zoom);});
- document.addEventListener('fullscreenchange',()=>invalidateCameraLimits());
- window.MapScene=Object.freeze({config,cameraFrame,assetUrls,createBackground,setZoom,getMinZoom,getCameraLimits,clampScroll,invalidateCameraLimits});
+ window.addEventListener('resize',()=>{invalidateViewportSize();const zoom=typeof window.getMapZoomUI==='function'?window.getMapZoomUI():1;if(typeof window.setMapZoomUI==='function')window.setMapZoomUI(zoom);else setZoom(zoom);});
+ document.addEventListener('fullscreenchange',()=>invalidateViewportSize());
+ window.MapScene=Object.freeze({config,cameraFrame,assetUrls,createBackground,setZoom,getMinZoom,getCameraLimits,clampScroll,invalidateCameraLimits,invalidateViewportSize});
 })();

@@ -27,7 +27,13 @@
     /* Avoid hinting Safari to promote the entire 9k × 7k map as one layer. */
     #mapBoard.map-zoom-interacting { will-change: auto; }
 }
-#mapBoard .map-background { transform: translateZ(0); will-change: transform; }
+#mapBoard .map-background {
+    contain: layout paint;
+    transform: none;
+    will-change: auto;
+    -webkit-backface-visibility: visible;
+    backface-visibility: visible;
+}
 #mapBoard:has(> .map-static-background),
 #mapBoard .map-static-background { -webkit-backface-visibility:visible; backface-visibility:visible; will-change:auto; }
 #mapBoard .map-static-background { transform:none; }
@@ -68,6 +74,8 @@
 #mapBoard.map-low-detail-active .map-workshop-magic-effects { display:none; }
 .map-background > .map-background-raster:not([src]) { visibility:hidden; }
 .game-screen > .map-area.map-ocean {
+    /* Keep map layout and paint updates inside the existing scroll viewport. */
+    contain: layout paint;
     background-color: #178bbb;
     background-image: none;
     background-repeat: repeat;
@@ -93,14 +101,6 @@
 #mapBoard .map-workshop-objects img.map-object-sharp{will-change:transform}
 
 @media (pointer: coarse) {
-    /* The full-world parent is 9216 × 7424 CSS pixels. Let the browser
-       composite its visible tile children without a full-size GPU surface. */
-    #mapBoard .map-background {
-        transform: none;
-        will-change: auto;
-        -webkit-backface-visibility: visible;
-        backface-visibility: visible;
-    }
     /* Avoid reserving layers for every object exposed during camera travel. */
     #mapBoard .map-workshop-objects img.map-object-sharp { will-change: auto; }
 }

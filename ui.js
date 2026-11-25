@@ -348,7 +348,11 @@ function updateMapZoomUI(zoom, options = {}) {
 
     if (options.preview) {
         const board = document.getElementById('mapBoard');
-        if (board) board.style.transform = Math.abs(mapZoomUI - 1) < 1e-6 ? 'none' : `scale(${mapZoomUI})`;
+        const translation = options.translateX || options.translateY
+            ? `translate(${options.translateX || 0}px,${options.translateY || 0}px) ` : '';
+        const transform = !translation && Math.abs(mapZoomUI - 1) < 1e-6
+            ? 'none' : `${translation}scale(${mapZoomUI})`;
+        if (board && board.style.transform !== transform) board.style.transform = transform;
         if (board) window.MapDetailLevel.setZoom(board, mapZoomUI, { preview: true });
         return;
     }

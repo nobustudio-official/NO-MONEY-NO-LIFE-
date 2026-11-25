@@ -15,10 +15,9 @@
     centerY:bounds.top+board.clientHeight*zoom/2-translateY};
   }
   function preview(zoom,point,clientX,clientY){
-   setZoom(zoom,{preview:true});
    translateX=clientX-point.centerX-(point.x-point.width/2)*zoom;
    translateY=clientY-point.centerY-(point.y-point.height/2)*zoom;
-   board.style.transform=`translate(${translateX}px,${translateY}px) scale(${zoom})`;
+   setZoom(zoom,{preview:true,translateX,translateY});
   }
   function commit(zoom,point,clientX,clientY){
    board.classList.remove('map-zoom-interacting');

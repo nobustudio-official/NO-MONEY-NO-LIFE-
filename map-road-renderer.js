@@ -119,8 +119,9 @@
   }
  }
  function setSimpleMode(svg,enabled){
-  const scene=scenes.get(svg);if(!scene)return;
-  scene.simpleMode=Boolean(enabled);
+  const scene=scenes.get(svg),simpleMode=Boolean(enabled);
+  if(!scene||scene.simpleMode===simpleMode)return;
+  scene.simpleMode=simpleMode;
   syncBridgeVisibility(svg,scene);
  }
  function setBridgeCollapse(svg,squares,state){

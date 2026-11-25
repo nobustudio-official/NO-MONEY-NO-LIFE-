@@ -20,7 +20,7 @@
             root.style.removeProperty('--game-visible-height');
             appliedHeight = null;
         }
-        if (changed) window.MapScene?.invalidateCameraLimits?.();
+        if (changed) window.MapScene?.invalidateViewportSize?.();
     }
 
     function syncViewportSize() {
@@ -48,7 +48,7 @@
             root.style.setProperty('--game-visible-height', `${height}px`);
             appliedHeight = height;
         }
-        if (changed) window.MapScene?.invalidateCameraLimits?.();
+        if (changed) window.MapScene?.invalidateViewportSize?.();
     }
 
     function scheduleSync() {

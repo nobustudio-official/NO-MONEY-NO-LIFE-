@@ -238,29 +238,27 @@
     function setZoom(board, zoom) {
         const background = board.querySelector('.map-background');
         const state = states.get(background);
-        const lowDetail=Boolean(window.MapDetailLevel?.touchDevice&&zoom<.5);
+        const touchDevice=Boolean(window.MapDetailLevel?.touchDevice);
+        const lowDetail=touchDevice&&zoom<.5;
         const wasLowDetail=board.classList.contains('map-low-detail-active');
         const flatLayerReady = Boolean(background?.querySelector('.map-flat-region-layer.is-ready'));
         const useLowDetail = lowDetail && flatLayerReady;
         board.classList.toggle('map-low-detail-active',useLowDetail);
-        if (useLowDetail) releaseMobileBase(board);
-        else if (wasLowDetail) restoreMobileBase(board);
+        if (useLowDetail && !wasLowDetail) releaseMobileBase(board);
+        else if (!useLowDetail && wasLowDetail) restoreMobileBase(board);
         window.MapRoadCache?.setSimpleMode(board, useLowDetail);
         if(useLowDetail&&!wasLowDetail)releaseTouchDetails(board);
         if (!state?.ready) return;
-        // Mobile swaps at the same 0.5 threshold as its road/object detail.
-        // Desktop keeps its existing hysteresis around the overview range.
-        const limit = MapScene.getMinZoom() * (state.active ? 1.8 : 1.45);
-        const roadState = board.querySelector('.map-stone-roads')?.dataset.roadCache;
-        // On phones the high-resolution road raster is intentionally omitted;
-        // the baked overview already contains the roads. A valid vector
-        // fallback is therefore sufficient for the overview transition.
-        const roadsReady = roadState === 'ready' || (state.tuned && roadState === 'fallback');
-        const valid = signature() === window.MapOverviewRasterData.signature && roadsReady &&
-            background.dataset.rasterState === 'ready';
-        const active = window.MapDetailLevel?.touchDevice
-            ? useLowDetail
-            : Boolean(valid && zoom <= limit);
+        // Mobile uses the fixed 0.5 threshold, without desktop size/signature checks.
+        let active = useLowDetail;
+        if (!touchDevice) {
+            const limit = MapScene.getMinZoom() * (state.active ? 1.8 : 1.45);
+            const roadState = board.querySelector('.map-stone-roads')?.dataset.roadCache;
+            const roadsReady = roadState === 'ready' || (state.tuned && roadState === 'fallback');
+            const valid = signature() === window.MapOverviewRasterData.signature && roadsReady &&
+                background.dataset.rasterState === 'ready';
+            active = Boolean(valid && zoom <= limit);
+        }
         if (state.active === active) return;
         state.active = active;
         background.classList.toggle('map-overview-active', active);

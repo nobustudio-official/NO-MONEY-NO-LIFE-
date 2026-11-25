@@ -239,7 +239,7 @@
         };
         area?.addEventListener('scroll', state.onScroll, { passive: true });
         state.observer = new ResizeObserver(() => {
-            window.MapScene?.invalidateCameraLimits?.(board);
+            window.MapScene?.invalidateViewportSize?.(area);
             schedule();
         });
         state.observer.observe(area || board);
@@ -376,7 +376,10 @@
         }
         // A player standing on the enlarged boss square must cancel its scale too.
         for (const row of state.bossPieces) {
-            row.piece.style.setProperty('--piece-node-scale', String(row.base * emphasis));
+            const scale = String(row.base * emphasis);
+            if (row.piece.style.getPropertyValue('--piece-node-scale') !== scale) {
+                row.piece.style.setProperty('--piece-node-scale', scale);
+            }
         }
         if (options.preview !== true) state.schedule();
     }
