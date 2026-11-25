@@ -181,10 +181,10 @@
                 const keepImage=!overview&&!lowDetail&&extent.left<imageBounds.right&&extent.right>imageBounds.left&&extent.top<imageBounds.bottom&&extent.bottom>imageBounds.top;
                 if(!keepImage){
                     cancelObjectLoad(state,row);
-                    image.classList.remove('is-ready');
+                    if(image.classList.contains('is-ready'))image.classList.remove('is-ready');
                     if (!(image.complete && image.naturalWidth)) window.MapDetailLevel?.releaseImage(image);
                 }else if(image.complete&&image.naturalWidth){
-                    image.classList.add('is-ready');
+                    if(!image.classList.contains('is-ready'))image.classList.add('is-ready');
                 }else if(onScreen&&!zooming&&state.objectImagesReady&&!state.pendingObjectImages.has(row)){
                     const centerX=(visibleBounds.left+visibleBounds.right)/2,centerY=(visibleBounds.top+visibleBounds.bottom)/2;
                     const distance=(row.object.x-centerX)**2+(row.object.y-centerY)**2;

@@ -183,11 +183,11 @@
             const element = tile.element;
             if (disposedImages.has(element) || disposedBoards.has(element.closest?.('#mapBoard'))) continue;
             if (!bounds || !intersects(tile, bounds)) {
-                element.style.visibility = 'hidden';
+                if (element.style.visibility !== 'hidden') element.style.visibility = 'hidden';
                 if (!(element.complete && element.naturalWidth)) releaseImage(element);
                 continue;
             }
-            element.style.visibility = '';
+            if (element.style.visibility) element.style.visibility = '';
             const rank = imagePriority(tile, visible);
             if (!element.hasAttribute('src') || (element.complete && !element.naturalWidth)) {
                 enqueueImage(element, tile.image, rank.priority, rank.distance).catch(() => {});
@@ -209,11 +209,11 @@
             cameraJumps: new Set(), waits: new Set(), disposed: false, visibleOnly: false, scrolling: false };
         states.set(board, state);
         const schedule = () => {
-            if (state.disposed || !board.isConnected || state.frame || state.cameraJumps.size) return;
+            if (state.disposed || !board.isConnected || state.frame || state.cameraJumps.size || window.MapScene?.isViewportResizing?.()) return;
             state.frame = requestAnimationFrame(() => {
                 state.frame = 0;
                 if (state.disposed || !board.isConnected) return;
-                if (board.classList.contains('map-zoom-interacting')) return;
+                if (board.classList.contains('map-zoom-interacting') || window.MapScene?.isViewportResizing?.()) return;
                 const visible = cull(board, state);
                 if (visible) window.MapOverviewCache?.setMobileViewport?.(board, visible, state.zoom, { visibleOnly: state.visibleOnly });
             });
@@ -239,8 +239,7 @@
         };
         area?.addEventListener('scroll', state.onScroll, { passive: true });
         state.observer = new ResizeObserver(() => {
-            window.MapScene?.invalidateViewportSize?.(area);
-            schedule();
+            window.MapScene?.scheduleViewportResize?.(area);
         });
         state.observer.observe(area || board);
         if (area) state.observer.observe(board);

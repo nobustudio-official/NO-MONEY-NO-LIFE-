@@ -85,17 +85,18 @@
   // Below the mobile detail threshold, never request native-resolution tiles.
   if(lowDetail){
    MapDetailLevel.setTileSources(state.tiles,null,visible);
-   state.svg.style.display='none';
+   if(state.svg.style.display!=='none')state.svg.style.display='none';
    const fallback=state.svg.querySelector('image[href]');
    if(fallback){fallback.dataset.fallbackImage ||= fallback.getAttribute('href');fallback.removeAttribute('href');}
-   state.background.classList.remove('map-background-tiles-pending');
+   if(state.background.classList.contains('map-background-tiles-pending'))state.background.classList.remove('map-background-tiles-pending');
    return;
   }
   const fallback=state.svg.querySelector('image[data-fallback-image]');
   if(fallback&&fallback.getAttribute('href')!==fallback.dataset.fallbackImage)fallback.setAttribute('href',fallback.dataset.fallbackImage);
   const ready=MapDetailLevel.setTileSources(state.tiles,overview?null:bounds,visible);
-  state.svg.style.display=ready?'none':'';
-  state.background.classList.toggle('map-background-tiles-pending',!ready);
+  const display=ready?'none':'';
+  if(state.svg.style.display!==display)state.svg.style.display=display;
+  if(state.background.classList.contains('map-background-tiles-pending')!==!ready)state.background.classList.toggle('map-background-tiles-pending',!ready);
  }
  function releaseDetail(board){
   const state=windows.get(board);

@@ -5,6 +5,7 @@
  // World rectangle inferred from the approved 1920x952 overview framing.
  const cameraFrame=Object.freeze({left:-4992,top:-1560,width:19200,height:9520});
  const observedAreas=new WeakSet();let activeScale=1,oceanCheckFrame=0;
+ const oceanTextureStates=new WeakMap();let resizeTimer=0,resizeFrame=0;
  const cameraLimits=new WeakMap();let cameraLayoutVersion=0;
  const viewportSizes=new WeakMap();let viewportLayoutVersion=0;
  const continent=window.MapContinentData;
@@ -22,6 +23,24 @@
  function invalidateViewportSize(area){
   if(area)viewportSizes.delete(area);else viewportLayoutVersion++;
   invalidateCameraLimits();
+ }
+ function isViewportResizing(){return Boolean(resizeTimer||resizeFrame);}
+ function scheduleViewportResize(area){
+  invalidateViewportSize(area);
+  clearTimeout(resizeTimer);
+  if(resizeFrame){cancelAnimationFrame(resizeFrame);resizeFrame=0;}
+  // Rotation reports intermediate dimensions. Commit the map once they settle.
+  resizeTimer=setTimeout(()=>{
+   resizeTimer=0;
+   resizeFrame=requestAnimationFrame(()=>{
+    resizeFrame=0;
+    const board=document.getElementById('mapBoard');
+    if(!board||!document.querySelector('.game-screen .map-area'))return;
+    const zoom=typeof window.getMapZoomUI==='function'?window.getMapZoomUI():activeScale;
+    if(typeof window.setMapZoomUI==='function')window.setMapZoomUI(zoom);
+    else{setZoom(zoom);window.MapDetailLevel?.setZoom(board,zoom);}
+   });
+  },120);
  }
  function getMinZoom(){
   const area=document.querySelector('.game-screen .map-area');if(!area)return config.minZoom;
@@ -92,8 +111,12 @@
  }
  function updateOceanTexture(){
   oceanCheckFrame=0;
+  if(isViewportResizing()||document.getElementById('mapBoard')?.classList.contains('map-zoom-interacting'))return;
+  clampScroll();
   const area=document.querySelector('.game-screen .map-area');if(!area)return;
   const useTexture=activeScale>=.5&&viewportShowsOcean();
+  if(oceanTextureStates.get(area)===useTexture)return;
+  oceanTextureStates.set(area,useTexture);
   area.classList.toggle('map-ocean-textured',useTexture);
   area.classList.toggle('map-ocean-flat',!useTexture);
   if(useTexture){
@@ -110,7 +133,8 @@
   const scale=Math.max(getMinZoom(),Math.min(config.maxZoom,Number(zoom)||1));activeScale=scale;
   area.classList.add('map-ocean');
   area.classList.toggle('map-ocean-flat',scale<.5);
-  if(!observedAreas.has(area)){observedAreas.add(area);area.addEventListener('scroll',()=>{clampScroll();queueOceanCheck();},{passive:true});}
+  oceanTextureStates.delete(area);
+  if(!observedAreas.has(area)){observedAreas.add(area);area.addEventListener('scroll',queueOceanCheck,{passive:true});}
   // Center-origin enlargement otherwise pushes the world's left/top into
   // negative, unreachable scroll coordinates. Reserve matching space on both sides.
   const extraX=Math.max(0,config.width*(scale-1)/2),extraY=Math.max(0,config.height*(scale-1)/2);
@@ -123,8 +147,7 @@
   area.style.setProperty('--ocean-base-size',config.baseTileSize*scale+'px');
   area.style.setProperty('--ocean-ripple-size',config.rippleTileSize*scale+'px');
   // Match the board's center-origin zoom, including the scrollable padding.
-  const padding=getComputedStyle(area);
-  area.style.backgroundPosition=`calc(${padding.paddingLeft} + ${extraX+config.width*(1-scale)/2}px) calc(${padding.paddingTop} + ${extraY+config.height*(1-scale)/2}px)`;
+  area.style.backgroundPosition=`calc(50vw + ${extraX+config.width*(1-scale)/2}px) calc(50vh + ${extraY+config.height*(1-scale)/2}px)`;
   invalidateCameraLimits();
   clampScroll();
   queueOceanCheck();
@@ -179,7 +202,7 @@
   queueMicrotask(()=>MapBackgroundCache.prepare(background,svg));
   return background;
  }
- window.addEventListener('resize',()=>{invalidateViewportSize();const zoom=typeof window.getMapZoomUI==='function'?window.getMapZoomUI():1;if(typeof window.setMapZoomUI==='function')window.setMapZoomUI(zoom);else setZoom(zoom);});
- document.addEventListener('fullscreenchange',()=>invalidateViewportSize());
- window.MapScene=Object.freeze({config,cameraFrame,assetUrls,createBackground,setZoom,getMinZoom,getCameraLimits,clampScroll,invalidateCameraLimits,invalidateViewportSize});
+ window.addEventListener('resize',()=>scheduleViewportResize());
+ document.addEventListener('fullscreenchange',()=>scheduleViewportResize());
+ window.MapScene=Object.freeze({config,cameraFrame,assetUrls,createBackground,setZoom,getMinZoom,getCameraLimits,clampScroll,invalidateCameraLimits,invalidateViewportSize,scheduleViewportResize,isViewportResizing});
 })();
