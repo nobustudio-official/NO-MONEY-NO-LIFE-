@@ -189,16 +189,26 @@
       bars: [...plot.querySelectorAll('.dp-bar-clip')], labels: [...body.querySelectorAll('.dp-axis-player')],
       history: plot.querySelector('.dp-history-clip') };
     updateChart(performance.now());
-    fitLegendNames();
+    fitLegendItems();
   }
-  function fitLegendNames() {
+  function fitLegendItems() {
+    const fitIcons = Boolean(root.closest('#dividendPresentationOverlay, #endingPresentationOverlay'));
     body.querySelectorAll('.dp-player-name').forEach(name => {
       const label = name.parentElement;
       const base = parseFloat(getComputedStyle(label).fontSize);
+      const slotWidth = label.clientWidth;
+      const image = fitIcons ? label.querySelector('img') : null;
+      const imageWidth = image ? parseFloat(getComputedStyle(image).width) : 0;
       name.style.fontSize = `${base}px`;
       const available = label.getBoundingClientRect().width;
       const needed = name.scrollWidth;
       if (available > 0 && needed > available) name.style.fontSize = `${Math.floor(base * available / needed * 100) / 100}px`;
+      if (slotWidth > 0 && imageWidth > 0) {
+        // Each grid column already reflects the current number of players.
+        // Preserve the four-player baseline, shrinking only when its slot is narrower.
+        const scale = String(Math.min(36 / 31.44, Math.max(0, slotWidth - 4) / imageWidth));
+        if (image.style.getPropertyValue('--dp-axis-icon-scale') !== scale) image.style.setProperty('--dp-axis-icon-scale', scale);
+      }
     });
   }
   function fitReceiptText() {
