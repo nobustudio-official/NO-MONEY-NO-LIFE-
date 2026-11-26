@@ -279,23 +279,35 @@
             const laneDimensions = () => {
                 const viewW = route.clientWidth, stageW = stageEl.clientWidth || viewW * 2.2;
                 const laneH = route.clientHeight * (count === 4 ? .2 : 1 / count);
-                const size = Math.min(180, laneH * .9);
+                const size = Math.min(180, laneH * .9) * 1.15;
                 const centers = finalPlayers.map((_, index) => route.clientHeight * (count === 4 ? .14 + index * .23 : (index + .5) / count));
                 return { viewW, stageW, finishX:viewW * (.08 + raceRules.courseLengthInViews), laneH, size, centers };
             };
-            function positionRacers({laneH, size, centers}) {
+            function positionRacers({laneH, size}) {
                 racers.forEach((racer, index) => {
                     racer.style.left = `${runnerX[index] - size / 2}px`;
                     racer.style.top = `${laneH / 2 - size / 2}px`;
                     racer.style.width = `${size}px`; racer.style.height = `${size}px`;
-                    racerNames[index].style.left = `${runnerX[index] + size / 2 + 8}px`;
-                    racerNames[index].style.top = `${centers[index]}px`;
+                });
+            }
+            function positionNames({viewW, size, centers}, {tx = 0, zoom = 1, originX = 0, originY = 0} = {}) {
+                const startFront = viewW * .08 + size / 2 + 8;
+                racerNames.forEach((name, index) => {
+                    // Cancel the stage camera transform, keeping each label at
+                    // its starting screen position and original text size.
+                    const values = {
+                        left: `${originX + (startFront - tx - originX) / zoom}px`,
+                        top: `${originY + (centers[index] - originY) / zoom}px`,
+                        transform: `translateY(-50%) scale(${1 / zoom})`
+                    };
+                    for (const [key, value] of Object.entries(values)) if (name.style[key] !== value) name.style[key] = value;
                 });
             }
             function positionAtStart() {
                 const dimensions = laneDimensions(), {viewW, finishX} = dimensions, startX = viewW * .08;
                 runnerX.fill(startX);
                 positionRacers(dimensions);
+                positionNames(dimensions);
                 startLine.style.left = `${startX - 2}px`; finish.style.left = `${finishX}px`;
             }
             positionAtStart();
@@ -384,6 +396,7 @@
                     racers.forEach(racer => { racer.style.visibility = 'visible'; }); crispRacers.forEach(image => { image.hidden = true; });
                 }
                 const originX = spotlight ? spotlight.cameraOriginX : 0, originY = spotlight ? spotlight.cameraOriginY : 0;
+                positionNames({viewW, size, centers}, {tx, zoom:cameraZoom, originX, originY});
                 const fontSize = Math.max(20, Math.min(34, window.innerWidth * .023)) * cameraZoom;
                 finishTotals.forEach((amount, index) => {
                     if (amount.hidden) return;

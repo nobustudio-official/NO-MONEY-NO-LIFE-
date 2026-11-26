@@ -8,7 +8,7 @@ const css = fs.readFileSync(require.resolve('../ending-presentation.css'), 'utf8
 const start = source.indexOf('            const laneDimensions = () => {');
 const end = source.indexOf('\n            positionAtStart();', start);
 assert.ok(start >= 0 && end > start);
-const layoutCode = source.slice(start, end) + '\nglobalThis.layout = {laneDimensions, positionAtStart, positionRacers};';
+const layoutCode = source.slice(start, end) + '\nglobalThis.layout = {laneDimensions, positionAtStart, positionRacers, positionNames};';
 
 function fixture(count, width, height) {
     const run = {
@@ -23,31 +23,44 @@ function fixture(count, width, height) {
     return run;
 }
 
-test('two to four racers start at their running size and fit inside their lanes', () => {
+test('two to four racers are 15% larger from the first waiting frame through running', () => {
     for (const count of [2, 3, 4]) for (const [width, height] of [[672, 307], [852, 393], [1920, 1080]]) {
         const run = fixture(count, width, height);
         run.layout.positionAtStart();
         const dimensions = run.layout.laneDimensions();
         const initial = run.racers.map(racer => ({...racer.style}));
-        assert.ok(dimensions.size <= dimensions.laneH * .9);
-        assert.ok(dimensions.size <= 180);
+        assert.equal(dimensions.size, Math.min(180, dimensions.laneH * .9) * 1.15);
+        assert.ok(dimensions.size <= 207);
         assert.ok(run.racers.every(racer => Number.parseFloat(racer.style.width) === dimensions.size));
         run.layout.positionRacers(dimensions);
         assert.deepEqual(run.racers.map(racer => racer.style), initial, 'the first running frame cannot resize or move the waiting racers');
     }
 });
 
-test('names follow the racer front at lane center, including after a waiting-screen resize', () => {
+test('names stay at the starting front and lane center while racers and the camera move', () => {
     const run = fixture(4, 852, 393);
     for (const height of [393, 307]) {
         run.route.clientHeight = height;
         run.layout.positionAtStart();
         const dimensions = run.layout.laneDimensions();
+        const initialNames = run.racerNames.map(name => ({...name.style}));
         run.runnerX[1] += 150;
         run.layout.positionRacers(dimensions);
+        assert.deepEqual(run.racerNames.map(name => name.style), initialNames, 'running cannot move the names');
         for (let i = 0; i < 4; i++) {
-            assert.equal(Number.parseFloat(run.racerNames[i].style.left), run.runnerX[i] + dimensions.size / 2 + 8);
+            assert.equal(Number.parseFloat(run.racerNames[i].style.left), dimensions.viewW * .08 + dimensions.size / 2 + 8);
             assert.equal(Number.parseFloat(run.racerNames[i].style.top), dimensions.centers[i]);
+        }
+        for (const camera of [{tx:-500,zoom:1,originX:0,originY:0},{tx:-800,zoom:1.62,originX:1200,originY:180}]) {
+            run.layout.positionNames(dimensions, camera);
+            run.racerNames.forEach((name, i) => {
+                const screenX = camera.tx + camera.originX + (Number.parseFloat(name.style.left) - camera.originX) * camera.zoom;
+                const screenY = camera.originY + (Number.parseFloat(name.style.top) - camera.originY) * camera.zoom;
+                assert.ok(Math.abs(screenX - Number.parseFloat(initialNames[i].left)) < 1e-9);
+                assert.ok(Math.abs(screenY - Number.parseFloat(initialNames[i].top)) < 1e-9);
+                const textScale = Number(name.style.transform.match(/scale\(([^)]+)\)/)[1]);
+                assert.ok(Math.abs(textScale * camera.zoom - 1) < 1e-9, 'camera zoom cannot resize the names');
+            });
         }
     }
 });

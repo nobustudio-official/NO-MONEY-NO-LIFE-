@@ -96,7 +96,7 @@
 @keyframes bf-racer-run-sway{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-race-ready{gap:0;min-width:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-racer img{image-rendering:auto;backface-visibility:hidden}
-#endingPresentationOverlay.bf-new-ending-race-scene .bf-racer-name{position:absolute;z-index:3;transform:translateY(-50%);font-size:18px;line-height:1.2;text-align:left;white-space:nowrap;pointer-events:none}
+#endingPresentationOverlay.bf-new-ending-race-scene .bf-racer-name{position:absolute;z-index:3;transform:translateY(-50%);transform-origin:0 50%;font-size:18px;line-height:1.2;text-align:left;white-space:nowrap;pointer-events:none}
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-spotlight-racer{position:absolute;z-index:9;display:block;max-width:none;object-fit:contain;filter:drop-shadow(0 2px 4px #071421cc);pointer-events:none;image-rendering:auto}
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-spotlight-racer[hidden]{display:none}
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-race-finish-total{position:absolute;z-index:10;transform:translate(-100%,-50%);color:#ffdc83;font-family:"Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",Georgia,serif;font-weight:700;line-height:1.2;white-space:nowrap;text-shadow:0 2px 5px #071421,0 0 10px #071421;pointer-events:none;opacity:0;clip-path:inset(0 0 0 100%)}
