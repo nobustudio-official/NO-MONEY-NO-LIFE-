@@ -466,7 +466,7 @@
             } else if (step === 6) {
                 main.classList.add('bf-new-ending-rank');
                 const rankRows = rows.map(row => `<div class="bf-new-rank-row${raceSchedule.entries[row.playerIndex].rank === 1 ? ' is-winner' : ''}"><strong>${raceSchedule.entries[row.playerIndex].rank}位</strong><img src="${PLAYER_CONTENTS[row.player.characterId]?.icon || ''}" alt=""><span>${escapeHTML(row.name)}</span><b>${fmt(row.totalAsset)}G</b></div>`).join('');
-                main.insertAdjacentHTML('beforeend', `<section class="bf-new-rank-table" aria-label="最終順位"><h2>最終順位</h2>${rankRows}</section>`);
+                main.insertAdjacentHTML('beforeend', `<h2 class="bf-new-rank-title">最終順位</h2><section class="bf-new-rank-table" aria-label="最終順位">${rankRows}</section>`);
                 copy.textContent = '最終順位はこちらです。';
             } else {
                 main.classList.add('bf-ending-cardless', 'bf-ending-closing');
