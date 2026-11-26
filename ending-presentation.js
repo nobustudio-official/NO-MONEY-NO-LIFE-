@@ -429,11 +429,12 @@
                 }
                 const originX = spotlight ? spotlight.cameraOriginX : 0, originY = spotlight ? spotlight.cameraOriginY : 0;
                 const fontSize = Math.max(20, Math.min(34, window.innerWidth * .023)) * cameraZoom;
+                const widestRacerHalf = Math.max(...sprites.map(sprite => sprite.visibleWidth)) / 2;
+                const finishTotalX = tx + originX + (finishX - widestRacerHalf - 18 - originX) * cameraZoom;
                 finishTotals.forEach((amount, index) => {
                     if (amount.hidden) return;
-                    const x = tx + originX + (runnerX[index] - originX) * cameraZoom;
                     const y = originY + (centers[index] - originY) * cameraZoom;
-                    amount.style.left = `${x - sprites[index].visibleWidth * cameraZoom / 2 - 18 * cameraZoom}px`;
+                    amount.style.left = `${finishTotalX}px`;
                     amount.style.top = `${y}px`; amount.style.fontSize = `${fontSize}px`;
                 });
                 const pan = Math.max(0, -tx);
