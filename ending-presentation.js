@@ -14,6 +14,34 @@
     const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
     let current = null;
 
+    // Right-facing WebP dimensions and alpha bounds: [width, height, left, top, right, bottom].
+    // Update these bounds when replacing the images; no pixel analysis is needed during play.
+    const raceSpriteFrames = {
+        'めぐみ': [612, 643, 162, 39, 395, 617],
+        'エルフ': [612, 643, 171, 26, 435, 616],
+        '剣士': [1223, 1286, 17, 20, 1199, 1271],
+        '戦士': [612, 643, 160, 39, 395, 617],
+        '獣人': [612, 643, 168, 57, 445, 617],
+        '看護師': [612, 643, 29, 21, 565, 620],
+        '義賊': [612, 643, 27, 16, 556, 611],
+        '聖職者': [612, 643, 41, 3, 611, 626],
+        '騎士': [612, 643, 116, 12, 414, 617],
+        '魔術師': [612, 643, 101, 17, 442, 617]
+    };
+    function fitRaceSprite(character, laneH) {
+        const [width, height, left, top, right, bottom] = raceSpriteFrames[character] || [1, 1, 0, 0, 1, 1];
+        const visibleWidth = right - left, visibleHeight = bottom - top;
+        // Allow one pixel above/below the full +/-7 degree running sway.
+        const angle = 7 * Math.PI / 180;
+        const scale = Math.max(0, laneH - 2) / (visibleHeight * Math.cos(angle) + visibleWidth * Math.sin(angle));
+        return {
+            width: width * scale, height: height * scale,
+            centerX: (left + right) / 2 * scale, centerY: (top + bottom) / 2 * scale,
+            visibleWidth: visibleWidth * scale, visibleHeight: visibleHeight * scale,
+            origin: `${(left + right) / 2 / width * 100}% ${(top + bottom) / 2 / height * 100}%`
+        };
+    }
+
     function show(ranking, players, history, online, local = null) {
         if (current) return;
         const sync = online ? window.onlineGame?.sync : null;
@@ -276,24 +304,33 @@
                 total.textContent = `${fmt(player.total)}G`; total.setAttribute('aria-label', `${player.name}の総資産 ${fmt(player.total)}G`); total.hidden = true;
                 route.append(total); return total;
             });
+            let spriteLaneH = -1, sprites = [];
             const laneDimensions = () => {
                 const viewW = route.clientWidth, stageW = stageEl.clientWidth || viewW * 2.2;
                 const laneH = route.clientHeight * (count === 4 ? .2 : 1 / count);
-                const size = Math.min(180, laneH * .9) * 1.15;
+                if (spriteLaneH !== laneH) {
+                    sprites = finalPlayers.map(player => fitRaceSprite(player.character, laneH));
+                    spriteLaneH = laneH;
+                }
+                const size = Math.max(0, laneH - 2);
                 const centers = finalPlayers.map((_, index) => route.clientHeight * (count === 4 ? .14 + index * .23 : (index + .5) / count));
-                return { viewW, stageW, finishX:viewW * (.08 + raceRules.courseLengthInViews), laneH, size, centers };
+                return { viewW, stageW, finishX:viewW * (.08 + raceRules.courseLengthInViews), laneH, size, centers, sprites };
             };
-            function positionRacers({laneH, size}) {
+            function positionSprite(element, sprite, x, y, zoom = 1) {
+                element.style.left = `${x - sprite.centerX * zoom}px`;
+                element.style.top = `${y - sprite.centerY * zoom}px`;
+                element.style.width = `${sprite.width * zoom}px`;
+                element.style.height = `${sprite.height * zoom}px`;
+                element.style.setProperty('--bf-racer-origin', sprite.origin);
+            }
+            function positionRacers({laneH, sprites}) {
                 racers.forEach((racer, index) => {
-                    racer.style.left = `${runnerX[index] - size / 2}px`;
-                    racer.style.top = `${laneH / 2 - size / 2}px`;
-                    racer.style.width = `${size}px`; racer.style.height = `${size}px`;
+                    positionSprite(racer, sprites[index], runnerX[index], laneH / 2);
                 });
             }
-            function positionNames({viewW, size, centers}) {
-                const startFront = viewW * .08 + size / 2 + 8;
+            function positionNames({viewW, sprites, centers}) {
                 racerNames.forEach((name, index) => {
-                    name.style.left = `${startFront}px`;
+                    name.style.left = `${viewW * .08 + sprites[index].visibleWidth / 2 + 8}px`;
                     name.style.top = `${centers[index]}px`;
                 });
             }
@@ -315,7 +352,7 @@
                 if (disposed || step !== 2 || !root.contains(route)) return;
                 const elapsed = Math.max(0, ((sync?.serverNow?.() ?? Date.now()) - raceStartedAt) / 1000);
                 const sample = raceRules.sample(elapsed, raceSchedule);
-                const { viewW, stageW, finishX, laneH, size, centers } = laneDimensions();
+                const { viewW, stageW, finishX, laneH, size, centers, sprites } = laneDimensions();
                 finalPlayers.forEach((_, index) => {
                     const entry = raceSchedule.entries[index];
                     const progress = motion(index, sample.runningTime, entry.finishTime);
@@ -385,9 +422,7 @@
                     crispRacers.forEach((image, index) => {
                         const worldY = centers[index], x = tx + spotlight.cameraOriginX + (runnerX[index] - spotlight.cameraOriginX) * cameraZoom;
                         const y = spotlight.cameraOriginY + (worldY - spotlight.cameraOriginY) * cameraZoom;
-                        image.style.width = `${size * cameraZoom}px`; image.style.height = `${size * cameraZoom}px`;
-                        image.style.left = `${x - size * cameraZoom / 2}px`;
-                        image.style.top = `${y - size * cameraZoom / 2}px`; image.hidden = false;
+                        positionSprite(image, sprites[index], x, y, cameraZoom); image.hidden = false;
                     });
                 } else {
                     racers.forEach(racer => { racer.style.visibility = 'visible'; }); crispRacers.forEach(image => { image.hidden = true; });
@@ -398,7 +433,7 @@
                     if (amount.hidden) return;
                     const x = tx + originX + (runnerX[index] - originX) * cameraZoom;
                     const y = originY + (centers[index] - originY) * cameraZoom;
-                    amount.style.left = `${x - size * cameraZoom / 2 - 18 * cameraZoom}px`;
+                    amount.style.left = `${x - sprites[index].visibleWidth * cameraZoom / 2 - 18 * cameraZoom}px`;
                     amount.style.top = `${y}px`; amount.style.fontSize = `${fontSize}px`;
                 });
                 const pan = Math.max(0, -tx);
@@ -406,7 +441,7 @@
                 depthLayers.mid.style.transform = `translate3d(${pan * .42}px,0,0)`;
                 depthLayers.near.style.transform = `translate3d(${-pan * .32}px,0,0)`;
                 finish.style.left = `${finishX}px`;
-                positionRacers({laneH, size, centers});
+                positionRacers({laneH, sprites});
                 raceComplete = sample.finishedCount === raceSchedule.groups.length;
                 if (raceComplete) { root.classList.add('bf-race-finished'); next.hidden = true; }
                 else animationFrame = requestAnimationFrame(animateRace);

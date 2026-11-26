@@ -89,7 +89,7 @@
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-race-view h2{font-size:clamp(25px,3vw,42px);padding:0 0 14px}
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-race-route{border-radius:0;min-height:300px}
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-race-stage{width:220%}
-#endingPresentationOverlay.bf-new-ending-race-scene .bf-racer img,#endingPresentationOverlay.bf-new-ending-race-scene .bf-spotlight-racer{transform-origin:50% 50%;transition:transform .32s ease-out}
+#endingPresentationOverlay.bf-new-ending-race-scene .bf-racer img,#endingPresentationOverlay.bf-new-ending-race-scene .bf-spotlight-racer{transform-origin:var(--bf-racer-origin,50% 50%);transition:transform .32s ease-out}
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-race-route.is-running:not(.is-finish-pause) .bf-racer:not(.is-finished) img,#endingPresentationOverlay.bf-new-ending-race-scene .bf-race-route.is-running:not(.is-finish-pause) .bf-spotlight-racer:not(.is-finished){animation:bf-racer-run-sway .34s ease-in-out infinite alternate}
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-race-route.is-finish-pause .bf-racer img,#endingPresentationOverlay.bf-new-ending-race-scene .bf-race-route.is-finish-pause .bf-spotlight-racer{animation:none;transform:rotate(0deg)}
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-racer.is-finished img,#endingPresentationOverlay.bf-new-ending-race-scene .bf-spotlight-racer.is-finished{animation:none;transform:rotate(0deg)}
