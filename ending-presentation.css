@@ -144,7 +144,7 @@
  #endingPresentationOverlay.bf-ending-sequence .bf-next{grid-row:2}
 }
 #endingPresentationOverlay.bf-new-ending-winner-scene .bf-main{left:50%;top:0;bottom:0;width:min(96vw,1450px);transform:translateX(-50%);padding:clamp(12px,2vw,28px);padding-bottom:calc(clamp(12px,2vw,28px) + 100px);border:0;border-radius:0;background:transparent;box-shadow:none;flex-direction:row;align-items:center;justify-content:space-around;gap:0}
-#endingPresentationOverlay.bf-new-ending-winner-scene .bf-staff{width:auto;max-width:42vw;aspect-ratio:auto 683/1024;height:clamp(160px,60vh,188px)}
+#endingPresentationOverlay.bf-new-ending-winner-scene .bf-staff{left:75%}
 #endingPresentationOverlay .bf-new-winner-name{max-width:100%;overflow-wrap:anywhere}
 #endingPresentationOverlay .bf-new-winners{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,clamp(90px,12vw,170px)),1fr));gap:clamp(8px,2vh,24px);max-height:calc(100% - var(--an02-min-height) - var(--an02-bottom));overflow:auto}
 #endingPresentationOverlay .bf-new-winners .bf-new-winner{margin:0;width:auto;transform:none}
