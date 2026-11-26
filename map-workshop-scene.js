@@ -93,7 +93,11 @@
         return rows.filter(row=>row.object.templateId===elfTemplate).map(elf=>{
             const target=targets.reduce((best,row)=>!best||Math.hypot(row.object.x-elf.object.x,row.object.y-elf.object.y)<Math.hypot(best.object.x-elf.object.x,best.object.y-elf.object.y)?row:best,null);
             if(!target)return null;
-            return {elf,target,from:magicAnchor(elf.object,elf, .86,.24),to:magicAnchor(target.object,target,.40,.65)};
+            const from=magicAnchor(elf.object,elf,.86,.24),to=magicAnchor(target.object,target,.40,.65);
+            return {elf,target,from,to,visible:false,effectBounds:{
+                left:Math.min(from.x,to.x)-25,right:Math.max(from.x,to.x)+25,
+                top:Math.min(from.y,to.y)-25,bottom:Math.max(from.y,to.y)+25
+            }};
         }).filter(Boolean);
     }
     function createMagicEffectLayer(rows) {
@@ -110,21 +114,38 @@
         }
         return {layer,pairs};
     }
+    function magicEffectsActive(board) {
+        return board.isConnected&&!document.hidden&&!board.classList.contains('map-overview-active')&&
+            !window.MapDetailLevel?.isLowDetail(board)&&!board.classList.contains('map-zoom-interacting')&&
+            !board.classList.contains('map-camera-busy')&&!reducedMotion?.matches;
+    }
+    function hideMagicPair(pair) {
+        pair.bolt.style.display='none';pair.ring.style.display='none';pair.target.image.style.rotate='0deg';
+    }
+    function syncMagicEffects(board,state) {
+        const active=magicEffectsActive(board),bounds=state.visibleBounds;
+        let changed=false,hasVisibleEffect=false;
+        for(const pair of state.pairs){
+            // Keep a projectile crossing the viewport even when both children are outside it.
+            const extent=pair.effectBounds;
+            const visible=Boolean(active&&bounds&&(pair.elf.onScreen||pair.target.onScreen||
+                extent.left<bounds.right&&extent.right>bounds.left&&extent.top<bounds.bottom&&extent.bottom>bounds.top));
+            hasVisibleEffect ||= visible;
+            if(pair.visible===visible)continue;
+            pair.visible=visible;changed=true;
+            if(!visible)hideMagicPair(pair);
+        }
+        if(!changed&&(state.effectTimer||!hasVisibleEffect))return;
+        clearTimeout(state.effectTimer);state.effectTimer=0;
+        if(hasVisibleEffect)updateMagicEffects(board,state);
+    }
     function updateMagicEffects(board,state,now=performance.now()) {
         state.effectTimer=0;
-        if(!board.isConnected)return;
-        const active=!document.hidden&&!board.classList.contains('map-overview-active')&&
-            !board.classList.contains('map-zoom-interacting')&&!board.classList.contains('map-camera-busy')&&!reducedMotion?.matches;
+        if(!magicEffectsActive(board)){pauseDetail(board);return;}
         let hasVisibleEffect=false;
-        const phase=(now%4000)/4000;
+        const cycleTime=now%4000,phase=cycleTime/4000;
         for(const pair of state.pairs){
-            if(!active||(state.streamImages&&!pair.elf.sharp&&!pair.target.sharp)){
-                if(pair.visible===false)continue;
-                pair.visible=false;
-                pair.bolt.style.display='none';pair.ring.style.display='none';pair.target.image.style.rotate='0deg';
-                continue;
-            }
-            pair.visible=true;
+            if(!pair.visible)continue;
             hasVisibleEffect=true;
             if(phase>=.12&&phase<.34){
                 const t=(phase-.12)/.22,x=pair.from.x+(pair.to.x-pair.from.x)*t,y=pair.from.y+(pair.to.y-pair.from.y)*t-Math.sin(t*Math.PI)*16;
@@ -138,7 +159,11 @@
             const impact=phase>=.34&&phase<.47?Math.sin((phase-.34)*Math.PI*2/.13)*.055*(1-(phase-.34)/.13):0;
             pair.target.image.style.rotate=impact?impact+'rad':'0deg';
         }
-        if(hasVisibleEffect)state.effectTimer=window.setTimeout(()=>updateMagicEffects(board,state),50);
+        if(hasVisibleEffect){
+            // Sleep through the empty part of each four-second cycle.
+            const delay=cycleTime>=480&&cycleTime<1880?Math.min(50,1880-cycleTime):(cycleTime<480?480:4480)-cycleTime;
+            state.effectTimer=window.setTimeout(()=>updateMagicEffects(board,state),Math.max(1,Math.ceil(delay)));
+        }
     }
     function setViewport(board,bounds,visibleBounds=bounds) {
         if(window.MapDetailLevel?.isCameraJumping?.(board))return;
@@ -191,12 +216,16 @@
             }
         }
         state.activeRows=active;
-        if(!state.effectTimer)updateMagicEffects(board,state);
+        syncMagicEffects(board,state);
     }
     function pauseDetail(board) {
         const state=boards.get(board);if(!state)return;
         clearTimeout(state.effectTimer);
         state.effectTimer=0;
+        for(const pair of state.pairs){
+            if(!pair.visible)continue;
+            pair.visible=false;hideMagicPair(pair);
+        }
     }
     function releaseDetail(board) {
         const state=boards.get(board);if(!state?.streamImages)return;
@@ -271,9 +300,11 @@
             window.MapDetailLevel?.setZoom(board,getMapZoomUI());
         });
     }
-    document.addEventListener('visibilitychange',()=>{
+    function refreshMagicEffects() {
         const board=document.getElementById('mapBoard'),state=boards.get(board);
-        if(state&&!state.effectTimer)updateMagicEffects(board,state);
-    });
+        if(state)syncMagicEffects(board,state);
+    }
+    document.addEventListener('visibilitychange',refreshMagicEffects);
+    reducedMotion?.addEventListener?.('change',refreshMagicEffects);
     window.MapWorkshopScene=Object.freeze({roadStyle,roadPoints,arrowPlacement,prepare,prepareRoads,drawRoad,drawObjects,mount,setViewport,releaseDetail,pauseDetail});
 })();

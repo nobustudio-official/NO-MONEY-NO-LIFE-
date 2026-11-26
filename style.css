@@ -6953,14 +6953,24 @@ GAME OVER
 
         cursor: pointer;
 
-        animation:
-            reachableStopAura 2.0s ease-in-out infinite;
-
         box-shadow:
             0 0 0 5px rgba(100,160,255,0.95),
             0 0 18px rgba(100,160,255,0.75),
             0 0 32px rgba(100,160,255,0.45);
 
+    }
+
+    .map-node.reachable-stop-highlight::after {
+        content: "";
+        position: absolute;
+        inset: -5px;
+        pointer-events: none;
+        border-radius: inherit;
+        border: 2px solid rgba(160, 225, 255, .95);
+        background: none;
+        filter: none;
+        box-shadow: 0 0 20px rgba(80, 180, 255, .8);
+        animation: reachableStopAura 2s ease-in-out infinite;
     }
 
     /* 観覧側にも停止候補を光らせるが、操作できる見た目にはしない。 */
@@ -6970,60 +6980,8 @@ GAME OVER
 
 
     @keyframes reachableStopAura {
-
-        0% {
-
-            box-shadow:
-                0 0 0 5px rgba(255,255,255,1),
-                0 0 12px rgba(255,255,255,1),
-                0 0 30px rgba(255,255,255,0.9),
-                0 0 60px rgba(255,255,255,0.5);
-
-        }
-
-        25% {
-
-            box-shadow:
-                0 0 0 5px rgba(80,180,255,1),
-                0 0 15px rgba(80,200,255,1),
-                0 0 40px rgba(80,180,255,0.95),
-                0 0 80px rgba(80,180,255,0.6),
-                0 0 110px rgba(80,180,255,0.3);
-
-        }
-
-        50% {
-
-            box-shadow:
-                0 0 0 5px rgba(255,255,255,1),
-                0 0 12px rgba(255,255,255,1),
-                0 0 35px rgba(255,255,255,0.9),
-                0 0 70px rgba(255,255,255,0.5);
-
-        }
-
-        75% {
-
-            box-shadow:
-                0 0 0 5px rgba(80,180,255,1),
-                0 0 15px rgba(80,200,255,1),
-                0 0 45px rgba(80,180,255,0.95),
-                0 0 90px rgba(80,180,255,0.6),
-                0 0 120px rgba(80,180,255,0.3);
-
-        }
-
-        100% {
-
-            box-shadow:
-                0 0 0 5px rgba(255,255,255,1),
-                0 0 12px rgba(255,255,255,1),
-                0 0 30px rgba(255,255,255,0.9),
-                0 0 60px rgba(255,255,255,0.5);
-
-        }
-
-
+        0%, 100% { opacity: .35; }
+        50% { opacity: 1; }
     }
 
     /* =========================
@@ -7073,6 +7031,18 @@ GAME OVER
         }
     }
 
+    @media (pointer: coarse), (prefers-reduced-motion: reduce) {
+        .boss-node:not(.reachable-stop-highlight)::before,
+        .boss-node:not(.reachable-stop-highlight)::after {
+            animation: none;
+            transform: none;
+            opacity: .75;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .map-node.reachable-stop-highlight::after { animation: none; opacity: .65; }
+    }
 
     /* ボスアイコン */
 
@@ -7095,8 +7065,8 @@ GAME OVER
             0 0 25px rgba(80, 180, 255, .8);
     }
 
-    .map-node.boss-node.reachable-stop-highlight::before,
-    .map-node.boss-node.reachable-stop-highlight::after {
+    .map-node.boss-node.reachable-stop-highlight::before {
+        animation: none;
         opacity: 0;
     }
 
@@ -12557,9 +12527,7 @@ body.magic-shop-dual-layout #magicShopPopup {
 }
 
 .map-node.square-detail-highlight.reachable-stop-highlight {
-    /* reachableStopAura animates box-shadow, so use an independent outline
-       to keep the detail selection visibly green at all animation phases. */
-    animation: none;
+    /* Keep the detail selection green above the static blue candidate glow. */
     outline: 4px solid rgba(80, 220, 120, 1);
     outline-offset: 8px;
     z-index: 9;
@@ -12570,6 +12538,8 @@ body.magic-shop-dual-layout #magicShopPopup {
         0 0 28px rgba(60, 220, 110, 0.75),
         0 0 44px rgba(60, 220, 110, 0.4);
 }
+
+.map-node.square-detail-highlight.reachable-stop-highlight::after { display: none; }
 
 /* =========================================
    宝箱・ゴールドルーレット：スロット演出
