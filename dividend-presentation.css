@@ -66,6 +66,7 @@
     #nmnl-dividend-lab .dp-swatch:after{content:"";position:absolute;left:20px;top:2px;width:10px;height:10px;border:2px solid currentColor;background:#f7f7ef;border-radius:50%}
     #nmnl-dividend-lab .dp-gridline{stroke:#e7ecf264;stroke-width:1}
     #nmnl-dividend-lab .dp-axis-line{stroke:#d8e5ed77;stroke-width:1}
+    :is(#dividendPresentationOverlay, #endingPresentationOverlay) #nmnl-dividend-lab .dp-axis-line{stroke:#fff}
     #nmnl-dividend-lab .dp-plot .dp-bar-value{fill:#17324b;font-weight:900}
     @media(max-width:600px){#nmnl-dividend-lab .dp-axis-player img{width:36px;height:36px}#nmnl-dividend-lab .dp-axis-player strong{font-size:12px}}
     @media(max-width:600px){#nmnl-dividend-lab .dp-receipts{--dp-row-size:12px}#nmnl-dividend-lab .dp-person{flex-direction:column;gap:4px}#nmnl-dividend-lab .dp-person img{width:36px;height:36px}#nmnl-dividend-lab .dp-income{font-size:clamp(17px,4.4vw,27px)}#nmnl-dividend-lab .dp-receipts thead th,#nmnl-dividend-lab .dp-receipt :is(td,th){padding:16px 3px}#nmnl-dividend-lab .dp-screen{aspect-ratio:auto;min-height:510px}#nmnl-dividend-lab .dp-steps button{padding:8px 10px}}
