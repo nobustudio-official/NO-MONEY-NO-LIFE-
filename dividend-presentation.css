@@ -117,8 +117,8 @@
 :is(#dividendPresentationOverlay, .dp-game-layout) #nmnl-dividend-lab .dp-screen:is([data-stage="2"],[data-stage="3"]) .dp-axis-players{align-content:end;padding-bottom:8px}
 :is(#dividendPresentationOverlay, .dp-game-layout) #nmnl-dividend-lab .dp-screen:is([data-stage="2"],[data-stage="3"]) .dp-axis-player{font-size:clamp(12px,1.8vh,16px)}
 :is(#dividendPresentationOverlay, .dp-game-layout) #nmnl-dividend-lab .dp-screen:is([data-stage="2"],[data-stage="3"]) .dp-axis-player img{width:clamp(26px,8vh,36px);height:clamp(26px,8vh,36px)}
-/* At 393px, 8vh is 31.44px. Enlarge to 33px without moving the layout box or its center. */
-:is(#dividendPresentationOverlay, #endingPresentationOverlay) #nmnl-dividend-lab .dp-screen:is([data-stage="2"],[data-stage="3"]) .dp-axis-player img{transform:scale(calc(33 / 31.44));transform-origin:center}
+/* At 393px, 8vh is 31.44px. Enlarge to 36px without moving the layout box or its center. */
+:is(#dividendPresentationOverlay, #endingPresentationOverlay) #nmnl-dividend-lab .dp-screen:is([data-stage="2"],[data-stage="3"]) .dp-axis-player img{transform:scale(calc(36 / 31.44));transform-origin:center}
 :is(#dividendPresentationOverlay, .dp-game-layout) #nmnl-dividend-lab .dp-screen:is([data-stage="2"],[data-stage="3"]) .dp-axis-player strong{font-size:clamp(14px,2.2vh,22px)}
 :is(#dividendPresentationOverlay, .dp-game-layout) #nmnl-dividend-lab .dp-screen:is([data-stage="2"],[data-stage="3"]) .dp-axis-head{font-size:clamp(13px,1.8vh,18px)}
 #dividendPresentationOverlay #nmnl-dividend-lab .dp-guide-opening .dp-guide-staff{right:18%;bottom:calc(var(--an02-min-height) + var(--an02-bottom) - 6px)}
