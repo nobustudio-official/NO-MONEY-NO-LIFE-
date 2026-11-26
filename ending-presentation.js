@@ -290,17 +290,11 @@
                     racer.style.width = `${size}px`; racer.style.height = `${size}px`;
                 });
             }
-            function positionNames({viewW, size, centers}, {tx = 0, zoom = 1, originX = 0, originY = 0} = {}) {
+            function positionNames({viewW, size, centers}) {
                 const startFront = viewW * .08 + size / 2 + 8;
                 racerNames.forEach((name, index) => {
-                    // Cancel the stage camera transform, keeping each label at
-                    // its starting screen position and original text size.
-                    const values = {
-                        left: `${originX + (startFront - tx - originX) / zoom}px`,
-                        top: `${originY + (centers[index] - originY) / zoom}px`,
-                        transform: `translateY(-50%) scale(${1 / zoom})`
-                    };
-                    for (const [key, value] of Object.entries(values)) if (name.style[key] !== value) name.style[key] = value;
+                    name.style.left = `${startFront}px`;
+                    name.style.top = `${centers[index]}px`;
                 });
             }
             function positionAtStart() {
@@ -311,7 +305,10 @@
                 startLine.style.left = `${startX - 2}px`; finish.style.left = `${finishX}px`;
             }
             positionAtStart();
-            chartObserver = new ResizeObserver(() => { if (!started) positionAtStart(); });
+            chartObserver = new ResizeObserver(() => {
+                if (!started) positionAtStart();
+                else positionNames(laneDimensions());
+            });
             chartObserver.observe(route);
 
             function animateRace(now) {
@@ -396,7 +393,6 @@
                     racers.forEach(racer => { racer.style.visibility = 'visible'; }); crispRacers.forEach(image => { image.hidden = true; });
                 }
                 const originX = spotlight ? spotlight.cameraOriginX : 0, originY = spotlight ? spotlight.cameraOriginY : 0;
-                positionNames({viewW, size, centers}, {tx, zoom:cameraZoom, originX, originY});
                 const fontSize = Math.max(20, Math.min(34, window.innerWidth * .023)) * cameraZoom;
                 finishTotals.forEach((amount, index) => {
                     if (amount.hidden) return;

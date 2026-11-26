@@ -37,7 +37,7 @@ test('two to four racers are 15% larger from the first waiting frame through run
     }
 });
 
-test('names stay at the starting front and lane center while racers and the camera move', () => {
+test('names stay on the course at the start and leave the viewport with the start line', () => {
     const run = fixture(4, 852, 393);
     for (const height of [393, 307]) {
         run.route.clientHeight = height;
@@ -52,17 +52,18 @@ test('names stay at the starting front and lane center while racers and the came
             assert.equal(Number.parseFloat(run.racerNames[i].style.top), dimensions.centers[i]);
         }
         for (const camera of [{tx:-500,zoom:1,originX:0,originY:0},{tx:-800,zoom:1.62,originX:1200,originY:180}]) {
-            run.layout.positionNames(dimensions, camera);
+            const lineX = Number.parseFloat(run.startLine.style.left);
+            const screenLineX = camera.tx + camera.originX + (lineX - camera.originX) * camera.zoom;
             run.racerNames.forEach((name, i) => {
                 const screenX = camera.tx + camera.originX + (Number.parseFloat(name.style.left) - camera.originX) * camera.zoom;
-                const screenY = camera.originY + (Number.parseFloat(name.style.top) - camera.originY) * camera.zoom;
-                assert.ok(Math.abs(screenX - Number.parseFloat(initialNames[i].left)) < 1e-9);
-                assert.ok(Math.abs(screenY - Number.parseFloat(initialNames[i].top)) < 1e-9);
-                const textScale = Number(name.style.transform.match(/scale\(([^)]+)\)/)[1]);
-                assert.ok(Math.abs(textScale * camera.zoom - 1) < 1e-9, 'camera zoom cannot resize the names');
+                const distance = Number.parseFloat(initialNames[i].left) - lineX;
+                assert.ok(Math.abs(screenX - screenLineX - distance * camera.zoom) < 1e-9);
+                assert.ok(screenX < 0, 'the name leaves the screen after the camera passes the start');
             });
         }
     }
+    const animate = source.slice(source.indexOf('            function animateRace('), source.indexOf('            function beginRace()'));
+    assert.ok(!animate.includes('positionNames('), 'running frames must not rewrite name positions');
 });
 
 test('name labels are below every racer layer and the duplicate START label is absent', () => {

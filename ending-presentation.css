@@ -96,7 +96,7 @@
 @keyframes bf-racer-run-sway{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-race-ready{gap:0;min-width:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-racer img{image-rendering:auto;backface-visibility:hidden}
-#endingPresentationOverlay.bf-new-ending-race-scene .bf-racer-name{position:absolute;z-index:3;transform:translateY(-50%);transform-origin:0 50%;font-size:18px;line-height:1.2;text-align:left;white-space:nowrap;pointer-events:none}
+#endingPresentationOverlay.bf-new-ending-race-scene .bf-racer-name{position:absolute;z-index:3;transform:translateY(-50%);font-size:18px;line-height:1.2;text-align:left;white-space:nowrap;pointer-events:none}
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-spotlight-racer{position:absolute;z-index:9;display:block;max-width:none;object-fit:contain;filter:drop-shadow(0 2px 4px #071421cc);pointer-events:none;image-rendering:auto}
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-spotlight-racer[hidden]{display:none}
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-race-finish-total{position:absolute;z-index:10;transform:translate(-100%,-50%);color:#ffdc83;font-family:"Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",Georgia,serif;font-weight:700;line-height:1.2;white-space:nowrap;text-shadow:0 2px 5px #071421,0 0 10px #071421;pointer-events:none;opacity:0;clip-path:inset(0 0 0 100%)}
@@ -108,16 +108,15 @@
 #endingPresentationOverlay.bf-new-ending-race-scene.bf-race-finished,#endingPresentationOverlay.bf-new-ending-race-scene.bf-race-finished .bf-race-route{cursor:pointer}
 #endingPresentationOverlay.bf-new-ending-rank-scene .bf-staff,#endingPresentationOverlay.bf-new-ending-rank-scene .bf-banner{display:none!important}
 #endingPresentationOverlay.bf-new-ending-rank-scene .bf-main{inset:0;width:auto;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;gap:0}
-#endingPresentationOverlay .bf-new-rank-table{position:absolute;top:16%;left:5.3%;right:4.5%;bottom:3%;margin:0;padding:0 10px 12px;display:flex;flex-direction:column;gap:12px;overflow:auto;overscroll-behavior:contain}
+#endingPresentationOverlay .bf-new-rank-table{position:absolute;top:16%;left:5.3%;right:4.5%;bottom:3%;margin:0;padding:0 10px 12px;display:flex;flex-direction:column;gap:8px;overflow:auto;overscroll-behavior:contain}
 #endingPresentationOverlay .bf-new-rank-title{position:absolute;top:3%;left:0;width:100%;margin:0;z-index:2;text-align:center;color:#f2cf76;font-family:"Yu Gothic","Hiragino Kaku Gothic ProN",sans-serif;font-size:clamp(21px,2.6vw,36px);font-weight:900;letter-spacing:.08em}
-#endingPresentationOverlay .bf-new-rank-row{display:grid;flex:none;grid-template-columns:100px 76px minmax(0,1fr) auto;align-items:center;gap:20px;min-height:clamp(88px,12vh,132px);padding:12px 28px;font-size:clamp(22px,2.1vw,32px)}
+#endingPresentationOverlay .bf-new-rank-row{display:grid;flex:none;grid-template-columns:100px 76px minmax(0,1fr) auto;align-items:center;gap:20px;min-height:clamp(88px,12vh,132px);padding:8px 28px;font-size:clamp(22px,2.1vw,32px)}
 #endingPresentationOverlay .bf-new-rank-row img{width:68px;height:68px;object-fit:contain}
-#endingPresentationOverlay .bf-new-rank-row b{color:#ffdc83;white-space:nowrap;font-size:1.08em}
+#endingPresentationOverlay .bf-new-rank-row b{color:#ffdc83;white-space:nowrap;font-size:1.1em}
 @media(max-width:760px){
 #endingPresentationOverlay .bf-new-rank-table{gap:3px}
 #endingPresentationOverlay .bf-new-rank-row{grid-template-columns:56px 46px minmax(0,1fr) auto;gap:8px;min-height:60px;padding:3px 9px;font-size:clamp(15px,3.3vw,20px)}
 #endingPresentationOverlay .bf-new-rank-row img{width:36px;height:36px}
-#endingPresentationOverlay .bf-new-rank-row b{font-size:1.1em}
 }
 #endingPresentationOverlay.bf-new-ending-graph-scene .bf-main{inset:0;width:auto;bottom:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;align-items:center;gap:0}
 #endingPresentationOverlay.bf-new-ending-graph-scene .bf-banner{display:none!important}
