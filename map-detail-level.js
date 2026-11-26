@@ -13,12 +13,32 @@
     const activeRequests = new Map();
     const maxConcurrentImageLoads = touchDevice ? 1 : 2;
     let pumpScheduled = false;
+    let pumpTimer = 0, pageSuspended = false;
     // Each map releases only its own pause, including during screen replacement.
     const scrollPauses = new Set();
     const cameraJumps = new Set();
     const presentationJobs = new Map();
     const presentationWaiters = new Map();
     let presentationFrame = 0;
+
+    function imageWorkPaused() {
+        return document.hidden || pageSuspended;
+    }
+
+    function syncImageWork() {
+        if (imageWorkPaused()) {
+            clearTimeout(pumpTimer);
+            pumpTimer = 0; pumpScheduled = false;
+            if (presentationFrame) cancelAnimationFrame(presentationFrame);
+            presentationFrame = 0;
+        } else {
+            scheduleImagePump();
+            schedulePresentation();
+        }
+    }
+    document.addEventListener?.('visibilitychange', syncImageWork);
+    window.addEventListener?.('pagehide', () => { pageSuspended = true; syncImageWork(); });
+    window.addEventListener?.('pageshow', () => { pageSuspended = false; syncImageWork(); });
 
     function imageGroup(element) {
         if (element.classList.contains('map-space-icon') || element.classList.contains('map-bridge-image')) return 1;
@@ -34,7 +54,7 @@
 
     function presentationPaused(board) {
         const state = states.get(board);
-        return state?.detailPending || isLowDetail(board) || state?.cameraJumps.size ||
+        return imageWorkPaused() || state?.detailPending || isLowDetail(board) || state?.cameraJumps.size ||
             window.MapScene?.isViewportResizing?.() || board.classList.contains('map-zoom-interacting');
     }
 
@@ -91,13 +111,13 @@
     }
 
     function schedulePresentation() {
-        if (!presentationFrame && presentationJobs.size) presentationFrame = requestAnimationFrame(flushPresentation);
+        if (!imageWorkPaused() && !presentationFrame && presentationJobs.size) presentationFrame = requestAnimationFrame(flushPresentation);
     }
 
     function queuePresentation(element, apply, request = null) {
         if (request?.settled) return;
         const board = request?.board || element.closest?.('#mapBoard');
-        if (!touchDevice || !board) { apply(); return; }
+        if (!board || (!touchDevice && !imageWorkPaused())) { apply(); return; }
         if (disposedBoards.has(board) || disposedImages.has(element)) return;
         presentationJobs.set(request || element, { element, board, group: imageGroup(element), apply, request });
         schedulePresentation();
@@ -105,6 +125,7 @@
 
     function flushPresentation() {
         presentationFrame = 0;
+        if (imageWorkPaused()) return;
         const available = [];
         for (const [key, job] of presentationJobs) {
             if (!job.element.isConnected || disposedBoards.has(job.board)) {
@@ -270,6 +291,8 @@
 
     function pumpImageLoads() {
         pumpScheduled = false;
+        pumpTimer = 0;
+        if (imageWorkPaused()) return;
         while (activeLoads.size < maxConcurrentImageLoads) {
             const request = [...pendingImages.values()].filter(request => {
                 if (request.entry.loading || request.entry.ready) return false;
@@ -288,9 +311,9 @@
     }
 
     function scheduleImagePump() {
-        if (pumpScheduled || !pendingImages.size) return;
+        if (imageWorkPaused() || pumpScheduled || !pendingImages.size) return;
         pumpScheduled = true;
-        setTimeout(pumpImageLoads, 32);
+        pumpTimer = setTimeout(pumpImageLoads, 32);
     }
 
     function releaseImage(element) {

@@ -115,7 +115,7 @@
         return {layer,pairs};
     }
     function magicEffectsActive(board) {
-        return board.isConnected&&!document.hidden&&!board.classList.contains('map-overview-active')&&
+        return board.isConnected&&!document.hidden&&!board.classList.contains('map-ambient-paused')&&!board.classList.contains('map-overview-active')&&
             !window.MapDetailLevel?.isLowDetail(board)&&!board.classList.contains('map-zoom-interacting')&&
             !board.classList.contains('map-camera-busy')&&!reducedMotion?.matches;
     }
@@ -294,6 +294,7 @@
             boards.set(board,{rows,index:window.MapScene.createSpatialIndex(rows,row=>row.extent),activeRows:new Set(),
                 bounds:null,visibleBounds:null,pairs:effects.pairs,effectTimer:0,streamImages:useStreaming,
                 pendingObjectImages:new Map()});
+            window.MapAmbientPause?.attach(board);
             if(!useStreaming)for(const row of rows){
                 if(row.image)window.MapDetailLevel.loadImage(row.image,row.asset,1).catch(()=>{});
             }
@@ -306,5 +307,5 @@
     }
     document.addEventListener('visibilitychange',refreshMagicEffects);
     reducedMotion?.addEventListener?.('change',refreshMagicEffects);
-    window.MapWorkshopScene=Object.freeze({roadStyle,roadPoints,arrowPlacement,prepare,prepareRoads,drawRoad,drawObjects,mount,setViewport,releaseDetail,pauseDetail});
+    window.MapWorkshopScene=Object.freeze({roadStyle,roadPoints,arrowPlacement,prepare,prepareRoads,drawRoad,drawObjects,mount,setViewport,releaseDetail,pauseDetail,refreshEffects:refreshMagicEffects});
 })();
