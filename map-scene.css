@@ -132,6 +132,7 @@
     pointer-events:none; contain:strict;
 }
 #mapBoard > .map-viewport-surface[hidden],
+#mapBoard.map-low-detail-active > .map-viewport-surface,
 #mapBoard .map-viewport-square-icon[hidden],
 #mapBoard:not(.map-viewport-active) .map-viewport-square-icon { display:none !important; }
 #mapBoard.map-viewport-active .map-viewport-icon-ready img.map-space-icon { display:none; }

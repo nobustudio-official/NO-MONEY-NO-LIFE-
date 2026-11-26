@@ -170,16 +170,46 @@
         if (!(element.complete && element.naturalWidth)) releaseImage(element);
     }
 
-    function enterLowDetail(board, state) {
+    function cancelDetailTransition(state) {
         clearTimeout(state.detailTimer);
+        cancelAnimationFrame(state.detailFrame);
         state.detailTimer = 0;
-        state.detailPending = false;
-        if (!state.lowDetail) {
-            state.lowDetail = true;
-            // Cancel unfinished work; keep decoded images and their DOM sources.
-            cancelPendingImages(board);
-        }
-        window.MapOverviewCache?.setZoom(board, state.zoom);
+        state.detailFrame = 0;
+        state.detailVersion++;
+    }
+
+    function scheduleDetailCommit(board, state) {
+        if (state.detailFrame || state.disposed) return;
+        const version = state.detailVersion;
+        state.detailFrame = requestAnimationFrame(now => {
+            state.detailFrame = 0;
+            if (version !== state.detailVersion || state.disposed || !board.isConnected) return;
+            const lowDetail = state.zoom < .5;
+            if (!lowDetail && (state.previewing || state.scrolling || state.cameraMotions.size ||
+                board.classList.contains('map-zoom-interacting'))) return;
+            if (window.MapScene?.isViewportResizing?.() || window.MapScene?.ensureViewportStable?.(board) === false) return;
+
+            const previous = state.lowDetail;
+            if (previous && !lowDetail) prepareNormalPresentation(board);
+            state.lowDetail = lowDetail;
+            state.detailPending = false;
+            // Register the destination viewport before drawing. The old mode's
+            // CSS remains in place until the new buffer has been painted.
+            if (!lowDetail) cull(board, state);
+            if (window.MapViewportRenderer?.present?.(board, now) === false) {
+                state.lowDetail = previous;
+                state.detailPending = true;
+                scheduleDetailCommit(board, state);
+                return;
+            }
+            if (version !== state.detailVersion || state.disposed) return;
+            if (lowDetail && !previous) cancelPendingImages(board);
+            window.MapOverviewCache?.setZoom(board, state.zoom);
+            if (!lowDetail) window.MapBackgroundCache?.showFallback?.(board);
+            state.schedule();
+            scheduleImagePump();
+            schedulePresentation();
+        });
     }
 
     function cancelPendingImages(board) {
@@ -421,7 +451,7 @@
         if (state) return state;
         const area = board.closest('.map-area');
         state = { area, nodes: [], nodeIndex: null, activeNodes: new Set(), important: [], bossPieces: [], zoom: 1, frame: 0, scrollSettleTimer: 0, lowDetail: null,
-            detailPending: false, detailTimer: 0, previewing: false, cameraMotions: new Set(), lastCullTime: -Infinity,
+            detailPending: false, detailTimer: 0, detailFrame: 0, detailVersion: 0, previewing: false, cameraMotions: new Set(), lastCullTime: -Infinity,
             cameraJumps: new Set(), waits: new Set(), disposed: false, visibleOnly: false, scrolling: false };
         states.set(board, state);
         const schedule = () => {
@@ -482,7 +512,7 @@
             state.area?.removeEventListener('scroll', state.onScroll);
             if (state.frame) cancelAnimationFrame(state.frame);
             clearTimeout(state.scrollSettleTimer);
-            clearTimeout(state.detailTimer);
+            cancelDetailTransition(state);
             scrollPauses.delete(state);
             for (const token of state.cameraJumps) cameraJumps.delete(token);
             state.cameraJumps.clear();
@@ -615,28 +645,27 @@
         state.zoom = zoom;
         state.previewing = options.preview === true;
         if (touchDevice) {
+            if (changed || state.previewing) cancelDetailTransition(state);
             if (state.lowDetail === null) {
                 state.lowDetail = true;
                 state.detailPending = true;
                 window.MapOverviewCache?.setZoom(board, zoom);
             }
-            if (zoom < .5) enterLowDetail(board, state);
-            else if (state.previewing || window.MapScene?.isViewportResizing?.()) prepareViewportResize(board);
-            else if (changed || (state.detailPending && !state.detailTimer)) {
+            const needsCommit = state.detailPending || state.lowDetail !== (zoom < .5);
+            const viewportReady = !needsCommit || window.MapScene?.ensureViewportStable?.(board) !== false;
+            if (!viewportReady || window.MapScene?.isViewportResizing?.()) prepareViewportResize(board);
+            else if (zoom < .5) {
+                if (changed || needsCommit) {
+                    state.detailPending = true;
+                    scheduleDetailCommit(board, state);
+                }
+            } else if (state.previewing) prepareViewportResize(board);
+            else if (changed || (state.detailPending && !state.detailTimer && !state.detailFrame)) {
                 state.detailPending = true;
                 clearTimeout(state.detailTimer);
                 state.detailTimer = setTimeout(() => {
                     state.detailTimer = 0;
-                    if (state.disposed || !board.isConnected || state.previewing || state.scrolling || state.cameraMotions.size ||
-                        board.classList.contains('map-zoom-interacting') || window.MapScene?.isViewportResizing?.()) return;
-                    if (state.lowDetail) prepareNormalPresentation(board);
-                    state.lowDetail = false;
-                    state.detailPending = false;
-                    window.MapOverviewCache?.setZoom(board, state.zoom);
-                    window.MapBackgroundCache?.showFallback?.(board);
-                    state.schedule();
-                    scheduleImagePump();
-                    schedulePresentation();
+                    scheduleDetailCommit(board, state);
                 }, 180);
             } else if (!state.detailPending) window.MapOverviewCache?.setZoom(board, zoom);
         } else {
@@ -671,8 +700,7 @@
         const state = states.get(board);
         if (!touchDevice || !state) return;
         const alreadyPending = state.detailPending && !state.detailTimer;
-        clearTimeout(state.detailTimer);
-        state.detailTimer = 0;
+        cancelDetailTransition(state);
         state.detailPending = true;
         if (!alreadyPending) window.MapBackgroundCache?.showFallback?.(board);
     }

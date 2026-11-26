@@ -281,29 +281,29 @@
         return found;
     }
 
-    function paint(state, now) {
+    function paint(state, now, force = false) {
         state.frame = 0;
-        if (state.disposed) return;
-        if (!state.board.isConnected) { dispose(state.board); return; }
-        if (document.hidden || window.MapScene.isViewportResizing()) return;
+        if (state.disposed) return false;
+        if (!state.board.isConnected) { dispose(state.board); return false; }
+        if (document.hidden || window.MapScene.isViewportResizing()) return false;
         const lowDetail = window.MapDetailLevel.isLowDetail(state.board);
-        if (state.canvas.hidden !== lowDetail) state.canvas.hidden = lowDetail;
         // Ownership survives lightweight mode: removing its CSS must never
         // expose the full background/SVG roads before our next painted frame.
         if (!state.board.classList.contains('map-viewport-active')) state.board.classList.add('map-viewport-active');
         if (lowDetail) {
+            state.canvas.hidden = true;
             for (const entry of state.activeIcons) cacheIcon(state, entry);
             state.activeIcons.clear();
             state.bounds = null;
             for (const resolve of state.presented) resolve();
             state.presented.clear();
-            return;
+            return true;
         }
         // Tolerate timestamp rounding: a nominal 60 Hz frame must not be skipped.
-        if (now - state.lastPaint < frameInterval - 1) { schedule(state.board, false, false); return; }
+        if (!force && now - state.lastPaint < frameInterval - 1) { schedule(state.board, false, false); return false; }
         try {
             const visible = measure(state);
-            if (!visible) return;
+            if (!visible) return false;
             const guard = padding / 2 / state.zoom;
             const previous = state.bounds;
             const redraw = state.contentDirty || !previous || visible.left < previous.left + guard ||
@@ -341,9 +341,12 @@
                 state.bounds = bounds; state.contentDirty = false;
             }
             const iconsChanged = drawIcons(state, visible);
+            // Keep the old mode visible until this buffer has valid geometry.
+            state.canvas.hidden = false;
             if (redraw || iconsChanged) state.lastPaint = now;
             for (const resolve of state.presented) resolve();
             state.presented.clear();
+            return true;
         } catch (error) {
             console.warn('[map] 画面内描画を継続できないため、既存方式へ戻します。', error);
             const { board, background, svg, squares } = state;
@@ -353,7 +356,18 @@
             const roads = board.querySelector('.map-lines');
             if (roads && squares) window.MapRoadCache.prepare(roads, squares);
             window.MapDetailLevel.scheduleViewport(board);
+            return true; // The existing renderer now owns presentation.
         }
+    }
+
+    // Called inside the detail controller's commit frame, before its CSS swap.
+    function present(board, now) {
+        const state = scenes.get(board);
+        if (!state) return null;
+        cancelAnimationFrame(state.frame);
+        state.frame = 0;
+        state.contentDirty = true;
+        return paint(state, now, true);
     }
 
     function mount(background, svg) {
@@ -480,5 +494,5 @@
         scenes.delete(board);
     }
 
-    window.MapViewportRenderer = Object.freeze({ mount, setViewport, setRoads, setBridgeCollapse, schedule, whenPresented, dispose });
+    window.MapViewportRenderer = Object.freeze({ mount, setViewport, setRoads, setBridgeCollapse, schedule, present, whenPresented, dispose });
 })();

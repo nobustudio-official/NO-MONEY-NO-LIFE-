@@ -79,7 +79,7 @@ function runtime() {
         getComputedStyle: element => { styleReads++; return { width: element.style.width || '66px', height: element.style.height || '66px' }; } };
     vm.createContext(context);
     const load = file => vm.runInContext(read(file), context, { filename: file });
-    return { area, board, background, svg, viewport, images, drawn, fallback, transforms, window, Element, Image, load, observers,
+    return { context, area, board, background, svg, viewport, images, drawn, fallback, transforms, window, Element, Image, load, observers,
         get styleReads() { return styleReads; },
         tick(ms = 32) {
             clock += ms;
@@ -395,4 +395,150 @@ test('actual low-detail switch hides the overview SVG, including scenery outside
     assert.equal(displayFromCss(flat, css), 'block');
     low = false; run.window.MapOverviewCache.setZoom(run.board, .8);
     assert.equal(displayFromCss(terrain, css), 'block');
+});
+
+// Exercise the real size coordinator, detail controller and renderer together.
+// Resizes below deliberately do not deliver observer notifications first.
+function sizeSwitchRuntime(canvasEnabled = true) {
+    const run = runtime(), { window, context, area, board, viewport } = run;
+    let zoom = .8;
+    const applied = [], swaps = [];
+    context.document.querySelector = () => area;
+    context.document.documentElement = { style: { setProperty() {} } };
+    window.addEventListener = () => {};
+    window.innerWidth = viewport.width; window.innerHeight = viewport.height;
+    window.MapContinentData = { grassTexture: 'grass.webp', coast: [
+        { x: 0, y: 0 }, { x: 9216, y: 0 }, { x: 9216, y: 7424 }, { x: 0, y: 7424 }
+    ] };
+    window.MapRegionBackground = { assetUrls: [] };
+    window.mapViewportRendering = canvasEnabled;
+    area.scrollLeft = area.scrollTop = board.offsetLeft = board.offsetTop = 0;
+    area.scrollWidth = area.scrollHeight = 30000;
+    area.getBoundingClientRect = () => ({ left: 0, top: 0, width: viewport.width, height: viewport.height });
+    board.getBoundingClientRect = () => ({ left: 0, top: 0, width: 9216 * zoom, height: 7424 * zoom });
+    context.getMapZoomUI = window.getMapZoomUI = () => zoom;
+    const requestZoom = (value, preview = false) => {
+        zoom = value;
+        board.classList.toggle('map-zoom-interacting', preview);
+        if (!preview) window.MapScene.setZoom(value);
+        window.MapDetailLevel.setZoom(board, value, { preview });
+    };
+    window.setMapZoomUI = value => { applied.push(value); requestZoom(value); };
+    for (const file of ['map-scene.js', 'map-detail-level.js', 'map-overview-cache.js', 'map-viewport-renderer.js']) run.load(file);
+    const flat = new run.Element('svg'); flat.className = 'map-flat-region-layer is-ready'; run.background.append(flat);
+    window.MapViewportRenderer.mount(run.background, run.svg);
+    const canvas = board.querySelector('.map-viewport-surface'), toggle = board.classList.toggle;
+    board.classList.toggle = (name, enabled) => {
+        if (name === 'map-low-detail-active' && board.classList.contains(name) !== enabled) {
+            swaps.push({ low: enabled, hidden: canvas?.hidden, width: area.clientWidth, height: area.clientHeight,
+                surfaceWidth: canvas?.style.width, surfaceHeight: canvas?.style.height });
+        }
+        return toggle(name, enabled);
+    };
+    const settle = () => { run.tick(120); run.tick(17); run.tick(180); run.tick(17); };
+    requestZoom(.8); settle();
+    return { ...run, applied, swaps, canvas, requestZoom, settle,
+        get low() { return board.classList.contains('map-low-detail-active'); },
+        get view() { return window.MapScene.getViewport(board); },
+        resize(width, height) { viewport.width = width; viewport.height = height; }
+    };
+}
+
+test('both detail modes reuse the initial buffer and stable switches never reapply camera zoom', () => {
+    const run = sizeSwitchRuntime(), initial = [run.canvas.width, run.canvas.height];
+    assert.equal(run.low, false); assert.equal(run.canvas.hidden, false);
+    const changes = watchCanvasSize(run.canvas), applied = run.applied.length;
+    for (let i = 0; i < 8; i++) {
+        run.requestZoom(.4); run.tick();
+        assert.equal(run.low, true); assert.equal(run.canvas.hidden, true);
+        run.requestZoom(.8); run.tick(180);
+        assert.equal(run.low, false); assert.equal(run.canvas.hidden, false);
+        assert.deepEqual([run.canvas.width, run.canvas.height], initial);
+    }
+    assert.deepEqual(changes, []);
+    assert.equal(run.applied.length, applied, 'size validation alone cannot cancel or restart a gesture');
+    assert.ok(run.swaps.every(swap => swap.hidden === swap.low), 'Canvas and mode CSS change in the same commit');
+});
+
+test('normal to simple waits for actual dimensions even before resize notification', () => {
+    const run = sizeSwitchRuntime(), initial = [run.canvas.width, run.canvas.height];
+    run.resize(800, 320); run.requestZoom(.4, true); run.tick(16);
+    assert.equal(run.window.MapScene.isViewportResizing(), true);
+    assert.equal(run.low, false); assert.equal(run.canvas.hidden, false, 'keep the current valid mode while sizing');
+    run.settle();
+    assert.equal(run.low, true); assert.equal(run.canvas.hidden, true);
+    assert.equal(run.view.width, 800); assert.equal(run.view.height, 320); assert.equal(run.view.zoom, .4);
+    assert.deepEqual([run.canvas.width, run.canvas.height], initial);
+});
+
+test('simple to normal paints the current-size buffer before removing simple-mode CSS', () => {
+    const run = sizeSwitchRuntime(); run.requestZoom(.4); run.tick();
+    const changes = watchCanvasSize(run.canvas);
+    run.resize(800, 340); run.requestZoom(.8); run.tick(16);
+    assert.equal(run.low, true); assert.equal(run.canvas.hidden, true);
+    run.settle();
+    assert.equal(run.low, false); assert.equal(run.canvas.hidden, false);
+    assert.equal(run.view.width, 800); assert.equal(run.view.zoom, .8);
+    const swap = run.swaps.at(-1);
+    assert.equal(swap.surfaceWidth, (800 + 320) / .8 + 'px');
+    assert.equal(swap.surfaceHeight, (340 + 320) / .8 + 'px');
+    assert.deepEqual(changes, []);
+});
+
+test('a second size change during validation replaces dimensions cached by a zoom preview', () => {
+    const run = sizeSwitchRuntime(); run.requestZoom(.4); run.tick();
+    run.resize(800, 340); run.requestZoom(.8); run.tick(120);
+    run.window.MapScene.getMinZoom(); // Refill the cache between the two measurements.
+    run.resize(760, 300); run.tick(17);
+    assert.equal(run.low, true); assert.equal(run.window.MapScene.isViewportResizing(), true);
+    run.settle();
+    assert.equal(run.low, false);
+    assert.equal(run.view.width, 760); assert.equal(run.view.height, 300); assert.equal(run.view.zoom, .8);
+});
+
+test('CSS viewport and pixel-density changes during the two-frame check restart validation', () => {
+    for (const field of ['innerHeight', 'devicePixelRatio']) {
+        const run = sizeSwitchRuntime(); run.requestZoom(.4); run.tick();
+        run.resize(800, 340); run.requestZoom(.8); run.tick(120);
+        run.window[field] += 1; run.tick(17);
+        assert.equal(run.low, true); assert.equal(run.window.MapScene.isViewportResizing(), true);
+        run.settle(); assert.equal(run.low, false); assert.equal(run.view.zoom, .8);
+    }
+});
+
+test('the latest zoom request wins over a mode switch waiting for viewport stability', () => {
+    const run = sizeSwitchRuntime(), start = run.swaps.length;
+    run.resize(800, 340); run.requestZoom(.4, true); run.tick(16);
+    run.requestZoom(.8); run.settle();
+    assert.equal(run.low, false); assert.equal(run.view.zoom, .8);
+    assert.ok(run.swaps.slice(start).every(swap => !swap.low), 'a cancelled simple-mode request cannot be presented later');
+    run.requestZoom(.4); run.tick();
+    run.requestZoom(.8); run.tick(90);
+    run.requestZoom(.3); run.tick(); run.tick(200);
+    assert.equal(run.low, true); assert.equal(run.canvas.hidden, true);
+});
+
+test('zero-size switching waits and resumes only after a positive stable viewport returns', () => {
+    const run = sizeSwitchRuntime(); run.requestZoom(.4); run.tick();
+    run.resize(0, 0); run.requestZoom(.8); run.settle();
+    assert.equal(run.low, true); assert.equal(run.canvas.hidden, true);
+    run.resize(852, 393); run.observers.forEach(notify => notify()); run.settle();
+    assert.equal(run.low, false); assert.equal(run.view.width, 852); assert.equal(run.view.zoom, .8);
+});
+
+test('disposing a map cancels a mode change waiting for stable dimensions', () => {
+    const run = sizeSwitchRuntime(), start = run.swaps.length;
+    run.resize(800, 340); run.requestZoom(.4);
+    run.window.MapDetailLevel.dispose(run.board); run.board.isConnected = false;
+    run.settle();
+    assert.equal(run.swaps.length, start); assert.equal(run.canvas.width, 0);
+});
+
+test('the legacy map also validates both detail modes before using new screen dimensions', () => {
+    const run = sizeSwitchRuntime(false);
+    assert.equal(run.canvas, null); assert.equal(run.low, false);
+    run.resize(800, 340); run.requestZoom(.4); run.settle();
+    assert.equal(run.low, true); assert.equal(run.view.width, 800); assert.equal(run.view.zoom, .4);
+    run.resize(760, 300); run.requestZoom(.8); run.settle();
+    assert.equal(run.low, false); assert.equal(run.view.width, 760); assert.equal(run.view.zoom, .8);
 });

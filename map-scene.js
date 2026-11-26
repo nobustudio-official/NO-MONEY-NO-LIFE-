@@ -28,6 +28,24 @@
   invalidateCameraLimits();
  }
  function isViewportResizing(){return Boolean(resizeTimer||resizeFrame);}
+ function readViewportSize(area,board){
+  return {board,width:area.clientWidth,height:area.clientHeight,pixelRatio:window.devicePixelRatio||1,
+   layoutWidth:window.innerWidth,layoutHeight:window.innerHeight};
+ }
+ function sameViewportSize(a,b){
+  return a?.board===b.board&&a.width===b.width&&a.height===b.height&&a.pixelRatio===b.pixelRatio&&
+   a.layoutWidth===b.layoutWidth&&a.layoutHeight===b.layoutHeight;
+ }
+ // A mode switch must not rely on a ResizeObserver notification arriving first.
+ // This checks dimensions only; an already stable viewport never reapplies zoom.
+ function ensureViewportStable(board){
+  const area=board?.closest('.map-area');
+  if(!area||!board.isConnected||document.getElementById('mapBoard')!==board)return false;
+  const size=readViewportSize(area,board);
+  if(size.width>0&&size.height>0&&!isViewportResizing()&&sameViewportSize(settledViewports.get(area),size))return true;
+  scheduleViewportResize(area);
+  return false;
+ }
  function finishViewportResize(stable=false){
   resizeRequest=null;
   for(const waiter of viewportWaiters)waiter.resolve(stable&&waiter.board.isConnected&&document.getElementById('mapBoard')===waiter.board);
@@ -47,12 +65,9 @@
    clearTimeout(resizeTimer);cancelAnimationFrame(resizeFrame);resizeTimer=resizeFrame=0;
    finishViewportResize();return;
   }
-  const size={board,width:viewport.clientWidth,height:viewport.clientHeight,pixelRatio:window.devicePixelRatio||1,
-   layoutWidth:window.innerWidth,layoutHeight:window.innerHeight};
+  const size=readViewportSize(viewport,board);
   const previous=resizeRequest?.area===viewport?resizeRequest:settledViewports.get(viewport);
-  if(size.width>0&&size.height>0&&previous?.board===board&&previous.width===size.width&&
-   previous.height===size.height&&previous.pixelRatio===size.pixelRatio&&
-   previous.layoutWidth===size.layoutWidth&&previous.layoutHeight===size.layoutHeight){
+  if(size.width>0&&size.height>0&&sameViewportSize(previous,size)){
    if(!isViewportResizing())finishViewportResize(true);
    return;
   }
@@ -68,14 +83,18 @@
     const board=document.getElementById('mapBoard');
     const viewport=document.querySelector('.game-screen .map-area');
     if(!board||!viewport){resizeFrame=0;finishViewportResize();return;}
-    const width=viewport.clientWidth,height=viewport.clientHeight;
+    const measured=readViewportSize(viewport,board);
     resizeFrame=requestAnimationFrame(()=>{
      resizeFrame=0;
      if(!board.isConnected||document.getElementById('mapBoard')!==board){finishViewportResize();return;}
-     if(width!==viewport.clientWidth||height!==viewport.clientHeight){scheduleViewportResize(viewport);return;}
+     const size=readViewportSize(viewport,board),{width,height}=size;
+     if(!sameViewportSize(measured,size)){scheduleViewportResize(viewport);return;}
      if(!(width>0&&height>0)){if(viewportWaiters.size)scheduleViewportResize(viewport);return;}
-     settledViewports.set(viewport,{board,width,height,pixelRatio:window.devicePixelRatio||1,
-      layoutWidth:window.innerWidth,layoutHeight:window.innerHeight});
+     // Zoom previews can refill the cache during the wait. Publish the final
+     // dimensions and invalidate their geometry together before applying zoom.
+     invalidateViewportSize(viewport);
+     viewportSizes.set(viewport,{width,height,version:viewportLayoutVersion});
+     settledViewports.set(viewport,size);
      const zoom=typeof window.getMapZoomUI==='function'?window.getMapZoomUI():activeScale;
      if(typeof window.setMapZoomUI==='function')window.setMapZoomUI(zoom);
      else{setZoom(zoom);window.MapDetailLevel?.setZoom(board,zoom);}
@@ -293,5 +312,5 @@
  }
  window.addEventListener('resize',()=>scheduleViewportResize());
  document.addEventListener('fullscreenchange',()=>scheduleViewportResize());
- window.MapScene=Object.freeze({config,cameraFrame,assetUrls,createBackground,setZoom,getMinZoom,getCameraLimits,clampScroll,getViewport,createSpatialIndex,invalidateCameraLimits,invalidateViewportSize,scheduleViewportResize,whenViewportStable,isViewportResizing});
+ window.MapScene=Object.freeze({config,cameraFrame,assetUrls,createBackground,setZoom,getMinZoom,getCameraLimits,clampScroll,getViewport,createSpatialIndex,invalidateCameraLimits,invalidateViewportSize,scheduleViewportResize,whenViewportStable,ensureViewportStable,isViewportResizing});
 })();
