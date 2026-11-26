@@ -250,15 +250,17 @@
             const raceRules = window.EndingRaceRules;
             main.classList.add('bf-ending-race');
             const laneMarkup = finalPlayers.map((player, index) =>
-                `<div class="bf-race-lane" style="--lane:${index};--lane-count:${finalPlayers.length};top:${finalPlayers.length === 4 ? 4 + index * 23 : index * 100 / finalPlayers.length}%;height:${finalPlayers.length === 4 ? 20 : 100 / finalPlayers.length}%"><div class="bf-racer"><img src="images/characters/player/directions/${player.character}_right.webp" alt="${escapeHTML(player.name)}、右向き"></div><span class="bf-racer-name">${escapeHTML(player.name)}</span></div>`
+                `<div class="bf-race-lane" style="--lane:${index};--lane-count:${finalPlayers.length};top:${finalPlayers.length === 4 ? 4 + index * 23 : index * 100 / finalPlayers.length}%;height:${finalPlayers.length === 4 ? 20 : 100 / finalPlayers.length}%"><div class="bf-racer"><img src="images/characters/player/directions/${player.character}_right.webp" alt="${escapeHTML(player.name)}、右向き"></div></div>`
             ).join('');
-            main.insertAdjacentHTML('beforeend', `<section class="bf-race-view" aria-label="プレイヤーレース"><div class="bf-race-heading"></div><div class="bf-race-route" tabindex="0"><div class="bf-race-stage"><div class="bf-race-depth" data-scenery="royal" aria-hidden="true"><div class="bf-depth-layer bf-depth-far"></div><div class="bf-depth-layer bf-depth-mid"></div><div class="bf-depth-layer bf-depth-near"></div></div><div class="bf-race-world" aria-hidden="true"></div><div class="bf-race-startline" aria-hidden="true"><span>START</span></div>${laneMarkup}<div class="bf-race-finish" aria-label="ゴール"></div></div><div class="bf-race-ready"><button type="button">スタート</button></div></div></section>`);
+            const nameMarkup = finalPlayers.map(player => `<span class="bf-racer-name">${escapeHTML(player.name)}</span>`).join('');
+            main.insertAdjacentHTML('beforeend', `<section class="bf-race-view" aria-label="プレイヤーレース"><div class="bf-race-heading"></div><div class="bf-race-route" tabindex="0"><div class="bf-race-stage"><div class="bf-race-depth" data-scenery="royal" aria-hidden="true"><div class="bf-depth-layer bf-depth-far"></div><div class="bf-depth-layer bf-depth-mid"></div><div class="bf-depth-layer bf-depth-near"></div></div><div class="bf-race-world" aria-hidden="true"></div><div class="bf-race-startline" aria-hidden="true"></div>${nameMarkup}${laneMarkup}<div class="bf-race-finish" aria-label="ゴール"></div></div><div class="bf-race-ready"><button type="button">スタート</button></div></div></section>`);
             const route = main.querySelector('.bf-race-route'), stageEl = main.querySelector('.bf-race-stage');
             stageEl.style.width = `${(raceRules.courseLengthInViews + .08 + .2) * 100}%`;
             const finish = main.querySelector('.bf-race-finish'), startLine = main.querySelector('.bf-race-startline');
             const ready = main.querySelector('.bf-race-ready'), depth = main.querySelector('.bf-race-depth');
             const depthLayers = { far: main.querySelector('.bf-depth-far'), mid: main.querySelector('.bf-depth-mid'), near: main.querySelector('.bf-depth-near') };
             const racers = [...main.querySelectorAll('.bf-racer')];
+            const racerNames = [...main.querySelectorAll('.bf-racer-name')];
             const count = racers.length, runnerX = finalPlayers.map(() => 0);
             const motion = raceRules.createRaceMotion(finalPlayers.map(player => player.history));
             const passBeatDuration = 60 / 112, passBeatPhase = .283;
@@ -277,17 +279,28 @@
             const laneDimensions = () => {
                 const viewW = route.clientWidth, stageW = stageEl.clientWidth || viewW * 2.2;
                 const laneH = route.clientHeight * (count === 4 ? .2 : 1 / count);
-                const size = count === 4 ? 180 : Math.min(180, laneH * .9);
+                const size = Math.min(180, laneH * .9);
                 const centers = finalPlayers.map((_, index) => route.clientHeight * (count === 4 ? .14 + index * .23 : (index + .5) / count));
                 return { viewW, stageW, finishX:viewW * (.08 + raceRules.courseLengthInViews), laneH, size, centers };
             };
+            function positionRacers({laneH, size, centers}) {
+                racers.forEach((racer, index) => {
+                    racer.style.left = `${runnerX[index] - size / 2}px`;
+                    racer.style.top = `${laneH / 2 - size / 2}px`;
+                    racer.style.width = `${size}px`; racer.style.height = `${size}px`;
+                    racerNames[index].style.left = `${runnerX[index] + size / 2 + 8}px`;
+                    racerNames[index].style.top = `${centers[index]}px`;
+                });
+            }
             function positionAtStart() {
-                const { viewW, finishX } = laneDimensions(), startX = viewW * .08;
+                const dimensions = laneDimensions(), {viewW, finishX} = dimensions, startX = viewW * .08;
                 runnerX.fill(startX);
-                racers.forEach(racer => { racer.style.left = `${startX - laneDimensions().size / 2}px`; });
+                positionRacers(dimensions);
                 startLine.style.left = `${startX - 2}px`; finish.style.left = `${finishX}px`;
             }
             positionAtStart();
+            chartObserver = new ResizeObserver(() => { if (!started) positionAtStart(); });
+            chartObserver.observe(route);
 
             function animateRace(now) {
                 if (disposed || step !== 2 || !root.contains(route)) return;
@@ -384,11 +397,7 @@
                 depthLayers.mid.style.transform = `translate3d(${pan * .42}px,0,0)`;
                 depthLayers.near.style.transform = `translate3d(${-pan * .32}px,0,0)`;
                 finish.style.left = `${finishX}px`;
-                racers.forEach((racer, index) => {
-                    racer.style.left = `${runnerX[index] - size / 2}px`;
-                    racer.style.top = `${laneH / 2 - size / 2}px`;
-                    racer.style.width = `${size}px`; racer.style.height = `${size}px`;
-                });
+                positionRacers({laneH, size, centers});
                 raceComplete = sample.finishedCount === raceSchedule.groups.length;
                 if (raceComplete) { root.classList.add('bf-race-finished'); next.hidden = true; }
                 else animationFrame = requestAnimationFrame(animateRace);

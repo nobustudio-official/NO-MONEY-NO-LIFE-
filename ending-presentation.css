@@ -54,11 +54,10 @@
 #endingPresentationOverlay .bf-race-route{cursor:pointer}
 #endingPresentationOverlay .bf-race-route.is-running{cursor:default}
 #endingPresentationOverlay .bf-race-startline{position:absolute;z-index:3;top:0;bottom:0;width:4px;background:repeating-linear-gradient(180deg,#fff 0 12px,#182d42 12px 24px);box-shadow:0 0 8px #071421aa}
-#endingPresentationOverlay .bf-race-startline span{position:absolute;top:10px;left:9px;padding:3px 7px;border:1px solid #d8ba71;border-radius:5px;background:#0d2239ed;color:#ffdc83;font-size:12px;font-weight:800;letter-spacing:.08em}
 #endingPresentationOverlay .bf-race-ready{position:absolute;z-index:5;left:50%;top:50%;display:flex;flex-direction:column;align-items:center;gap:10px;min-width:260px;padding:16px 24px;transform:translate(-50%,-50%);border:1px solid #d8ba71;border-radius:14px;background:#0d2239ed;box-shadow:0 8px 24px #07142199;text-align:center}
 #endingPresentationOverlay .bf-race-ready[hidden]{display:none!important}
 #endingPresentationOverlay .bf-race-ready p{margin:0;color:#fff;font-size:clamp(14px,1.2vw,18px);font-weight:700}
-#endingPresentationOverlay .bf-race-ready button{min-height:42px;padding:8px 22px;border:1px solid #ffdc83;border-radius:9px;background:linear-gradient(180deg,#dfb95f,#9f6c2e);color:#17283b;font-size:16px;font-weight:800;cursor:pointer}
+#endingPresentationOverlay .bf-race-ready button{min-height:0;padding:3px 7px;border:1px solid #d8ba71;border-radius:5px;background:#0d2239ed;color:#ffdc83;font:800 12px "Yu Gothic","Meiryo",sans-serif;letter-spacing:.08em;cursor:pointer}
 #endingPresentationOverlay .bf-race-ready button:hover{filter:brightness(1.1)}
 #endingPresentationOverlay .bf-race-route:focus-visible{outline:3px solid #ffdc83;outline-offset:3px}
 #endingPresentationOverlay .bf-racer{z-index:4}
@@ -96,9 +95,8 @@
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-racer.is-finished img,#endingPresentationOverlay.bf-new-ending-race-scene .bf-spotlight-racer.is-finished{animation:none;transform:rotate(0deg)}
 @keyframes bf-racer-run-sway{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-race-ready{gap:0;min-width:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
-#endingPresentationOverlay.bf-new-ending-race-scene .bf-racer{width:180px;height:180px;top:calc(50% - 90px)}
-#endingPresentationOverlay.bf-new-ending-race-scene .bf-racer img{width:180px;height:180px;image-rendering:auto;backface-visibility:hidden}
-#endingPresentationOverlay.bf-new-ending-race-scene .bf-racer-name{top:calc(50% - 122px);font-size:18px}
+#endingPresentationOverlay.bf-new-ending-race-scene .bf-racer img{image-rendering:auto;backface-visibility:hidden}
+#endingPresentationOverlay.bf-new-ending-race-scene .bf-racer-name{position:absolute;z-index:3;transform:translateY(-50%);font-size:18px;line-height:1.2;text-align:left;white-space:nowrap;pointer-events:none}
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-spotlight-racer{position:absolute;z-index:9;display:block;max-width:none;object-fit:contain;filter:drop-shadow(0 2px 4px #071421cc);pointer-events:none;image-rendering:auto}
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-spotlight-racer[hidden]{display:none}
 #endingPresentationOverlay.bf-new-ending-race-scene .bf-race-finish-total{position:absolute;z-index:10;transform:translate(-100%,-50%);color:#ffdc83;font-family:"Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",Georgia,serif;font-weight:700;line-height:1.2;white-space:nowrap;text-shadow:0 2px 5px #071421,0 0 10px #071421;pointer-events:none;opacity:0;clip-path:inset(0 0 0 100%)}
