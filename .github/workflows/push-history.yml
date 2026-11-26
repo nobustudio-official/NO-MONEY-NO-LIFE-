@@ -1,0 +1,18 @@
+name: Push history
+
+on:
+  push:
+    branches: ["**"]
+
+permissions:
+  contents: read
+
+jobs:
+  record-push:
+    name: Record pushed commit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Record branch and commit
+        run: |
+          echo "Branch: ${GITHUB_REF_NAME}"
+          echo "Commit: ${GITHUB_SHA}"
