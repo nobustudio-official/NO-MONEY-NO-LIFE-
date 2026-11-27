@@ -3279,6 +3279,39 @@ playSharedSE(buttonSound)
     const otherTitleConfirmYes = document.getElementById("otherTitleConfirmYes");
     const otherTitleConfirmNo = document.getElementById("otherTitleConfirmNo");
 
+    window.positionOtherMenuPopup = function () {
+        if (!otherMenuPopup || !otherButton) return;
+        const gameScreen = otherButton.closest(".game-screen");
+        const actionMenu = otherButton.closest(".action-menu");
+        const diceButton = document.getElementById("rouletteButton");
+        if (!gameScreen || !actionMenu || !diceButton) return;
+
+        const screenRect = gameScreen.getBoundingClientRect();
+        const menuRect = actionMenu.getBoundingClientRect();
+        const diceRect = diceButton.getBoundingClientRect();
+        const scaleX = gameScreen.offsetWidth ? screenRect.width / gameScreen.offsetWidth : 1;
+        const scaleY = gameScreen.offsetHeight ? screenRect.height / gameScreen.offsetHeight : 1;
+        const originLeft = screenRect.left + gameScreen.clientLeft * scaleX;
+        const originTop = screenRect.top + gameScreen.clientTop * scaleY;
+        const left = (menuRect.right - originLeft) / scaleX + 10;
+        const top = (diceRect.top - originTop) / scaleY;
+
+        otherMenuPopup.style.left = left + "px";
+        otherMenuPopup.style.top = top + "px";
+        otherMenuPopup.style.width = Math.max(0, Math.min(260, gameScreen.clientWidth - left - 12)) + "px";
+        otherMenuPopup.style.maxHeight = Math.max(0, gameScreen.clientHeight - top - 12) + "px";
+        otherMenuPopup.style.boxSizing = "border-box";
+        otherMenuPopup.style.transform = "none";
+    };
+
+    const repositionVisibleOtherMenu = function () {
+        if (otherMenuPopup && getComputedStyle(otherMenuPopup).display !== "none") {
+            window.positionOtherMenuPopup();
+        }
+    };
+    window.addEventListener("resize", repositionVisibleOtherMenu);
+    window.visualViewport?.addEventListener("resize", repositionVisibleOtherMenu);
+
     if (otherButton) {
 
         otherButton.addEventListener(
@@ -3286,6 +3319,7 @@ playSharedSE(buttonSound)
             function () {
 
                 if (otherMenuPopup) {
+                    window.positionOtherMenuPopup();
                     otherMenuPopup.style.display = "block";
                 }
                 syncOnlineScreenView("other-menu", players[currentPlayer]);
@@ -6887,7 +6921,10 @@ inventoryButton.disabled =
                 }
                 else if (data.screenType === "other-menu") {
                     const popup = document.getElementById("otherMenuPopup");
-                    if (popup) popup.style.display = "block";
+                    if (popup) {
+                        window.positionOtherMenuPopup?.();
+                        popup.style.display = "block";
+                    }
                 }
                 else if (data.screenType === "sound-settings") {
                     const popup = document.getElementById("soundSettingsPopup");
