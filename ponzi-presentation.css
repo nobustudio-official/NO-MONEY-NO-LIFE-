@@ -41,3 +41,7 @@
 #ponzi-preview{background:transparent}
 #ponzi-preview .ponzi-outer,#ponzi-preview .ponzi-shade,#ponzi-preview .ponzi-hud{display:none}
 #ponzi-preview .ponzi-panel{position:fixed;left:var(--an02-left);right:var(--an02-right);bottom:var(--an02-bottom);width:auto;max-width:var(--an02-max-width);height:var(--an02-min-height);min-height:var(--an02-min-height);max-height:52vh;margin:0 auto;display:flex;align-items:center;padding:30px clamp(80px,6vw,115px) 30px 22px;z-index:5}
+
+
+/* Hide the announcement only while entering a Ponzi investment amount. */
+#ponzi-preview[data-stage='amount'] .ponzi-panel { display: none; }
