@@ -109,7 +109,7 @@
     min-height: 0;
     margin: 0;
     padding: 0 84px 0 0;
-    font: 600 clamp(14px, 2.1vh, 22px)/1.3 "Yu Gothic", "Meiryo", sans-serif;
+    font: 600 clamp(14px, 2.1vh, 22px)/1.35 "Yu Gothic", "Meiryo", sans-serif;
     overflow-wrap: anywhere;
 }
 
@@ -355,8 +355,6 @@
 @media (max-width: 700px), (pointer: coarse) and (max-height: 500px) {
     .boss-opening:not(.boss-opening-start) .boss-opening-copy {
         padding-right: 76px;
-        font-size: clamp(12px, 3vh, 16px);
-        line-height: 1.2;
         max-height: 100%;
         overflow: auto;
     }
