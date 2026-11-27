@@ -29,6 +29,38 @@
     let transferFade = null;
     let immunitySound;
     let menuPlaceholder, menuNode, hudPlaceholder, hudNode, returnButtonState;
+    let stopOfferTracking;
+    function placeOfferChoices(scene, caption) {
+        const cards = scene?.querySelector('.ug-options');
+        if (!cards || !caption) return;
+        const update = () => {
+            if (!scene.isConnected || root.hidden) return;
+            const frame = scene.getBoundingClientRect(), telop = caption.getBoundingClientRect();
+            if (!frame.height || !telop.height) return;
+            const style = getComputedStyle(scene), borderTop = parseFloat(style.borderTopWidth), borderBottom = parseFloat(style.borderBottomWidth);
+            // The job scene centers its staff (and choice cards) at 42%.
+            const center = frame.top + borderTop + (frame.height - borderTop - borderBottom) * .42;
+            const bottom = telop.top - 8, height = Math.max(48, 2 * (bottom - center));
+            Object.assign(cards.style, { left: (telop.left - frame.left) + 'px', right: (frame.right - telop.right) + 'px',
+                top: (bottom - height - frame.top) + 'px', bottom: 'auto', height: height + 'px' });
+        };
+        let pending = 0;
+        const schedule = () => { if (!pending) pending = requestAnimationFrame(() => { pending = 0; update(); }); };
+        const observer = new ResizeObserver(schedule);
+        [scene, caption].forEach(element => observer.observe(element));
+        window.addEventListener('resize', schedule, { passive: true });
+        window.visualViewport?.addEventListener('resize', schedule, { passive: true });
+        window.visualViewport?.addEventListener('scroll', schedule, { passive: true });
+        stopOfferTracking = () => {
+            observer.disconnect();
+            window.removeEventListener('resize', schedule);
+            window.visualViewport?.removeEventListener('resize', schedule);
+            window.visualViewport?.removeEventListener('scroll', schedule);
+            if (pending) cancelAnimationFrame(pending);
+            stopOfferTracking = null;
+        };
+        update();
+    }
     function updateHudBoundary() {
         if (!root || root.hidden) return;
         root.style.setProperty('--ug-hud-bottom', Math.ceil(document.querySelector('.game-hud')?.getBoundingClientRect().bottom || 80) + 'px');
@@ -307,12 +339,13 @@
             undergroundMusic(underground, stage);
         } else lastMusic = null;
         const stageKey = [state.matchPhase, flow?.turnKey, flow?.step, stage, underground].join(':');
-        const key = playingImmunitySound || immunityNotice ? `${stageKey}:${owner}` : stageKey;
+        const key = playingImmunitySound || immunityNotice || stage === 'offer' ? `${stageKey}:${owner}` : stageKey;
         if (key === viewKey) return;
         const priorViewKey = viewKey;
         viewKey = key;
         generation++;
         busy = false;
+        stopOfferTracking?.();
         cancelAnimationFrame(frame);
         clearTimeout(timer);
         restoreMenu();
@@ -412,10 +445,11 @@
                 return '<div class="ug-sale-row"><span>' + branch + '</span><span>' + escape(asset.name) + '</span><span>' + format(valuation) + 'G</span>' + gold(format(asset.payout) + 'G') + '</div>';
             }).join('') + '</div><div class="ug-sale-totals"><span>所持ゴールド <strong class="ug-sale-balance">' + format(player.money) +
             'G</strong></span><span>売却合計 ' + gold(format(flow.sales.reduce((sum, asset) => sum + asset.payout, 0)) + 'G') + '</span></div></section>' : '';
-        const stageContent = scene ? '<div class="ug-scene' + (gambling ? ' ug-gambling' : '') + (stage === 'cheat' ? ' ug-inspection' : '') + '">' +
+        const stageContent = scene ? '<div class="ug-scene' + (gambling ? ' ug-gambling' : '') + (stage === 'offer' ? ' ug-offer' : '') + (stage === 'cheat' ? ' ug-inspection' : '') + '">' +
             (guard ? '<img class="ug-character" alt="" src="images/characters/npc/shops/黒服.webp">' : '') +
             (['foreman','offer','confession'].includes(stage) ? '<img class="ug-character" alt="" src="images/characters/npc/shops/' + (stage === 'confession' ? '班長2.webp' : '班長1.webp') + '">' : '') +
-            (stage === 'offer' ? '<div class="ug-options job-choices">' + button(player.underground.memo ? 'メモ帳を所持<br>して挑戦' : '挑戦する','challenge','job-choice-button job-work-button') + button('断る','decline','job-choice-button') + '</div>' : '') +
+            (stage === 'offer' ? '<div class="ug-options br-choices"><div class="br-card-slot"><button type="button" class="ug-challenge" data-action="challenge" data-frame-id="BT03-G"' + (!owner ? ' disabled' : '') + '><span class="br-card-front">' + (player.underground.memo ? 'メモ帳を所持<br>して挑戦' : '挑戦する') + '</span></button></div>' +
+                '<div class="br-card-slot"><button type="button" class="ug-decline" data-action="decline" data-frame-id="BT03-S"' + (!owner ? ' disabled' : '') + '><span class="br-card-front">断る</span></button></div></div>' : '') +
             (dice ? '<div class="ug-dice">' + participant('player', portrait(player), escape(player.name)) +
             participant('foreman','images/characters/npc/shops/班長アイコン1.webp','班長') + '</div>' : '') +
             (stage === 'duel' ? button('<img src="images/ui/icons/interface/dice.webp" alt="">サイコロを振る','next','ug-roll') : '') + '</div>' : '';
@@ -438,6 +472,7 @@
             window.Plane02Layout?.apply(sceneFrame);
         }
         if (underground) placeMenu();
+        if (stage === 'offer') placeOfferChoices(sceneFrame, telop);
         if (underground && ['choose','moving'].includes(stage) && flow.remaining > 0) window.DiceMovementCounter?.show(flow.remaining, !owner);
         else if (underground) window.DiceMovementCounter?.hide();
         if (underground) {
@@ -553,6 +588,7 @@
     }
 
     function suspend() {
+        stopOfferTracking?.();
         generation++;
         clearTimeout(timer);
         cancelAnimationFrame(frame);

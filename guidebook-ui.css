@@ -128,6 +128,19 @@
 .guidebook-copy p { margin: 0; }
 .guidebook-intro { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 12px; align-items: center; min-height: 100%; }
 .guidebook-layer[data-view="intro"] .guidebook-panel { align-content: stretch; }
+.guidebook-layer:is([data-view="reading"], [data-view="intro"]) { --an02-bottom: inherit; --guidebook-an02-height: var(--an02-min-height); }
+.guidebook-layer:is([data-view="reading"], [data-view="intro"]) .guidebook-panel { border-width: 2px; }
+/* Keep reading content above AN02 while retaining the full choice-scene frame. */
+.guidebook-layer[data-view="reading"] .guidebook-panel { padding-bottom: calc(var(--an02-min-height) + var(--an02-bottom)); overflow: clip; }
+.guidebook-layer[data-view="reading"] .guidebook-reading-body { position: relative; overflow: clip; }
+.guidebook-layer[data-view="reading"] .guidebook-spread { position: absolute; left: 50%; top: 50%; width: min(100%, 1400px); margin: 0; transform: translate(-50%, -45%); }
+/* Scale the artwork alone; the text background retains its size and position. */
+.guidebook-layer[data-view="reading"] .guidebook-spread > img { position: absolute; left: 51.25%; top: 45%; height: auto; max-width: none; transform: translate(-51.25%, -45%); }
+.guidebook-layer[data-view="reading"] .guidebook-copy { left: 51.25%; width: max-content; max-width: calc(77.5% - 16px); padding-inline: .9cqi; font-size: clamp(12px, 2.3cqi, 30px); text-align: center; white-space: normal; overflow-wrap: anywhere; }
+.guidebook-layer[data-view="intro"] .guidebook-panel { grid-template-rows: minmax(0, 1fr) auto auto; }
+.guidebook-layer[data-view="intro"] .guidebook-next { justify-self: end; margin: 0; padding: 4px 12px; font-size: clamp(12px, 1.5vw, 18px); }
+.guidebook-layer[data-view="intro"] .guidebook-notice { margin: 0; color: #ffd0c5; }
+.guidebook-layer[data-view="intro"] .guidebook-notice:empty { display: none; }
 .guidebook-intro > img { width: 100%; height: min(38dvh, 380px); object-fit: contain; }
 .guidebook-intro > div { font-size: clamp(12px, 1.4vw, 25px); line-height: 1.5; }
 .guidebook-trade-title { margin: 0 0 .65em; color: #ffdc83; font-size: 1.15em; }

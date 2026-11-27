@@ -1,0 +1,21 @@
+/* Shared continuation labels; gameplay handlers stay on their original nodes. */
+.game-next-indicator {
+    position: absolute !important; inset: auto 10px 6px auto !important;
+    grid-area: auto !important; align-self: auto !important; justify-self: auto !important;
+    width: max-content !important; min-width: 44px !important; max-width: calc(100% - 20px) !important;
+    height: auto !important; min-height: 27px !important; margin: 0 !important; padding: 0 !important;
+    display: flex !important; align-items: flex-end !important; justify-content: flex-end !important;
+    font-size: calc(var(--game-next-original-size) - 3pt) !important;
+    line-height: 1.5 !important; text-align: right !important; white-space: nowrap !important;
+    transform: none !important; box-sizing: border-box !important;
+}
+.game-next-indicator[hidden] { display: none !important; }
+.game-next-relative-host { position: relative !important; }
+.game-next-short-host { min-height: var(--game-next-host-height) !important; }
+.game-next-copy {
+    box-sizing: border-box !important; padding-right: var(--game-next-copy-space) !important;
+    white-space: normal !important; overflow-wrap: anywhere !important;
+}
+.game-next-copy-absolute { right: 0 !important; }
+.game-next-copy :is(.an02-single-line, .battle-log-phrase) { white-space: normal !important; }
+.game-next-copy .battle-log-phrase { display: inline !important; }

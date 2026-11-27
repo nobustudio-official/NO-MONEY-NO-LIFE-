@@ -1,0 +1,101 @@
+<!doctype html><meta charset="utf-8"><title>Dividend alignment and market timing</title>
+<style>html,body{margin:0}iframe{display:block;border:0}#report{display:none}</style>
+<pre id="report">RUNNING</pre><iframe id="game" style="width:665px;height:307px"></iframe>
+<script>
+(async()=>{
+ const frame=document.getElementById('game'),results=[],failures=[];
+ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+ const check=(yes,message)=>{if(!yes)throw Error(message)};
+ const capture=async name=>{window.__captureRequest={name};await new Promise(resolve=>window.__continueCapture=resolve)};
+ const rect=e=>{const r=e.getBoundingClientRect();return[r.x,r.y,r.width,r.height]};
+ const close=(a,b)=>a.every((n,i)=>Math.abs(n-b[i])<.8);
+ let stage='load',w,d,cleanup,overlay;
+ try{
+  await new Promise(resolve=>{frame.onload=resolve;frame.src='../index.html?dividend-layout-test=1'});
+  w=frame.contentWindow;d=w.document;
+  w.requestAnimationFrame=fn=>w.setTimeout(()=>fn(w.performance.now()),16);w.cancelAnimationFrame=id=>w.clearTimeout(id);
+  w.HTMLMediaElement.prototype.play=()=>Promise.resolve();await w.localMatchRecoveryReady;
+  const load=(tag,url)=>new Promise((resolve,reject)=>{const e=d.createElement(tag);if(tag==='link'){e.rel='stylesheet';e.href=url}else e.src=url;e.onload=()=>resolve(e);e.onerror=reject;d.head.append(e)});
+  const current=[...d.querySelectorAll('link')].find(e=>e.getAttribute('href')?.startsWith('dividend-presentation.css'));
+  const baseline=await load('link','/__dividend_baseline.css');current.before(baseline);current.disabled=true;
+  const players=Array.from({length:4},(_,i)=>({name:'プレイヤー'+(i+1),characterId:i+1,icon:w.eval('PLAYER_CONTENTS')[i+1].icon,income:i?25000:0,property:i?50000:0,averageYield:i?50:0,cash:10000,history:[0,10000]}));
+  const mount=(count,stage,extra={})=>{
+   cleanup?.();overlay?.remove();overlay=d.createElement('div');overlay.id='dividendPresentationOverlay';
+   overlay.innerHTML='<div id="nmnl-dividend-lab"><nav class="dp-steps" hidden></nav><section class="dp-screen"><h2 class="dp-title"></h2><div class="dp-body"></div><footer class="dp-footer"><small></small><button type="button" class="dp-next">次へ</button></footer></section></div>';
+   d.body.append(overlay);
+   cleanup=w.DividendPresentation.mount(overlay.firstElementChild,{stage,players:players.slice(0,count),startedAt:Date.now()-20000,completedTurn:9,historyTurns:[0,9],onNext:async()=>{},readOnly:false,...extra});
+   return overlay;
+  };
+  const snapshot=()=>[...overlay.querySelectorAll('.dp-title,.dp-body,.dp-receipts,.dp-receipts th,.dp-receipts td,.dp-person,.dp-income')].map(e=>[e.textContent,...rect(e)]);
+  const settleStyles=async()=>{
+   await capture(null);
+   for(let attempt=0;attempt<100;attempt++){
+    if(w.getComputedStyle(overlay).position==='fixed'&&w.getComputedStyle(overlay.querySelector('.dp-title')).position==='absolute'){await delay(50);return}
+    await delay(20);
+   }
+   throw Error('Dividend stylesheet did not activate');
+  };
+  // Compare the exact same real table before and after enabling the next-label feature.
+  mount(2,1);await delay(80);const beforeNext=snapshot();
+  await load('link','../next-indicator.css');await load('script','../next-indicator.js');await delay(100);
+  check(JSON.stringify(snapshot())===JSON.stringify(beforeNext),'next-label change moved table or title');
+  const offsets=()=>[...overlay.querySelectorAll('.dp-receipt')].map(row=>{
+   const r=row.getBoundingClientRect(),center=r.y+r.height/2;
+   return [...row.children].map(cell=>{
+    const item=cell.querySelector('.dp-person,.dp-income');
+    if(item){const b=item.getBoundingClientRect();return(b.y+b.height/2)-center}
+    const range=d.createRange();range.selectNodeContents(cell);const b=range.getBoundingClientRect();return(b.y+b.height/2)-center;
+   });
+  });
+  const originalOffsets=offsets();check(originalOffsets.some(row=>row.some(value=>Math.abs(value)>3)),'baseline vertical offset not reproduced');
+  results.push({nextFeature:'title/table/all cells unchanged',originalVerticalOffsets:originalOffsets});
+  baseline.disabled=true;current.disabled=false;await settleStyles();
+  for(const [width,height] of [[665,307],[852,393],[640,320],[740,360],[1280,720],[393,852]]){
+   stage='dividend rows '+width+'x'+height;frame.style.width=width+'px';frame.style.height=height+'px';await capture(null);await delay(80);
+   for(const count of [2,4]){
+    mount(count,1);await delay(80);
+    const title=overlay.querySelector('.dp-title').getBoundingClientRect();check(Math.abs(title.x+title.width/2-width/2)<1,'title not centered');
+    const rows=[...overlay.querySelectorAll('.dp-receipt')],head=[...overlay.querySelectorAll('thead th')];
+    const errors=offsets();
+    check(errors.every(row=>row.every(value=>Math.abs(value)<=2)), 'row content not vertically centered '+JSON.stringify(errors));
+    const scroll=overlay.querySelector('.dp-body');
+    check(w.getComputedStyle(scroll).scrollbarWidth==='none','dividend scrollbar still visible');
+    if(scroll.scrollHeight>scroll.clientHeight){scroll.scrollTop=20;check(scroll.scrollTop>0,'dividend scrolling disabled');scroll.scrollTop=0;}
+    for(const row of rows)for(let col=1;col<4;col++){
+     const a=row.children[col].getBoundingClientRect(),b=head[col].getBoundingClientRect();
+     check(Math.abs(a.x+a.width/2-(b.x+b.width/2))<.8,'column centers differ');
+    }
+    const actual=snapshot();current.disabled=true;baseline.disabled=false;await settleStyles();const original=snapshot();
+    // Hiding the scrollbar returns its gutter to the table; outer frames stay fixed.
+    for(let i=0;i<2;i++)check(close(actual[i].slice(1),original[i].slice(1)),'outer frame changed '+JSON.stringify({i,actual:actual[i],original:original[i]}));
+    baseline.disabled=true;current.disabled=false;await settleStyles();
+    if(width===665&&count===2)await capture('dividend-row-centers-665x307.png');
+    results.push({viewport:[width,height],players:count,rowVerticalOffsets:errors,title:'centered',columns:'matched'});
+   }
+   for(const readOnly of [false,true]){
+    stage='market sound '+width+'x'+height+' '+readOnly;
+    let finishSound,soundStart;
+    const start=()=>{
+     const character=overlay.querySelector('.dp-guide-staff');
+     soundStart={character:rect(character),copy:overlay.querySelector('.dp-guide-copy').textContent};
+     return new Promise(resolve=>finishSound=resolve);
+    };
+    w.GameSE={...w.GameSE,play:()=>Promise.resolve(),playAndWait:start,waitForEnd:start};
+    mount(2,6,{readOnly,marketSound:'marketCrash',marketMessage:'急激なデフレが発生しました！次の配当終了までの間、報酬や資産などの価格が50%減少します！'});
+    check(soundStart&&Math.abs(soundStart.character[0]+soundStart.character[2]/2-width/2)<1,'character not centered when SE starts');
+    check(!soundStart.copy,'announcement shown before SE completes');
+    const character=overlay.querySelector('.dp-guide-staff');await character.decode();await delay(60);
+    const during=rect(character);check(Math.abs(during[0]+during[2]/2-width/2)<1,'character moved while SE plays');
+    if(width===665&&!readOnly)await capture('dividend-market-during-se-665x307.png');
+    finishSound();await delay(80);check(close(rect(character),during),'character moved after SE');
+    check(overlay.querySelector('.dp-guide-copy').textContent.includes('急激なデフレ'),'announcement did not appear');
+    check(overlay.querySelector('.dp-next').disabled===readOnly,'next ownership changed');
+    if(width===665&&!readOnly)await capture('dividend-market-centered-665x307.png');
+    results.push({viewport:[width,height],readOnly,marketCharacter:'centered before SE/during SE/after SE'});
+   }
+  }
+  cleanup?.();overlay?.remove();stage='complete';
+ }catch(error){failures.push(error.stack||String(error))}
+ document.getElementById('report').textContent=JSON.stringify({stage,results,failures});document.body.dataset.complete='true';
+})();
+</script>

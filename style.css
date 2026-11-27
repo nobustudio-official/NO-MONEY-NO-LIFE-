@@ -10415,7 +10415,7 @@ max-height:
    ========================================================= */
 .game-hud .hud-turn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;line-height:1.05}
 .game-hud.has-market-badge{overflow:visible}
-.game-hud>.hud-market-badge{position:absolute;z-index:1001;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:56px;padding:5px 8px;border:2px solid #8d65d6;border-radius:0 0 10px 10px;background:linear-gradient(180deg,#663ca5,#442574);box-shadow:0 6px 16px rgba(0,0,0,.38);color:#fff;font-family:"Yu Gothic","Meiryo",sans-serif;text-align:center;white-space:nowrap;box-sizing:border-box}
+.game-hud>.hud-market-badge{position:absolute;z-index:1001;display:flex;flex-direction:row;align-items:baseline;justify-content:center;gap:4px;min-height:0;padding:4px 6px;left:auto!important;right:0;width:max-content!important;max-width:100%;border:2px solid #8d65d6;border-radius:0 0 10px 10px;background:linear-gradient(180deg,#663ca5,#442574);box-shadow:0 6px 16px rgba(0,0,0,.38);color:#fff;font-family:"Yu Gothic","Meiryo",sans-serif;text-align:center;white-space:nowrap;box-sizing:border-box}
 .hud-market-badge .hud-market-label{font-size:clamp(10px,1.05vw,15px);font-weight:700;line-height:1.1}
 .hud-market-badge .hud-market-rate{font-size:clamp(13px,1.35vw,19px);font-weight:900;line-height:1.1}
 .game-hud>.hud-market-badge[data-season="boom"]{border-color:#ff7772;background:linear-gradient(180deg,#bd3d46,#81232f)}

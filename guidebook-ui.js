@@ -19,7 +19,7 @@
         rejected: '申請を却下した！',
         expired: '攻略本は消失した！もう手に入らない！'
     };
-    let layer, key, gameScreen, stopHudTracking, stopChoiceTracking, pending = false, withdrawalTimer, withdrawalBanner, currentWithdrawal;
+    let layer, key, gameScreen, stopHudTracking, stopChoiceTracking, stopFrameTracking, stopReadingTracking, pending = false, withdrawalTimer, withdrawalBanner, currentWithdrawal;
     const withdrawals = [];
     const formatGold = amount => amount.toLocaleString('ja-JP') + 'G';
     const make = (tag, cls, value) => {
@@ -38,6 +38,10 @@
         window.PlayerCardSize?.release(layer);
         stopChoiceTracking?.();
         stopChoiceTracking = null;
+        stopFrameTracking?.();
+        stopFrameTracking = null;
+        stopReadingTracking?.();
+        stopReadingTracking = null;
         stopHudTracking?.();
         stopHudTracking = null;
         layer?.remove();
@@ -76,6 +80,23 @@
             window.visualViewport?.removeEventListener('scroll', schedule);
             window.Plane02Layout?.release(panel);
         };
+    }
+    function fitReadingArt(root, panel) {
+        const spread = panel.querySelector('.guidebook-spread'), copy = spread?.querySelector('.guidebook-copy'), book = spread?.querySelector('img');
+        if (!copy || !book) return null;
+        const update = () => {
+            if (layer !== root || !root.isConnected) return;
+            // The two pages occupy 77.5% of the asset; match them to the text background.
+            const width = copy.getBoundingClientRect().width;
+            if (width) book.style.width = (width / .775) + 'px';
+        };
+        let frameId = 0;
+        const observer = new ResizeObserver(() => {
+            if (!frameId) frameId = requestAnimationFrame(() => { frameId = 0; update(); });
+        });
+        [spread, copy].forEach(element => observer.observe(element));
+        update();
+        return () => { observer.disconnect(); if (frameId) cancelAnimationFrame(frameId); };
     }
     function trackHud(root, hud) {
         const update = () => {
@@ -180,10 +201,10 @@
             else if (subjectIndex != null) banner.append(image(icon(subjectIndex)));
             banner.append(make('p', '', message));
         }
-        function next() {
+        function next(target = banner) {
             const advance = () => go('next', { view: kind, page: view.page });
             if (control) {
-                banner.append(button('次へ▶', advance, 'guidebook-next'));
+                target.append(button('次へ▶', advance, 'guidebook-next'));
                 root.onclick = event => { if (!event.target.closest('button,input,select,textarea')) advance(); };
                 root.onkeydown = event => {
                     if (event.target === root && (event.key === 'Enter' || event.key === ' ')) {
@@ -235,8 +256,7 @@
             copy.append(heading, detail);
             layout.append(image(closedBook, '閉じた攻略本'), copy);
             panel.append(layout);
-            announce(messages.intro, active);
-            next();
+            next(panel);
         } else if (kind === 'last-chance') {
             panel.hidden = true;
             announce('攻略本の購入申請はこのターンで最後です。', null, guildStaffIcon);
@@ -325,11 +345,21 @@
             next();
         }
         panel.hidden = panel.hidden || !panel.childNodes.length;
-        if (banner.childNodes.length) banner.append(notice);
-        root.append(panel, banner);
+        if (kind === 'intro') {
+            panel.append(notice);
+            root.append(panel);
+        } else {
+            if (banner.childNodes.length) banner.append(notice);
+            root.append(panel, banner);
+        }
         document.body.append(root);
-        styleBanner(banner);
+        if (kind !== 'intro') styleBanner(banner);
         if (kind === 'choice') stopChoiceTracking = placeChoiceCards(root, panel);
+        if ((kind === 'reading' || kind === 'intro') && !panel.hidden) {
+            window.Plane02Layout?.apply(panel, { once: true });
+            stopFrameTracking = window.Plane02Layout?.apply(panel);
+            if (kind === 'reading') stopReadingTracking = fitReadingArt(root, panel);
+        }
         if (kind === 'offer' || kind === 'offers') window.PlayerCardSize?.watch(root);
         const screen = document.querySelector('.game-screen');
         const hud = screen?.querySelector('.game-hud');

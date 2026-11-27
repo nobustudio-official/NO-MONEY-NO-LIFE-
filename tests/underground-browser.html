@@ -32,7 +32,8 @@
  function centerCheck(){
   const tile=[...w.document.querySelectorAll('.ug-tile')].find(e=>e.style.getPropertyValue('--x')==='2'&&e.style.getPropertyValue('--y')==='2');
   const r=tile.getBoundingClientRect();
-  check(Math.abs(r.x+r.width/2-w.innerWidth/2)<.8&&Math.abs(r.y+r.height/2-w.innerHeight/2)<.8,'central square off screen center');
+  const hudBottom=w.document.querySelector('.game-hud').getBoundingClientRect().bottom;
+  check(Math.abs(r.x+r.width/2-w.innerWidth/2)<.8&&Math.abs(r.y+r.height/2-(Math.ceil(hudBottom)+w.innerHeight)/2)<.8,'central square off underground area center');
   return rect(w.document.querySelector('.ug-map'));
  }
  try{
@@ -81,7 +82,7 @@
    const tile=w.document.querySelector('.ug-tile').getBoundingClientRect();
    check(tile.y-tile.height*.22>=w.document.querySelector('.game-hud').getBoundingClientRect().bottom-1,'board overlaps HUD after resize');
   }
-  results.push('center square remains at viewport center through three viewport resizes');output();
+  results.push('center square remains at the center of the area below the HUD through three viewport resizes');output();
   w.UndergroundUI.suspend();
   check(w.document.querySelector('.game-container .game-hud')&&w.document.querySelector('.game-container .action-menu'),'ground HUD/menu not restored');
   check(w.getComputedStyle(w.document.querySelector('.map-area')).visibility==='visible','ground map remains hidden');

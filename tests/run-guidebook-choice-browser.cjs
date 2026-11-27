@@ -52,7 +52,7 @@ async function main(){
         }
         if(!complete)throw Error('Guidebook tests did not complete');
         const report=await evaluate(`JSON.parse(document.getElementById('report').textContent)`);
-        fs.writeFileSync(path.join(output,'guidebook-choice-report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
+        fs.writeFileSync(path.join(output,'guidebook-choice-report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify({stage:report.stage,cases:report.results.length,failures:report.failures}));
         if(report.failures.length)throw Error('Guidebook regression failed');
         await send('Browser.close').catch(()=>{});
     }finally{socket?.close();child.kill();server.close();}

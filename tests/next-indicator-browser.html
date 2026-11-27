@@ -1,0 +1,94 @@
+<!doctype html><meta charset="utf-8"><title>Game continuation labels</title>
+<style>html,body{margin:0}iframe{display:block;border:0}#report{display:none}</style>
+<pre id="report">RUNNING</pre><iframe id="game" style="width:852px;height:393px"></iframe>
+<script>
+(async()=>{
+ const frame=document.getElementById('game'),results=[],failures=[],references=new Map();
+ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+ const check=(yes,message)=>{if(!yes)throw Error(message)};
+ const capture=async name=>{window.__captureRequest={name};await new Promise(resolve=>window.__continueCapture=resolve)};
+ const rect=e=>{const r=e.getBoundingClientRect();return[r.x,r.y,r.width,r.height]};
+ const same=(a,b)=>a.every((n,i)=>Math.abs(n-b[i])<.8);
+ const sizes=[[1920,1080],[1280,720],[852,393],[740,360],[640,320],[393,852]];
+ const longText='とても長い名前の冒険者は、攻略本を使ってイベントの詳細を確認しました。報酬と資産の価格が変化します。次のターンに進む前に、アイテムの説明と獲得金額も確認してください。';
+ const cases=[
+  ['common','<div id="eventPopup" class="event-popup common-announcement announcement-no-portrait"><p class="event-popup-message"></p><button class="event-popup-button">次へ▶</button></div>','.common-announcement','.event-popup-message','button'],
+  ['guidebook','<div class="guidebook-layer" data-view="reading"><div class="guidebook-an02"><div class="telop-standard-frame telop-no-portrait"><p class="telop-standard-copy"></p><button class="guidebook-next telop-standard-next">次へ▶</button></div></div></div>','.telop-standard-frame','p','button'],
+  ['underground','<section id="undergroundPresentation"><div class="ug-caption telop-standard-frame telop-no-portrait telop-has-speaker"><span class="telop-standard-speaker">班長</span><p class="telop-standard-copy"></p><button class="ug-next telop-standard-next">次へ▶</button></div></section>','.ug-caption','p','button'],
+  ['lost-magic','<div class="lost-magic-an02 telop-standard-frame telop-no-portrait"><p class="lost-magic-an02-copy telop-standard-copy"></p><span class="lost-magic-an02-next telop-standard-next">次へ ▶</span></div>','.telop-standard-frame','p','span'],
+  ['job','<div id="jobPopup" class="job-approved-layout"><div class="job-dialogue-box"><div class="job-dialogue-text"></div><div class="job-dialogue-next">次へ▶</div></div></div>','.job-dialogue-box','.job-dialogue-text','.job-dialogue-next'],
+  ['boss-aftermath','<section id="boss-aftermath"><div class="bf-banner"><span class="bf-speaker">ギルドのお姉さん</span><p class="bf-copy"></p><button class="bf-next">次へ▶</button></div></section>','.bf-banner','p','button'],
+  ['ending','<section id="endingPresentationOverlay" class="bf-ending-sequence"><div class="bf-banner"><p class="bf-copy"></p><button class="bf-next">次へ▶</button></div></section>','.bf-banner','p','button'],
+  ['opening-start','<section class="boss-opening boss-opening-start"><div class="boss-opening-banner"><span class="boss-opening-speaker">ギルドのお姉さん</span><p class="boss-opening-copy"></p><button class="boss-opening-next">次へ▶</button></div></section>','.boss-opening-banner','p','button'],
+  ['opening-next-boss','<section class="boss-opening"><div class="boss-opening-banner"><span class="boss-opening-speaker">ギルドのお姉さん</span><p class="boss-opening-copy"></p><button class="boss-opening-next">次へ▶</button></div></section>','.boss-opening-banner','p','button'],
+  ['bridge-npc','<div class="bridge-mugging-an06"><span class="bridge-mugging-speaker">チビリン</span><p class="bridge-mugging-copy"></p><span class="bridge-mugging-next">次へ ▶</span></div>','.bridge-mugging-an06','p','.bridge-mugging-next'],
+  ['bridge-player','<div class="bridge-mugging-an06 has-player-icon"><p class="bridge-mugging-copy"></p><span class="bridge-mugging-next">次へ ▶</span></div>','.bridge-mugging-an06','p','span'],
+  ['normal-reward','<div class="reward-announcement"><div id="rewardMessage"></div><button id="rewardNext">次へ▶</button></div>','.reward-announcement','#rewardMessage','button'],
+  ['dividend-guide','<section id="dividendPresentationOverlay"><div id="nmnl-dividend-lab"><div class="dp-guide-banner"><span class="dp-guide-speaker">ギルドのお姉さん</span><div class="dp-guide-copy"></div><button class="dp-next">次へ▶</button></div></div></section>','.dp-guide-banner','.dp-guide-copy','button'],
+  ['dividend-table','<section id="dividendPresentationOverlay"><div id="nmnl-dividend-lab"><div class="dp-screen" data-stage="1"><footer class="dp-footer"><button class="dp-next">次へ▶</button></footer></div></div></section>','.dp-footer',null,'button'],
+  ['combat-log','<div id="battleMainPopup" class="battle-motion-mode"><div id="battleNewMessage" class="battle-new-message is-active"><span class="battle-log-text"></span><small class="battle-log-next">次へ▶</small></div></div>','.battle-new-message','.battle-log-text','small'],
+  ['ponzi','<section id="ponzi-preview"><div class="ponzi-panel telop-standard-frame telop-no-portrait"><p class="ponzi-text telop-standard-copy"></p><span class="ponzi-next telop-standard-next">次へ ▶</span></div></section>','.ponzi-panel','p','span'],
+  ['hatataki','<div class="hatataki-layer"><div class="hatataki-body hatataki-notice"><p></p><button class="hatataki-button hatataki-notice-next">次へ ▶</button></div></div>','.hatataki-notice','p','button'],
+  ['guidebook-intro','<section class="guidebook-layer" data-view="intro"><div class="guidebook-panel"><div class="guidebook-intro"></div><button class="guidebook-next">次へ▶</button></div></section>','.guidebook-panel','.guidebook-intro','button'],
+  ['floating-underground','<section id="undergroundPresentation"><button class="ug-next">次へ▶</button></section>','#undergroundPresentation',null,'button'],
+  ['plain-next','<div id="eventPopup" class="event-popup"><p class="event-popup-message"></p><button class="event-popup-button">次へ</button></div>','#eventPopup','p','button']
+ ];
+ let stage='load',w,d,mounted;
+ try{
+  await new Promise(resolve=>{frame.onload=resolve;frame.src='../index.html?next-indicator-test=1'});
+  w=frame.contentWindow;d=w.document;w.HTMLMediaElement.prototype.play=()=>Promise.resolve();
+  w.requestAnimationFrame=fn=>w.setTimeout(()=>fn(w.performance.now()),16);w.cancelAnimationFrame=id=>w.clearTimeout(id);
+  await w.localMatchRecoveryReady;check(!w.NextIndicator,'test baseline already modified');
+  const mount=entry=>{
+   mounted?.remove();const root=mounted=d.createElement('div');root.innerHTML=entry[1];
+   const host=root.querySelector(entry[2]),copy=entry[3]&&root.querySelector(entry[3]),next=root.querySelector(entry[4]);
+   host.style.cssText='position:fixed;left:var(--an02-left);right:var(--an02-right);bottom:var(--an02-bottom);height:var(--an02-min-height);min-height:var(--an02-min-height);width:auto;max-width:var(--an02-max-width);margin:0 auto;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr);';
+   if(copy){copy.textContent=longText;copy.style.minWidth='0';if(entry[0]==='combat-log')copy.innerHTML='<span class="battle-log-phrase">'+longText+'</span>';}
+   if(next.tagName==='BUTTON')next.type='button';
+   d.body.append(root);return{root,host,copy,next};
+  };
+  for(const [width,height] of sizes){
+   frame.style.width=width+'px';frame.style.height=height+'px';await capture(null);await delay(60);
+   for(const entry of cases){const {host,next}=mount(entry);references.set(width+'-'+entry[0],{font:parseFloat(w.getComputedStyle(next).fontSize),host:rect(host)});}
+  }
+  mounted.remove();
+  const load=(tag,url)=>new Promise((resolve,reject)=>{const node=d.createElement(tag);if(tag==='link'){node.rel='stylesheet';node.href=url}else node.src=url;node.onload=resolve;node.onerror=reject;d.head.append(node)});
+  await load('link','../next-indicator.css');await load('script','../next-indicator.js');
+  for(const [width,height] of sizes){
+   stage='geometry '+width+'x'+height;frame.style.width=width+'px';frame.style.height=height+'px';await capture(null);await delay(80);
+   for(const entry of cases){
+    const {host,copy,next}=mount(entry);let clicks=0;const handler=()=>clicks++;next.onclick=handler;await delay(75);
+    const before=references.get(width+'-'+entry[0]),h=host.getBoundingClientRect(),n=next.getBoundingClientRect(),font=parseFloat(w.getComputedStyle(next).fontSize);
+    check(next.classList.contains('game-next-indicator'),entry[0]+' missed');
+    check(Math.abs(font-(before.font-4))<.1,entry[0]+' font delta '+JSON.stringify({before:before.font,after:font}));
+    check(same(rect(host),before.host),entry[0]+' frame changed');
+    const hostStyle=w.getComputedStyle(host),scrollbar=Math.max(0,host.offsetWidth-host.clientWidth-parseFloat(hostStyle.borderLeftWidth)-parseFloat(hostStyle.borderRightWidth));
+    check(h.right-n.right>=9+scrollbar&&h.right-n.right<=12+scrollbar&&h.bottom-n.bottom>=5&&h.bottom-n.bottom<=8,entry[0]+' edge inset '+JSON.stringify({host:rect(host),next:rect(next),scrollbar}));
+    check(next.onclick===handler,entry[0]+' click handler changed');next.click();check(clicks===1,entry[0]+' click failed');
+    if(copy){
+     const s=w.getComputedStyle(copy),r=copy.getBoundingClientRect(),right=r.right-parseFloat(s.paddingRight);
+     check(right<=n.left-4.5,entry[0]+' copy overlaps next');
+     const walker=d.createTreeWalker(copy,w.NodeFilter.SHOW_TEXT),range=d.createRange();
+     while(walker.nextNode()){range.selectNodeContents(walker.currentNode);for(const part of range.getClientRects())check(part.right<=n.left-4,entry[0]+' text extends under next')}
+    }
+    next.hidden=true;await delay(50);check(!next.getClientRects().length,entry[0]+' hidden next visible');
+    if(copy)check(!copy.classList.contains('game-next-copy'),entry[0]+' hidden next retains custom reservation');
+    next.hidden=false;await delay(60);check(next.classList.contains('game-next-indicator'),entry[0]+' shown next missed');
+    next.textContent='終了';await delay(60);check(!next.classList.contains('game-next-indicator'),entry[0]+' end button changed');
+    results.push({viewport:[width,height],screen:entry[0],fontBefore:before.font,fontAfter:font,gap:'5px',actions:'passed'});
+   }
+  }
+  mounted.remove();stage='real guidebook';frame.style.width='852px';frame.style.height='393px';await capture(null);await delay(80);
+  w.renderGameTemplate('mainGameTemplate',d.querySelector('.game-container'));
+  const players=w.players=[{name:'プレイヤー1',characterId:1,money:100000,inventory:[30],assets:[],magic:[]}],icon=()=>w.eval('PLAYER_CONTENTS')[1].icon;
+  d.getElementById('hudPlayerName').textContent=players[0].name;d.getElementById('hudPlayerAvatar').style.backgroundImage='url("'+icon()+'")';d.querySelector('.hud-destination-icon').src=w.eval('BOSS_MAP_ICON_PATH');
+  let advances=0;const ctx={players,active:0,book:{remaining:0,withdrawals:[]},icon,control:true,turnKey:'next-guidebook',dispatch:async()=>advances++};
+  w.GuidebookUI.render({kind:'reading'},ctx);await delay(120);await capture('next-indicator-guidebook-852x393.png');
+  d.querySelector('.guidebook-next').click();await delay(30);check(advances===1,'real guidebook next failed');w.GuidebookUI.reset();
+  // Changing a next label must not affect an adjacent control or its text style.
+  const unrelated=d.createElement('button');unrelated.textContent='閉じる';d.body.append(unrelated);const old=w.getComputedStyle(unrelated).fontSize;w.NextIndicator.refresh();await delay(70);check(!unrelated.classList.contains('game-next-indicator')&&w.getComputedStyle(unrelated).fontSize===old,'unrelated button changed');unrelated.remove();
+  stage='complete';
+ }catch(error){failures.push(error.stack||String(error))}
+ document.getElementById('report').textContent=JSON.stringify({stage,results,failures});document.body.dataset.complete='true';
+})();
+</script>

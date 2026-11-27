@@ -19,6 +19,9 @@
         w.renderGameTemplate('mainGameTemplate',d.querySelector('.game-container'));
         const players=w.players=[0,1].map(i=>({name:'プレイヤー'+(i+1),characterId:i+1,money:100000,inventory:[30],assets:[],magic:[]}));
         const icon=i=>w.eval('PLAYER_CONTENTS')[i+1].icon;
+        d.getElementById('hudPlayerName').textContent=players[0].name;
+        d.getElementById('hudPlayerAvatar').style.backgroundImage='url("'+icon(0)+'")';
+        d.querySelector('.hud-destination-icon').src=w.eval('BOSS_MAP_ICON_PATH');
         let sequence=0;
         const context=(online=false,control=true)=>({players,active:0,book:{remaining:0,withdrawals:[]},icon,online,control,
             turnKey:'guidebook-layout-'+ ++sequence,dispatch:async()=>{},back(){}});
@@ -84,6 +87,64 @@
                 frame.style.width=width+'px';await delay(100);
                 results.push({viewport:[width,height],online,cards:reference.cards,caption:reference.caption,liveResize:'passed'});
             }
+            for(const online of [false,true])for(const control of [true,false]){
+                stage='reading/intro '+width+'x'+height+' '+online+' '+control;
+                const ctx={...context(online,control),marketOutcomeAt18:online?'boom':'bust',marketEventTurn:online?123:18};
+                const expectedFrame=()=>{const hud=d.querySelector('.game-hud').getBoundingClientRect(),screen=d.querySelector('.game-screen').getBoundingClientRect();return[hud.left,hud.bottom+8,hud.width,screen.bottom-8-(hud.bottom+8)]};
+                w.GuidebookUI.render({kind:'reading'},ctx);await delay(70);
+                let panel=d.querySelector('.guidebook-panel');
+                if(control){
+                    check(same(rect(panel),expectedFrame()),'reading frame differs from choice');
+                    const body=d.querySelector('.guidebook-reading-body'),caption=d.querySelector('.guidebook-an02 .telop-standard-frame');
+                    check(body.getBoundingClientRect().bottom<=caption.getBoundingClientRect().top-6,'reading content overlaps caption');
+                    check(d.querySelector('.guidebook-heading button').getBoundingClientRect().bottom<caption.getBoundingClientRect().top,'close button covered');
+                    const spread=d.querySelector('.guidebook-spread'),copy=d.querySelector('.guidebook-copy');
+                    const checkReading=()=>{
+                        const bounds=body.getBoundingClientRect(),text=copy.getBoundingClientRect();
+                        check(text.top>=bounds.top-1&&text.bottom<=bounds.bottom+1&&text.left>=bounds.left&&text.right<=bounds.right,'book text clipped: '+JSON.stringify({viewport:[width,height],online,body:rect(body),copy:rect(copy)}));
+                        check(copy.scrollWidth<=copy.clientWidth,'book text overflows horizontally');
+                        const bookBounds=spread.getBoundingClientRect(),pageLeft=bookBounds.left+bookBounds.width*.125,pageRight=bookBounds.right-bookBounds.width*.1;
+                        check(text.left>=pageLeft&&text.right<=pageRight,'text background extends beyond visible pages');
+                        check(Math.abs((text.left+text.right)/2-(pageLeft+pageRight)/2)<1,'text background not centered on pages');
+                        check(w.getComputedStyle(copy).textAlign==='center','book text not centered');
+                        const art=spread.querySelector('img').getBoundingClientRect();
+                        check(Math.abs(art.left+art.width*.125-text.left)<1&&Math.abs(art.right-art.width*.1-text.right)<1,'book page edges do not match text background');
+                        const range=d.createRange();let widest=0;
+                        for(const line of copy.querySelectorAll('p')){range.selectNodeContents(line);for(const part of range.getClientRects())widest=Math.max(widest,part.width)}
+                        const copyStyle=w.getComputedStyle(copy),horizontalPadding=parseFloat(copyStyle.paddingLeft)+parseFloat(copyStyle.paddingRight);
+                        // Wrapped lines can leave less than one glyph of unused width.
+                        check(text.width-widest<=horizontalPadding+parseFloat(copyStyle.fontSize)+1,'text background has excess horizontal whitespace');
+                        check(w.getComputedStyle(body).overflow==='clip'&&w.getComputedStyle(panel).overflow==='clip','reading scroll not disabled');
+                        body.scrollTop=100;body.scrollLeft=100;panel.scrollTop=100;panel.scrollLeft=100;
+                        check(!body.scrollTop&&!body.scrollLeft&&!panel.scrollTop&&!panel.scrollLeft,'reading area still scrolls');
+                        check(parseFloat(w.getComputedStyle(copy).fontSize)>=12,'book text too small');
+                    };
+                    checkReading();
+                    if(width===852){check(spread.getBoundingClientRect().width>=600,'book not enlarged');check(parseFloat(w.getComputedStyle(copy).fontSize)>=14,'book text not enlarged')}
+                    if(width===852&&!online)await capture('guidebook-reading-852x393.png');
+                    if(width===640&&!online)await capture('guidebook-reading-640x320.png');
+                    frame.style.width=(width-24)+'px';await capture(null);await delay(100);
+                    check(same(rect(panel),expectedFrame()),'reading live resize failed');
+                    checkReading();
+                    frame.style.width=width+'px';await capture(null);await delay(80);
+                }else check(panel.hidden&&!d.querySelector('.guidebook-spread'),'private book exposed to observer');
+                check(d.querySelector('.guidebook-an02 .telop-standard-frame'),'reading AN02 missing');
+                w.GuidebookUI.render({kind:'intro'},ctx);await delay(70);
+                panel=d.querySelector('.guidebook-panel');
+                check(same(rect(panel),expectedFrame()),'intro frame differs from choice');
+                check(!d.querySelector('.guidebook-an02'),'trade intro AN02 remains');
+                check(Boolean(d.querySelector('.guidebook-next'))===control,'intro next control incorrect');
+                const detail=d.querySelector('.guidebook-intro');
+                check(detail.textContent.includes('攻略本の売買イベント発生')&&detail.textContent.includes('2回（2ターン）'),'trade details missing');
+                if(control){const next=d.querySelector('.guidebook-next').getBoundingClientRect();check(next.bottom<=panel.getBoundingClientRect().bottom&&next.top>=detail.getBoundingClientRect().bottom-1,'intro next overlaps details')}
+                if(width===852&&!online&&control)await capture('guidebook-trade-intro-852x393.png');
+                if(width===640&&!online&&control)await capture('guidebook-trade-intro-640x320.png');
+                frame.style.width=(width-24)+'px';await capture(null);await delay(100);
+                check(same(rect(panel),expectedFrame()),'intro live resize failed');
+                frame.style.width=width+'px';await capture(null);await delay(80);
+                w.GuidebookUI.reset();active=false;
+                results.push({viewport:[width,height],online,control,reading:'frame/privacy/resize/large text/no scroll passed',tradeIntro:'frame/no AN02/next/resize passed'});
+            }
         }
         stage='actions';frame.style.width='852px';frame.style.height='393px';await delay(100);
         const actions=[];
@@ -98,12 +159,26 @@
         for(const button of d.querySelectorAll('.guidebook-choices button')){check(button.disabled,'observer button enabled');button.click();}
         check(actions.length===1&&backs===1,'observer invoked action');w.GuidebookUI.reset();
         check(!d.querySelector('.game-screen').inert,'screen remains inert after closing');
+        const flowState={players,activePlayerIndex:0,guidebook:{ownerIndex:0,remaining:0,offers:[],withdrawals:[],view:null}};
+        const dispatch=async(action,payload)=>{check(w.GuidebookRules.act(flowState,action,payload),'guidebook progression rejected '+action);w.GuidebookUI.render(flowState.guidebook.view,{...context(),book:flowState.guidebook,dispatch})};
+        check(w.GuidebookRules.act(flowState,'read'),'cannot read owned book');
+        w.GuidebookUI.render(flowState.guidebook.view,{...context(),book:flowState.guidebook,dispatch});
+        d.querySelector('.guidebook-heading button').click();await delay(40);
+        check(flowState.guidebook.view?.kind==='intro'&&!d.querySelector('.guidebook-an02'),'close did not enter banner-free intro');
+        d.querySelector('.guidebook-next').click();await delay(40);
+        check(!flowState.guidebook.view&&!d.querySelector('.guidebook-layer')&&!d.querySelector('.game-screen').inert,'intro next did not return to game');
+        // The caption-free intro must still show dispatch errors and allow retry.
+        let attempts=0;
+        w.GuidebookUI.render({kind:'intro'},{...context(),dispatch:async()=>{if(++attempts===1)throw Error('確認用エラー')}});
+        d.querySelector('.guidebook-next').click();await delay(30);
+        check(d.querySelector('.guidebook-panel>.guidebook-notice').textContent==='確認用エラー','intro error hidden with AN02');
+        d.querySelector('.guidebook-next').click();await delay(30);check(attempts===2,'intro retry blocked');w.GuidebookUI.reset();
         // Toggle only this patch's stylesheet against its baseline on other views.
         stage='unrelated views';
         const currentCss=[...d.querySelectorAll('link[rel="stylesheet"]')].find(link=>link.getAttribute('href').startsWith('guidebook-ui.css'));
         const baselineCss=d.createElement('link');baselineCss.rel='stylesheet';baselineCss.href='/__guidebook_baseline.css';
         await new Promise(resolve=>{baselineCss.onload=resolve;currentCss.before(baselineCss)});baselineCss.disabled=true;
-        for(const view of [{kind:'reading'},{kind:'intro'},{kind:'offer'},{kind:'offers'},{kind:'last-chance'},{kind:'expired',owner:0}]){
+        for(const view of [{kind:'offer'},{kind:'offers'},{kind:'last-chance'},{kind:'expired',owner:0}]){
             const ctx={...context(),book:{remaining:2,withdrawals:[],ownerIndex:1,offers:[]}};
             w.GuidebookUI.render(view,ctx);await delay(50);
             const snapshot=()=>[...d.querySelectorAll('.guidebook-layer .guidebook-panel,.guidebook-layer .telop-standard-frame,.guidebook-heading,.guidebook-spread,.guidebook-back')].map(element=>[...rect(element),...styles(element)]);
@@ -111,7 +186,7 @@
             check(JSON.stringify(snapshot())===JSON.stringify(modified),'unrelated view changed: '+view.kind);
             baselineCss.disabled=true;currentCss.disabled=false;w.GuidebookUI.reset();
         }
-        results.push({actions:'read/back/observer passed',otherViews:'reading, intro, offer, offers, last-chance, expired unchanged'});
+        results.push({actions:'read/back/observer/reading-close/intro-next/error-retry passed',otherViews:'offer, offers, last-chance, expired unchanged'});
     }catch(error){failures.push(error.stack||String(error))}
     if(!failures.length)stage='complete';
     document.getElementById('report').textContent=JSON.stringify({stage,results,failures});document.body.dataset.complete='true';
