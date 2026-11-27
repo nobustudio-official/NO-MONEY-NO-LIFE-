@@ -352,7 +352,7 @@
     line-height: 1.2;
 }
 
-@media (max-width: 700px), (pointer: coarse) and (max-height: 500px) {
+@media (pointer: coarse) and (max-height: 500px) {
     .boss-opening:not(.boss-opening-start) .boss-opening-copy {
         padding-right: 76px;
         max-height: 100%;

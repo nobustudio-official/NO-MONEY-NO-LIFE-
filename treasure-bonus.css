@@ -17,14 +17,3 @@ body.treasure-bonus-dice #diceRoulette {
 }
 
 #treasureBonusBanner.slot-arrival-announcement:focus-visible { outline: none; }
-
-@media (max-width: 700px) {
-    body.treasure-bonus-moving #itemRoulette {
-        left: 27%;
-        width: min(40vw, 760px);
-    }
-    body.treasure-bonus-dice #diceRoulette {
-        left: 69%;
-        width: 42vw;
-    }
-}

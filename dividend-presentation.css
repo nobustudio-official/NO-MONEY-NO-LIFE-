@@ -68,7 +68,7 @@
     #nmnl-dividend-lab .dp-axis-player strong{color:var(--dp-gold);font-size:clamp(18px,2.6vw,34px);font-weight:900;line-height:1.3;overflow-wrap:anywhere}
     #nmnl-dividend-lab .dp-axis-head{display:flex;align-items:center;justify-content:center;font-size:clamp(18px,2.6vw,34px);width:100%;height:1.3em;flex-shrink:0;line-height:1.3;white-space:nowrap}
     #nmnl-dividend-lab .dp-player-name{display:block;width:100%;white-space:nowrap;line-height:1.4}
-    @media(max-width:600px){#nmnl-dividend-lab .dp-axis-head{font-size:12px}}
+
     #nmnl-dividend-lab .dp-swatch{height:14px;position:relative;width:48px;color:var(--player-color)}
     #nmnl-dividend-lab .dp-swatch:before{content:"";position:absolute;left:0;right:0;top:6px;height:3px;background:currentColor}
     #nmnl-dividend-lab .dp-swatch:after{content:"";position:absolute;left:20px;top:2px;width:10px;height:10px;border:2px solid currentColor;background:#f7f7ef;border-radius:50%}
@@ -76,10 +76,10 @@
     #nmnl-dividend-lab .dp-axis-line{stroke:#d8e5ed77;stroke-width:1}
     :is(#dividendPresentationOverlay, #endingPresentationOverlay) #nmnl-dividend-lab .dp-axis-line{stroke:#fff}
     #nmnl-dividend-lab .dp-plot .dp-bar-value{fill:#17324b;font-weight:900}
-    @media(max-width:600px){#nmnl-dividend-lab .dp-axis-player img{width:36px;height:36px}#nmnl-dividend-lab .dp-axis-player strong{font-size:12px}}
-    @media(max-width:600px){#nmnl-dividend-lab .dp-receipts{--dp-row-size:12px}#nmnl-dividend-lab .dp-person{flex-direction:column;gap:4px}#nmnl-dividend-lab .dp-person img{width:36px;height:36px}#nmnl-dividend-lab .dp-income{font-size:clamp(17px,4.4vw,27px)}#nmnl-dividend-lab .dp-receipts thead th,#nmnl-dividend-lab .dp-receipt :is(td,th){padding:16px 3px}#nmnl-dividend-lab .dp-screen{aspect-ratio:auto;min-height:510px}#nmnl-dividend-lab .dp-steps button{padding:8px 10px}}
+
+
     @media(prefers-reduced-motion:reduce){#nmnl-dividend-lab .is-paying .dp-income{animation:none}}
-  
+
 #dividendPresentationOverlay{position:fixed;inset:0;z-index:10000;background-color:#102d4e;background-image:linear-gradient(#102d4ec9,#102d4edb),url('images/backgrounds/scenes/配当.webp');background-position:center;background-size:cover;background-repeat:no-repeat;overflow:hidden;display:flex;justify-content:center;align-items:flex-start;padding:0;box-sizing:border-box}
 :is(#dividendPresentationOverlay, .dp-game-layout) #nmnl-dividend-lab{width:min(96vw,1450px);height:100%;min-height:0}
 :is(#dividendPresentationOverlay, .dp-game-layout) #nmnl-dividend-lab .dp-screen{height:100%;min-height:0;aspect-ratio:auto;border:0}
@@ -94,7 +94,7 @@
 #nmnl-dividend-lab .dp-guide-scene .dp-guide-staff{position:absolute;right:3%;bottom:calc(clamp(148px,17vh,168px) + 12px);width:34%;height:80%;object-fit:contain;object-position:center bottom}
 #nmnl-dividend-lab .dp-guide-scene.dp-guide-final .dp-guide-staff{left:50%;right:auto;transform:translateX(-50%);width:50%}
 #nmnl-dividend-lab .dp-guide-scene.dp-guide-market .dp-guide-staff{left:50%;right:auto;transform:translateX(-50%);width:50%}
-#dividendPresentationOverlay #nmnl-dividend-lab .dp-guide-scene .dp-guide-staff{left:auto;right:18%;width:auto;max-width:42vw;height:clamp(160px,60vh,188px);bottom:calc(var(--an02-min-height) + var(--an02-bottom) - 6px);transform:none;transform-origin:center}
+#dividendPresentationOverlay #nmnl-dividend-lab .dp-guide-scene .dp-guide-staff{left:auto;right:18%;width:auto;max-width:42vw;height:244px;bottom:calc(var(--an02-min-height) + var(--an02-bottom) - 6px);transform:none;transform-origin:center}
 #dividendPresentationOverlay #nmnl-dividend-lab .dp-guide-scene.dp-guide-final .dp-guide-staff{left:auto;right:18%;transform:none}
 #dividendPresentationOverlay #nmnl-dividend-lab .dp-guide-scene.dp-guide-market .dp-guide-staff{left:auto;right:18%;transform:none}
 #dividendPresentationOverlay #nmnl-dividend-lab .dp-guide-scene.dp-guide-ranking .dp-guide-staff{right:29%;bottom:calc(var(--an02-min-height) + var(--an02-bottom) + 16px)}

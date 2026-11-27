@@ -146,7 +146,7 @@ body.boss-flow-active .demo-controls>label,body.boss-flow-active .demo-controls>
     padding-left: clamp(64px, 7vw, 100px);
 }
 
-@media (max-width: 700px), (pointer: coarse) and (max-height: 500px) {
+@media (pointer: coarse) and (max-height: 500px) {
     #boss-aftermath .bf-banner {
         padding: clamp(8px, 2.2vh, 16px);
     }
@@ -242,7 +242,7 @@ body.boss-flow-active .demo-controls>label,body.boss-flow-active .demo-controls>
     object-position: center bottom;
 }
 
-@media (max-width: 700px), (pointer: coarse) and (max-height: 500px) {
+@media (pointer: coarse) and (max-height: 500px) {
     #boss-aftermath.bf-reward-announcement .bf-main {
         padding: 10px 11px;
         gap: 6px;

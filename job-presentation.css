@@ -33,7 +33,7 @@
 #jobPopup.job-approved-layout .job-choices .job-none-button:hover,#jobPopup.job-approved-layout .job-choices .job-none-button:focus-visible,
 .guidebook-choices .guidebook-choice-back:is(:hover,:focus-visible){outline-color:#c4ccd4}
 #jobPopup.job-approved-layout .job-choices button:disabled{cursor:default}
-@media(max-width:700px),(pointer:coarse) and (max-height:500px){
+@media (pointer:coarse) and (max-height:500px) {
  #jobPopup.job-approved-layout :is(.job-dialogue-box,.job-choice-panel){padding:clamp(8px,2.2vh,16px)}
  #jobPopup.job-approved-layout .job-dialogue-text{padding-right:72px}
  #jobPopup.job-approved-layout .job-dialogue-next{right:14px;bottom:10px}

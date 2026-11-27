@@ -462,7 +462,7 @@
 
         background:
             rgba(247, 177, 177, 0.9);
-            
+
         box-shadow:
             0 0 0 4px rgba(255, 80, 80, 0.9),
             0 0 25px rgba(255, 80, 80, 0.9);
@@ -1485,75 +1485,7 @@
     報酬選択：スマホ対応
     ========================================================= */
 
-    @media (max-width: 700px) {
 
-        .reward-popup {
-
-            width:
-                min(92%, 420px);
-
-            padding:
-                20px 14px;
-
-            border-radius:
-                18px;
-
-        }
-
-
-        .reward-title {
-
-            font-size:
-                20px;
-
-            margin-bottom:
-                8px;
-
-        }
-
-
-        .reward-message {
-
-            font-size:
-                14px;
-
-            margin-bottom:
-                14px;
-
-        }
-
-
-        .reward-choices {
-
-            flex-direction:
-                row;
-
-            gap:
-                8px;
-
-        }
-
-
-        .reward-choice-button {
-
-            min-height:
-                82px;
-
-            padding:
-                12px 6px;
-
-            border-radius:
-                14px;
-
-            font-size:
-                15px;
-
-            line-height:
-                1.4;
-
-        }
-
-    }
 
     /* =========================================================
     27. 所持品画面
@@ -2147,127 +2079,7 @@
     29. スマホ対応
     ========================================================= */
 
-    @media (max-width: 500px) {
 
-        .game-container {
-            padding:
-                15px;
-        }
-
-
-        .map-board {
-            padding:
-                8px;
-        }
-
-
-        .map-node {
-            width:
-                45px;
-
-            height:
-                45px;
-        }
-
-
-        .square-icon {
-            font-size:
-                1.4rem;
-        }
-
-
-        .player-card {
-            gap:
-                8px;
-
-            padding:
-                10px;
-        }
-
-
-
-
-
-        .player-count {
-            min-width:
-                50px;
-
-            padding:
-                10px 8px;
-
-            font-size:
-                0.9rem;
-        }
-
-
-        /*
-        メニューボタンは現在の横並びを維持。
-        画面が狭すぎる場合だけ少し縮小。
-        */
-
-        .roulette-area {
-            gap:
-                8px;
-        }
-
-        .inventory-popup,
-        .magic-popup {
-            width:
-                94%;
-
-            height:
-                90vh;
-
-            padding:
-                24px 14px;
-        }
-
-
-        .inventory-item,
-        .magic-item {
-            gap:
-                8px;
-
-            padding:
-                12px 10px;
-        }
-
-
-        .inventory-item-name,
-        .magic-item-name {
-            flex:
-                0 0 24%;
-
-            font-size:
-                15px;
-        }
-
-
-        .inventory-item-effect,
-        .magic-item-effect {
-            font-size:
-                14px;
-
-            line-height:
-                1.5;
-        }
-
-
-        .inventory-item-use-button {
-            flex:
-                0 0 72px;
-
-            height:
-                34px;
-        }
-
-
-        .magic-item-cost {
-            font-size:
-                13px;
-        }
-
-    }
     /* =========================
     バイト選択
     ========================= */
@@ -3625,82 +3437,31 @@ GAME OVER
     スマホ版：ゲームボタン縮小
     ========================= */
 
-    @media (max-width: 600px) {
 
-        .roulette-area {
-            gap: 8px;
-            padding-top: 6px;
-            padding-bottom: 5px;
-        }
-
-    }
 
     /* =========================
     スマホ版：プレイヤー一覧
     ========================= */
 
-    @media (max-width: 600px) {
 
-        .player-card {
-            height: 42px;
-            min-height: 42px;
-            padding: 6px 12px;
-            gap: 8px;
-        }
-
-
-
-    }
 
     /* =========================
     スマホ版：マップ拡大
     ========================= */
 
-    @media (max-width: 600px) {
 
-        .game-screen .map-area {
-            padding-left: 8px;
-            padding-right: 8px;
-        }
-
-            .map-board {
-            height: var(--map-world-height, 2400px);
-            padding: 0;
-        }
-
-        .square-icon {
-            font-size: 1.5rem;
-        }
-
-    }
 
     /* =========================================================
     スマホ：分岐矢印を小さく
     ========================================================= */
 
-    @media (max-width: 500px) {
 
-        .branch-arrow-map {
-            width: 36px;
-            height: 36px;
-            border-width: 2px;
-        }
-
-    }
 
     /* =========================================================
     スマホ：ゲームタイトル
     ========================================================= */
 
-    @media (max-width: 500px) {
 
-        .game-title {
-            font-size: 28px;
-            letter-spacing: 1px;
-            white-space: nowrap;
-        }
-
-    }
     /* =========================
     プレイヤーカード 資産ボタン
     ========================= */
@@ -3949,41 +3710,7 @@ GAME OVER
     スマホ版：資産購入
     ========================= */
 
-    @media (max-width: 500px) {
 
-        .asset-purchase-item {
-            gap: 6px;
-
-            padding: 10px 8px;
-        }
-
-
-        .asset-purchase-name {
-            font-size: 15px;
-        }
-
-
-        .asset-purchase-detail {
-            font-size: 13px;
-        }
-
-
-        .asset-purchase-owner {
-            flex-basis: 26px;
-
-            font-size: 1.1rem;
-        }
-
-
-        .asset-purchase-button {
-            flex-basis: 75px;
-
-            height: 36px;
-
-            font-size: 12px;
-        }
-
-    }
     /* =========================
     資産購入：所持金
     ========================= */
@@ -4036,81 +3763,7 @@ GAME OVER
     スマホ版：ゲーム画面の横幅調整
     ========================================================= */
 
-    @media (max-width: 600px) {
 
-        /* ゲーム画面そのもの */
-        .game-screen {
-            width: 100%;
-            max-width: 100%;
-            overflow: hidden;
-        }
-
-
-        /* =========================
-        上部：TURN ＋ 次の目的地
-        ========================= */
-
-
-        /* =========================
-        ゲームメニューボタン
-        ========================= */
-
-        .roulette-area {
-            width: 100%;
-            max-width: 100%;
-            padding-left: 4px;
-            padding-right: 4px;
-            gap: 5px;
-            box-sizing: border-box;
-        }
-
-        /* =========================
-        プレイヤー一覧：横スクロール
-        ========================= */
-
-        .player-status {
-            width: 100%;
-            max-width: 100%;
-
-            display: flex;
-            flex-direction: row;
-
-            gap: 8px;
-
-            overflow-x: auto;
-            overflow-y: hidden;
-
-            justify-content: flex-start;
-
-            padding: 0 4px;
-
-            box-sizing: border-box;
-
-            scrollbar-width: none;
-
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .player-status::-webkit-scrollbar {
-            display: none;
-        }
-
-
-    .player-card {
-        flex: 0 0 auto;
-
-        width: max-content;
-        min-width: 260px;
-
-        height: 42px;
-        min-height: 42px;
-
-        padding: 6px 12px;
-
-        white-space: nowrap;
-    }
-
-    }
 
     /* =========================
     ゴールド表示：改行させない
@@ -4260,17 +3913,7 @@ GAME OVER
     }
 
 
-    @media (max-width: 500px) {
 
-        .shop-category-button {
-            width: 80%;
-
-            padding: 13px 16px;
-
-            font-size: 15px;
-        }
-
-    }
 
     /* =========================
     ショップ商品一覧
@@ -4809,7 +4452,7 @@ GAME OVER
     transform:
         translate(-50%, -50%)
         scale(0.85);
-    
+
         overflow: visible;
 
         background: rgba(255,255,255,0.78);
@@ -5151,14 +4794,7 @@ GAME OVER
         .other-title-confirm-actions button { min-width: 0; width: 100%; }
     }
 
-    @media (max-width: 700px) and (orientation: portrait) {
 
-        .other-title-confirm {
-            left: 50%;
-            width: min(340px, calc(100vw - 32px));
-            transform: translate(-50%, -50%);
-        }
-    }
 
     /* =========================
     既存ポップアップを新UIの最前面へ
@@ -5226,126 +4862,7 @@ GAME OVER
 
     }
 
-    @media (max-width: 700px) {
 
-        .game-hud {
-            top: 4px;
-            left: 4px;
-            right: 4px;
-            height: 58px;
-            grid-template-columns:
-                108px
-                minmax(165px, 1.3fr)
-                minmax(105px, 0.8fr)
-                minmax(180px, 1.2fr)
-                100px;
-            gap: 0;
-        }
-
-        .hud-box {
-            height: 58px;
-            padding: 4px 6px;
-            border-width: 1px;
-            border-radius: 8px;
-        }
-
-        .hud-player {
-            gap: 4px;
-        }
-
-        .hud-player-avatar {
-            width: 44px;
-            height: 44px;
-            flex-basis: 44px;
-        }
-
-        .hud-player-name {
-            font-size: 18px;
-        }
-
-        .hud-icon {
-            width: 34px;
-            height: 34px;
-            flex-basis: 34px;
-            margin-right: 4px;
-        }
-
-        .hud-destination-icon {
-            width: 34px;
-            height: 34px;
-            flex-basis: 34px;
-            margin-right: 2px;
-        }
-
-        .hud-icon-fallback {
-            width: 34px;
-            height: 34px;
-            flex-basis: 34px;
-            margin-right: 4px;
-            font-size: 23px;
-        }
-
-        .hud-value {
-            font-size: 19px;
-        }
-
-
-        .hud-turn {
-            font-size: 16px;
-        }
-
-        .game-screen > .map-area {
-            top: 0;
-        }
-
-        .game-screen > .action-menu {
-            top: 74px;
-            left: 4px;
-            width: 112px;
-            gap: 4px;
-        }
-
-        .action-menu-button {
-            width: 112px;
-            height: 70px;
-            padding: 4px 6px;
-            grid-template-columns: 38px 1fr;
-            gap: 3px;
-            border-radius: 10px;
-            border-width: 2px;
-            font-size: 14px;
-        }
-
-        .action-menu-button img {
-            width: 36px;
-            height: 36px;
-        }
-
-        .action-menu-fallback {
-            font-size: 30px;
-        }
-
-        .map-board {
-        width: var(--map-world-width, 3600px);
-        height: var(--map-world-height, 2400px);
-        }
-
-        .map-node {
-            width: 50px;
-            height: 50px;
-        }
-
-        .map-space-icon {
-            width: 58px;
-            height: 58px;
-        }
-
-        .boss-node .map-space-icon {
-            width: 68px;
-            height: 68px;
-        }
-
-    }
 
     /* =========================================================
     プレイヤーキャラクター：4方向スプライトシート
@@ -5529,26 +5046,7 @@ GAME OVER
     スマートフォン
     ========================================================= */
 
-    @media (max-width: 700px) {
-        /*
-        マップ上のプレイヤーは、
-        スマホでも小さくしません。
 
-        マップ自体のズームに合わせて
-        一緒に拡大・縮小します。
-        */
-
-        .map-node .player-piece.player-sprite {
-
-            width:
-                110px;
-
-            height:
-                130px;
-
-        }
-
-    }
 
     /* =========================================================
     UI微修正：今回の最終調整
@@ -5663,73 +5161,13 @@ GAME OVER
     画面幅700px以下
     ========================= */
 
-    @media (max-width: 700px) {
 
-        .game-hud {
-            grid-template-columns:
-                150px
-                minmax(150px, 1.3fr)
-                minmax(105px, 0.8fr)
-                minmax(170px, 1.2fr)
-                100px;
-        }
-
-        .hud-avatar-face {
-            width: 44px;
-            height: 44px;
-            flex-basis: 44px;
-        }
-
-        .game-screen > .action-menu {
-            top: 74px;
-            left: 4px;
-            width: 150px;
-            gap: 5px;
-        }
-
-        .game-screen > .action-menu .action-menu-button {
-            width: 150px;
-            height: 78px;
-            grid-template-columns: 46px 1fr;
-            font-size: 16px;
-        }
-
-        .game-screen > .action-menu .action-menu-button img {
-            width: 42px;
-            height: 42px;
-        }
-
-    }
 
     /* =========================
     画面幅500px以下
     ========================= */
 
-    @media (max-width: 500px) {
 
-        .game-screen > .action-menu,
-        .game-screen > .action-menu .action-menu-button {
-            width: 140px;
-        }
-
-        .game-screen > .action-menu .action-menu-button {
-            height: 72px;
-            grid-template-columns: 42px 1fr;
-            font-size: 15px;
-        }
-
-        .game-screen > .action-menu .action-menu-button img {
-            width: 38px;
-            height: 38px;
-        }
-
-        .hud-avatar-face {
-            width: 42px;
-            height: 42px;
-            flex-basis: 42px;
-        }
-
-    }
 
 
     /* =========================================================
@@ -5772,114 +5210,7 @@ GAME OVER
     スマホ縦・狭い画面
     ========================================================= */
 
-    @media (max-width: 700px) {
 
-        .game-hud {
-            top: 4px;
-            left: 4px;
-            right: 4px;
-            height: 58px;
-
-            grid-template-columns:
-                minmax(78px, 0.9fr)
-                minmax(68px, 0.85fr)
-                minmax(55px, 0.7fr)
-                minmax(115px, 1.35fr)
-                minmax(62px, 0.8fr);
-
-            gap: 0;
-        }
-
-        .hud-box {
-            height: 58px;
-            padding: 4px 4px;
-            border-width: 1px;
-            border-radius: 8px;
-        }
-
-        .hud-player {
-            gap: 3px;
-            padding-left: 4px;
-            padding-right: 3px;
-        }
-
-        .hud-avatar-face {
-            width: 38px;
-            height: 38px;
-            flex: 0 0 38px;
-        }
-
-        .hud-player-name {
-            font-size: clamp(10px, 3.5vw, 18px);
-        }
-
-        .hud-icon {
-            width: 30px;
-            height: 30px;
-            flex-basis: 30px;
-            margin-right: 2px;
-        }
-
-        .hud-destination-icon {
-            width: 28px;
-            height: 28px;
-            flex-basis: 28px;
-            margin-right: 1px;
-        }
-
-        .hud-icon-fallback {
-            width: 30px;
-            height: 30px;
-            flex-basis: 30px;
-            margin-right: 2px;
-            font-size: 20px;
-        }
-
-        .hud-value {
-            font-size: clamp(13px, 4vw, 19px);
-        }
-
-        .hud-destination {
-            gap: 1px;
-            padding-left: 2px;
-            padding-right: 2px;
-        }
-
-        .hud-destination-value {
-            margin: 0 1px;
-        }
-
-        .hud-turn {
-            font-size: clamp(10px, 3.5vw, 16px);
-            padding-left: 2px;
-            padding-right: 2px;
-        }
-
-        /* 左メニュー */
-        .game-screen > .action-menu {
-            top: 70px;
-            left: 4px;
-            width: 112px;
-            gap: 4px;
-        }
-
-        .game-screen > .action-menu .action-menu-button {
-            width: 112px;
-            height: 68px;
-            padding: 4px 5px;
-            grid-template-columns: 36px 1fr;
-            gap: 2px;
-            border-radius: 10px;
-            border-width: 2px;
-            font-size: 14px;
-        }
-
-        .game-screen > .action-menu .action-menu-button img {
-            width: 34px;
-            height: 34px;
-        }
-
-    }
 
     /* =========================================================
     スマホ横持ち
@@ -5888,7 +5219,7 @@ GAME OVER
 
     @media (orientation: landscape) and (max-height: 600px) {
 
-       
+
 
         /* 横持ちではマップを最大限確保 */
         .game-screen > .map-area {
@@ -5966,7 +5297,7 @@ GAME OVER
             flex-basis: 26px;
         }
 
-        
+
         .hud-value {
             font-size: 14px;
         }
@@ -6006,77 +5337,9 @@ GAME OVER
     360px前後でも5項目を1列に収める
     ========================================================= */
 
-    @media (max-width: 380px) {
 
-        .game-hud {
-            grid-template-columns:
-                minmax(70px, 0.85fr)
-                minmax(62px, 0.8fr)
-                minmax(50px, 0.65fr)
-                minmax(105px, 1.25fr)
-                minmax(58px, 0.75fr);
-        }
 
-        .hud-box {
-            padding-left: 3px;
-            padding-right: 3px;
-        }
 
-        .hud-player {
-            gap: 2px;
-            padding-left: 3px;
-        }
-
-        .hud-avatar-face {
-            width: 34px;
-            height: 34px;
-            flex-basis: 34px;
-        }
-
-        .hud-player-name {
-            font-size: 10px;
-        }
-
-        .hud-icon {
-            width: 27px;
-            height: 27px;
-            flex-basis: 27px;
-            margin-right: 1px;
-        }
-
-        .hud-destination-icon {
-            width: 24px;
-            height: 24px;
-            flex-basis: 24px;
-        }
-
-        .hud-value {
-            font-size: 13px;
-        }
-
-        .hud-turn {
-            font-size: 10px;
-        }
-
-        .game-screen > .action-menu {
-            width: 100px;
-        }
-
-        .game-screen > .action-menu .action-menu-button {
-            width: 100px;
-            height: 64px;
-            grid-template-columns: 32px 1fr;
-            font-size: 13px;
-        }
-
-        .game-screen > .action-menu .action-menu-button img {
-            width: 30px;
-            height: 30px;
-        }
-
-    }
-
-    
 
     /* ---------- PC標準 ---------- */
 
@@ -6135,35 +5398,15 @@ GAME OVER
 
     /* ---------- 700px以下 ---------- */
 
-    @media (max-width: 700px) {
 
-        .game-hud .hud-player-avatar,
-        .game-hud .hud-icon,
-        .game-hud .hud-icon-fallback,
-        .game-hud .hud-destination-icon,
-        .game-screen > .action-menu .action-menu-button img {
-            width: 30px;
-            height: 30px;
-            flex-basis: 30px;
-        }
 
-        .game-screen > .action-menu .action-menu-button {
-            grid-template-columns: 32px minmax(0, 1fr);
-        }
 
-        .game-screen > .action-menu .action-menu-fallback {
-            font-size: 28px;
-        }
-
-    }
-
-   
 
     /* ---------- 極端に低い横画面 ---------- */
 
     @media (orientation: landscape) and (max-height: 430px) {
 
-        
+
         .game-screen > .action-menu .action-menu-button img {
             width: 28px;
             height: 28px;
@@ -6178,19 +5421,7 @@ GAME OVER
 
     /* ---------- 極端に狭い縦画面 ---------- */
 
-    @media (max-width: 380px) {
 
-        .game-screen > .action-menu .action-menu-button img {
-            width: 28px;
-            height: 28px;
-            flex-basis: 28px;
-        }
-
-        .game-screen > .action-menu .action-menu-button {
-            grid-template-columns: 28px minmax(0, 1fr);
-        }
-
-    }
 
     /* =========================================================
     ボス決定ポップアップ専用
@@ -6260,29 +5491,7 @@ GAME OVER
     }
 
 
-    @media (max-width: 700px) {
 
-        .event-popup.boss-destination-popup {
-            width:
-                min(90%, 360px);
-
-            padding:
-                16px 14px;
-        }
-
-        .event-popup.boss-destination-popup
-        .event-popup-title {
-            font-size:
-                18px;
-        }
-
-        .event-popup.boss-destination-popup
-        .event-popup-message {
-            font-size:
-                18px;
-        }
-
-    }
 
 
     @media (orientation: landscape) and (max-height: 600px) {
@@ -6383,31 +5592,7 @@ GAME OVER
         line-height: 1.45;
     }
 
-    @media (max-width: 700px) {
-        .event-popup.boss-destination-popup {
-            width: min(92%, 390px);
-            padding: 14px 14px;
-        }
 
-        .boss-destination-image-wrap {
-            height: 105px;
-            margin-bottom: 5px;
-        }
-
-        .boss-destination-popup-icon {
-            width: 105px;
-            height: 105px;
-        }
-
-        .boss-destination-line {
-            font-size: 20px;
-        }
-
-        .boss-destination-message {
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
-    }
 
     /* =========================================================
     今回のUI修正：バイトマス
@@ -6573,7 +5758,7 @@ GAME OVER
             font-size: 17px;
         }
 
-        
+
         .boss-destination-image-wrap {
             height: 78px;
             margin: 0 0 3px;
@@ -7424,7 +6609,7 @@ GAME OVER
             contents;
     }
 
-        
+
     .battle-magic-panel {
         grid-area:
             magic;
@@ -7490,7 +6675,7 @@ GAME OVER
 
         text-shadow:
             0 2px 4px rgba(0, 0, 0, 0.7);
-            
+
     }
 
     .battle-panel-title img {
@@ -7549,7 +6734,7 @@ GAME OVER
         flex-direction: column;
 
         align-items: center;
-        
+
         justify-content: center;
 
         padding: 8px;
@@ -8075,7 +7260,7 @@ GAME OVER
             border-box;
     }
 
-   
+
 
 /* 大きな「一枚のバトルウィンドウ」 */
 .battle-main-screen {
@@ -8659,7 +7844,7 @@ GAME OVER
     and (max-width: 1000px)
     and (max-height: 610px) {
 
-    
+
     /* -----------------------------------------
         戦闘画面の幅
         ----------------------------------------- */
@@ -9259,64 +8444,7 @@ GAME OVER
     スマホ用レイアウト
     ========================================================= */
 
-    @media (max-width: 600px) {
 
-        .player-character-window {
-            padding: 10px;
-        }
-
-
-        /* タイトル */
-
-        .player-character-window-title {
-            margin-bottom: 12px;
-
-            font-size: 20px;
-        }
-
-
-        /* キャラクター一覧 */
-
-        .player-character-list {
-            width: 100%;
-            max-width: 360px;
-
-            display: grid;
-
-            grid-template-columns:
-                repeat(3, 1fr);
-
-            gap: 8px;
-        }
-
-
-        /* キャラクター1人分 */
-
-        .player-character-option {
-            width: 100%;
-            height: 105px;
-
-            padding: 5px;
-
-            gap: 3px;
-        }
-
-
-        /* キャラクター画像 */
-
-        .player-character-option img {
-            width: 65px;
-            height: 65px;
-        }
-
-
-        /* キャラクター名 */
-
-        .player-character-option span {
-            font-size: 14px;
-        }
-
-    }   
 
     /* =========================
     魔法店カテゴリーアイコン
@@ -9706,81 +8834,7 @@ max-height:
     スマホ
     ========================= */
 
-    @media (max-width: 700px) {
 
-        .event-popup.boss-reward-popup {
-
-            width:
-                90vw;
-
-            height:
-                min(
-                    72vh,
-                    600px
-                );
-
-            max-width:
-                90vw;
-
-            max-height:
-                calc(100dvh - 80px);
-
-            padding:
-                28px 22px;
-
-            border-width:
-                2px;
-
-            border-radius:
-                16px;
-
-        }
-
-
-        .event-popup.boss-reward-popup
-        .event-popup-title {
-
-            font-size:
-                clamp(
-                    23px,
-                    6vw,
-                    30px
-                );
-
-            margin-bottom:
-                16px;
-
-        }
-
-
-        .event-popup.boss-reward-popup
-        .event-popup-message {
-
-            font-size:
-                clamp(
-                    16px,
-                    4.5vw,
-                    21px
-                );
-
-            line-height:
-                1.4;
-
-            margin-bottom:
-                18px;
-
-        }
-
-
-        .event-popup.boss-reward-popup
-        .event-popup-button {
-
-            bottom:
-                18px;
-
-        }
-
-    }
 
 
     /* =========================
@@ -9844,19 +8898,7 @@ max-height:
         }
 
 
-    @media (max-width: 700px) {
 
-        .event-popup.boss-reward-complete-popup {
-
-            width:
-                78vw;
-
-            height:
-                260px;
-
-        }
-
-    }
 
     /* =========================================================
     プレイヤー被ダメージ点滅
@@ -10472,13 +9514,7 @@ max-height:
     }
 }
 
-@media (pointer: coarse) and (orientation: landscape) and (max-width: 480px) {
-    .game-hud .hud-gold,
-    .game-hud .hud-magic {
-        flex-direction: column;
-        gap: 0;
-    }
-}
+
 
 @media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
     .game-screen {
@@ -10543,12 +9579,7 @@ max-height:
     }
 }
 
-@media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) and (max-width: 480px) {
-    .game-hud .hud-icon,
-    .game-hud .hud-icon-fallback {
-        --hud-icon-size: min(4.4vw, calc(var(--mobile-hud-height) - 18px));
-    }
-}
+
 
 .item-action-popup {
 
@@ -10911,49 +9942,13 @@ max-height:
    スマホ
    ========================= */
 
-@media (max-width: 700px) {
 
-    .lost-magic-icon {
-        width: 42px;
-        height: 42px;
-    }
-
-    .lost-magic-name {
-        font-size: 16px;
-    }
-
-}
 
 /* =========================
    スマホ
    ========================= */
 
-@media (max-width: 700px) {
 
-    .loss-note-player-popup {
-        width: min(92%, 420px);
-    }
-
-    .loss-note-player-list {
-        max-height: 55vh;
-    }
-
-    .loss-note-player-row {
-        min-height: 50px;
-        padding: 7px 9px;
-    }
-
-    .loss-note-player-name {
-        font-size: 16px;
-    }
-
-    .loss-note-use-button {
-        min-width: 84px;
-        padding: 9px 10px;
-        font-size: 13px;
-    }
-
-}
 
 /* =========================
    マス詳細パネル
@@ -11462,103 +10457,7 @@ max-height:
    スマホ
    ========================================================= */
 
-@media screen and (max-width: 600px) {
 
-    .square-detail-panel {
-
-        top:
-            auto;
-
-        right:
-            10px;
-
-        bottom:
-            10px;
-
-        transform:
-            none;
-
-        width:
-            calc(100vw - 20px);
-
-        max-width:
-            none;
-
-        max-height:
-            55vh;
-
-        padding:
-            12px;
-
-        border-radius:
-            14px;
-    }
-
-
-    .square-detail-title {
-
-        margin-bottom:
-            8px;
-
-        padding-bottom:
-            7px;
-
-        font-size:
-            18px;
-    }
-
-
-    .square-detail-content {
-
-        font-size:
-            14px;
-    }
-
-
-    .square-detail-item {
-
-        min-height:
-            40px;
-
-        padding:
-            6px 8px;
-    }
-
-
-    .square-detail-item strong {
-
-        font-size:
-            13px;
-    }
-
-
-    .square-detail-item span {
-
-        font-size:
-            12px;
-    }
-
-
-    .square-detail-buttons {
-
-        margin-top:
-            8px;
-
-        padding-top:
-            8px;
-    }
-
-
-    .square-detail-buttons button {
-
-        min-height:
-            40px;
-        font-size:
-            13px;
-        overflow-y: auto;
-    }
-
-}
 
 /* =========================
    マス詳細：一覧部分だけ縦スクロール
@@ -11870,38 +10769,7 @@ max-height:
    モバイル調整
    ========================= */
 
-@media (max-width: 600px) {
 
-    .money-transfer-player-name {
-        font-size: 16px;
-    }
-
-    .money-transfer-player-money {
-        font-size: 13px;
-    }
-
-    .money-transfer-player-select-button {
-        flex-basis: 64px;
-        height: 38px;
-        font-size: 13px;
-    }
-
-    .money-transfer-type-button {
-        min-height: 52px;
-        font-size: 17px;
-    }
-
-    .money-transfer-amount-input {
-        width: 165px;
-        height: 50px;
-        font-size: 22px;
-    }
-
-    .money-transfer-target-money {
-        font-size: 15px;
-    }
-
-}
 
 /* =========================================================
    所持アイテム・所持魔法の横幅拡張
@@ -12110,9 +10978,7 @@ body:has(#undergroundPresentation:not([hidden]) .ug-sale) .online-recovery-panel
 .asset-ranking-total { text-align: right; }
 .asset-ranking-total:not(.asset-ranking-heading) { color: #f5d76e; font-weight: bold; }
 
-@media (max-width: 520px) {
-    .asset-ranking-grid { grid-template-columns: 44px minmax(0, 1fr) 100px; gap: 5px; font-size: 12px; }
-}
+
 
 
 /* =========================================================
@@ -12303,7 +11169,7 @@ canvas {
 
 /* 内側：バトル画面のメイン枠と同じ基準 */
 #jobPopup .job-scene {
-    
+
     position: absolute;
 
     top: 50%;
@@ -12789,36 +11655,9 @@ body.magic-shop-dual-layout #magicShopPopup {
 }
 
 /* 狭い画面ではログの高さを調整する */
-@media (max-width: 700px) {
-    #battleMainPopup .battle-new-message {
-        --battle-log-height: 110px;
-    }
-}
 
-@media (max-width: 700px) {
 
-    #battleMainPopup .battle-new-magic-item {
-        flex-basis: 82px;
-        width: 82px;
-    }
 
-    #battleMainPopup .battle-new-magic-icon-wrap {
-        width: 38px;
-        height: 38px;
-    }
-
-    #battleMainPopup .battle-new-magic-list {
-        padding-right: 92px;
-    }
-
-  
-
-    #battleMainPopup .battle-player-hp {
-        left: 8px;
-        bottom: 74px;
-    }
-
-}
 
 body.bridge-collapse-shake > :not(script):not(style) {
     animation: bridge-collapse-shake 320ms linear 12;
@@ -12872,12 +11711,7 @@ body.bridge-collapse-shake > :not(script):not(style) {
     font-size:15px;font-weight:700;
 }
 #soundSettingsPopup .inventory-close-button:hover{background:#3b617f}
-@media(max-width:500px){
-    #soundSettingsPopup{padding:18px}
-    #soundSettingsPopup .sound-setting-item{gap:10px;padding:12px}
-    #soundSettingsPopup .sound-setting-title{width:64px;min-width:64px;font-size:15px}
-    #soundSettingsPopup .sound-volume-value{min-width:42px;font-size:14px}
-}
+
 
 /* Compact landscape tile details, aligned with the right edge of the HUD. */
 @media (pointer:coarse) and (orientation:landscape) and (max-height:600px) {

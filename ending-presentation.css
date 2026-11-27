@@ -113,11 +113,7 @@
 #endingPresentationOverlay .bf-new-rank-row{display:grid;flex:none;grid-template-columns:100px 76px minmax(0,1fr) auto;align-items:center;gap:20px;min-height:clamp(88px,12vh,132px);padding:8px 28px;font-size:clamp(22px,2.1vw,32px)}
 #endingPresentationOverlay .bf-new-rank-row img{width:68px;height:68px;object-fit:contain}
 #endingPresentationOverlay .bf-new-rank-row b{color:#ffdc83;white-space:nowrap;font-size:1.1em}
-@media(max-width:760px){
-#endingPresentationOverlay .bf-new-rank-table{gap:3px}
-#endingPresentationOverlay .bf-new-rank-row{grid-template-columns:56px 46px minmax(0,1fr) auto;gap:8px;min-height:60px;padding:3px 9px;font-size:clamp(15px,3.3vw,20px)}
-#endingPresentationOverlay .bf-new-rank-row img{width:36px;height:36px}
-}
+
 #endingPresentationOverlay.bf-new-ending-graph-scene .bf-main{inset:0;width:auto;bottom:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;align-items:center;gap:0}
 #endingPresentationOverlay.bf-new-ending-graph-scene .bf-banner{display:none!important}
 
@@ -146,4 +142,3 @@
 #endingPresentationOverlay .bf-new-winner-name{max-width:100%;overflow-wrap:anywhere}
 #endingPresentationOverlay .bf-new-winners{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,clamp(90px,12vw,170px)),1fr));gap:clamp(8px,2vh,24px);max-height:calc(100% - var(--an02-min-height) - var(--an02-bottom));overflow:auto}
 #endingPresentationOverlay .bf-new-winners .bf-new-winner{margin:0;width:auto;transform:none}
-@media(max-width:600px){#endingPresentationOverlay .bf-new-winners{width:36%;margin-right:60%}}

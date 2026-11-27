@@ -146,11 +146,7 @@
 .guidebook-trade-title { margin: 0 0 .65em; color: #ffdc83; font-size: calc(var(--guidebook-trade-base-size) * 1.15 + 8pt); }
 .guidebook-intro p { margin: 0; }
 .guidebook-intro p + p { margin-top: .65em; }
-@media (orientation: landscape) and (max-height: 360px) {
-    .guidebook-layer[data-view="intro"] .guidebook-intro { grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); }
-    .guidebook-layer[data-view="intro"] .guidebook-intro > div { line-height: 1.2; }
-    .guidebook-layer[data-view="intro"] .guidebook-trade-title { margin-bottom: .5em; }
-}
+
 .guidebook-layer[data-view="offer"] .guidebook-panel { grid-template-rows: auto minmax(min-content, 1fr) auto auto; }
 .guidebook-layer[data-view="offer"] .guidebook-offer-route { display: flex; align-items: center; justify-content: center; justify-self: center; gap: clamp(20px, 5vw, 48px); min-height: 0; }
 .guidebook-layer[data-view="offer"] .guidebook-offer-icon { flex: none; width: clamp(48px, 16dvh, 96px); height: clamp(48px, 16dvh, 96px); object-fit: contain; }
@@ -186,16 +182,11 @@
 }
 .special-reward-an02 > img { width: clamp(50px, 6vw, 92px); aspect-ratio: auto; object-fit: contain; }
 .special-reward-an02 > p { flex: 1; }
-@media (max-width: 700px) {
-    .special-reward-panel { width: min(92%, 520px); min-height: 38dvh; }
-    .special-reward-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
+
 @media (max-width: 1000px) {
     .guidebook-panel { width: 86%; }
 }
-@media (max-width: 700px) {
-    .guidebook-panel { width: calc(100% - 20px); }
-}
+
 @media (orientation: landscape) and (max-height: 760px) {
     .guidebook-layer { --guidebook-gap: 6px; }
     .guidebook-layer, .guidebook-withdrawal { --guidebook-an02-height: 64px; --an02-bottom: 6px; }
@@ -213,18 +204,7 @@
     .guidebook-layer[data-view="offer"] .guidebook-panel .guidebook-back { position: absolute; inset: 6px auto auto 8px; }
     .guidebook-back { position: absolute; inset: 6px auto auto 8px; }
 }
-@media (orientation: landscape) and (max-height: 360px) {
-    .guidebook-layer[data-view="offers"] .guidebook-panel { gap: 3px; }
-    .guidebook-layer[data-view="offers"] .guidebook-heading { font-size: 15px; line-height: 1.2; padding-bottom: 2px; }
-    .guidebook-layer[data-view="offers"] .guidebook-offer-list > .bf-receipt-card { --item-player-icon-size: 26px; --item-player-card-gap: 1px; --item-player-card-padding: 2px; }
-    #guidebookOffersPopup .guidebook-offer-list > .bf-receipt-card > strong { line-height: 1.1; }
-    .guidebook-layer[data-view="offer"] .guidebook-panel { gap: 3px; }
-    .guidebook-layer[data-view="offer"] .guidebook-heading { padding-bottom: 0; }
-    .guidebook-layer[data-view="offer"] .guidebook-offer-icon { width: clamp(32px, 10dvh, 40px); height: clamp(32px, 10dvh, 40px); }
-    .guidebook-layer[data-view="offer"] .mt-arrow { width: 32px; height: 32px; }
-    .guidebook-layer[data-view="offer"] .mt-form { gap: 2px; }
-    .guidebook-layer[data-view="offer"] .mt-form > small { font-size: 12px; }
-}
+
 @media (orientation: landscape) and (max-height: 600px) {
     .guidebook-layer { --guidebook-hud-bottom: 52px; }
 }

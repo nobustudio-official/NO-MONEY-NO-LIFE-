@@ -46,7 +46,7 @@
 :is(.guidebook-an02,.fukubukuro-an02).telop-layout-slot { background: transparent; border-color: transparent; box-shadow: none; pointer-events: none; }
 :is(.telop-standard-frame, #moneyTransferScreen .telop-standard-frame, #undergroundPresentation .telop-standard-frame, #ponzi-preview .telop-standard-frame)[data-telop-passive] { pointer-events: none; }
 :is(.telop-standard-frame, #moneyTransferScreen .telop-standard-frame, #undergroundPresentation .telop-standard-frame, #ponzi-preview .telop-standard-frame)[hidden], .telop-standard-frame [hidden], #ponzi-preview:is([data-stage="payout"],[data-stage="report"]) .telop-standard-frame { display: none; }
-@media (max-width:700px), (pointer:coarse) and (max-height:500px) {
+@media (pointer:coarse) and (max-height:500px) {
     :is(.telop-standard-frame, #moneyTransferScreen .telop-standard-frame, #undergroundPresentation .telop-standard-frame, #ponzi-preview .telop-standard-frame) { padding: clamp(8px,2.2vh,16px); column-gap: 12px; }
     :is(.telop-standard-frame, #moneyTransferScreen .telop-standard-frame, #undergroundPresentation .telop-standard-frame, #ponzi-preview .telop-standard-frame):not(.telop-no-portrait) { grid-template-columns: 48px minmax(0,1fr); }
     :is(.telop-standard-frame, #moneyTransferScreen .telop-standard-frame, #undergroundPresentation .telop-standard-frame, #ponzi-preview .telop-standard-frame) > .telop-standard-portrait { left: 16px; width: 48px; height: 48px; }

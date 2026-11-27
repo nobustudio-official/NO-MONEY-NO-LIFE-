@@ -46,7 +46,7 @@
 .fukubukuro-an02 > .fukubukuro-an02-copy.an02-copy { padding-right:0; }
 #moneyTransferScreen .mt-telop > img { flex:none; }
 
-@media (max-width:700px), (pointer:coarse) and (max-height:500px) {
+@media (pointer:coarse) and (max-height:500px) {
  :is(#eventPopup,#slotArrivalBanner,#treasureBonusBanner).common-announcement,
  #jobPopup.job-approved-layout :is(.job-dialogue-box,.job-choice-panel) { padding:clamp(8px,2.2vh,16px);column-gap:12px; }
  :is(#eventPopup,#slotArrivalBanner,#treasureBonusBanner).common-announcement:not(.announcement-no-portrait) { grid-template-columns:48px minmax(0,1fr); }
