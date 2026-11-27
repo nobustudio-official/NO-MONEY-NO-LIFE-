@@ -304,10 +304,11 @@
             });
             const results = flow[side + 'Dice'];
             if (!results && rolling !== side) return null;
-            const phase = flow.stage === 'cheat' && side === 'foreman' ? 'rolling' : rolling === side ? 'rolling' : stopping === side ? 'stopping' : 'result';
+            const inspection = flow.stage === 'cheat' && side === 'foreman';
+            const phase = inspection ? 'rolling' : rolling === side ? 'rolling' : stopping === side ? 'stopping' : 'result';
             return { renderer, state:{ phase, results:results || [], count:3, began:started, stopped:started,
-                showIndividualResults:false, centerLanding:true, canvasLanding:true, cornerLaunch:true,
-                diceScale:window.DiceAnimation.gameplayScale }, side };
+                showIndividualResults:false, centerLanding:true, canvasLanding:!inspection, cornerLaunch:true,
+                stationaryRotation:inspection, diceScale:window.DiceAnimation.gameplayScale * (inspection ? 1.35 : 1) }, side };
         }).filter(Boolean);
         if (stopping) busy = true;
         function animate(now) {

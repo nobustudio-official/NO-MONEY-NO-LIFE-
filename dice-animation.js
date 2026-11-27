@@ -90,6 +90,7 @@
   throwLeft=state.cornerLaunch ? .5*Math.max(0,Math.min(r.width*.27,r.width/2-(columns-1)*cell/2-70))/size : THROW_LEFT;
   const verticalRoom=state.canvasLanding?Math.max(0,r.height*.55-(rows-1)*(rows>2?76:116)/2-60):Infinity;
   throwForward=state.cornerLaunch?Math.min(r.height*(state.launchHeight??.26),verticalRoom)/size:THROW_FORWARD;
+  if(state.stationaryRotation){throwLeft=0;throwForward=0;}
   for(let i=0;i<count();i++){const row=Math.floor(i/columns),inRow=Math.min(columns,count()-row*columns);
    const rowOffset=(row-(rows-1)/2)*(showIndividualResults==='above'?(rows>2?108:146):(rows>2?76:116));
    const x=r.width/2+(i%columns-(inRow-1)/2)*cell+(state.centerLanding&&!reduced?throwLeft*size:0);
