@@ -142,10 +142,15 @@
 .guidebook-layer[data-view="intro"] .guidebook-notice { margin: 0; color: #ffd0c5; }
 .guidebook-layer[data-view="intro"] .guidebook-notice:empty { display: none; }
 .guidebook-intro > img { width: 100%; height: min(38dvh, 380px); object-fit: contain; }
-.guidebook-intro > div { font-size: clamp(12px, 1.4vw, 25px); line-height: 1.5; }
-.guidebook-trade-title { margin: 0 0 .65em; color: #ffdc83; font-size: 1.15em; }
+.guidebook-intro > div { --guidebook-trade-base-size: clamp(12px, 1.4vw, 25px); font-size: calc(var(--guidebook-trade-base-size) + 8pt); line-height: 1.5; }
+.guidebook-trade-title { margin: 0 0 .65em; color: #ffdc83; font-size: calc(var(--guidebook-trade-base-size) * 1.15 + 8pt); }
 .guidebook-intro p { margin: 0; }
 .guidebook-intro p + p { margin-top: .65em; }
+@media (orientation: landscape) and (max-height: 360px) {
+    .guidebook-layer[data-view="intro"] .guidebook-intro { grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); }
+    .guidebook-layer[data-view="intro"] .guidebook-intro > div { line-height: 1.2; }
+    .guidebook-layer[data-view="intro"] .guidebook-trade-title { margin-bottom: .5em; }
+}
 .guidebook-layer[data-view="offer"] .guidebook-panel { grid-template-rows: auto minmax(min-content, 1fr) auto auto; }
 .guidebook-panel .mt-route, .guidebook-panel .mt-form { position: static; transform: none; justify-self: center; }
 .guidebook-panel .mt-route { width: min(100%, 650px); }

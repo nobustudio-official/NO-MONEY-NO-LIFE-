@@ -6,7 +6,14 @@
     const copies = '.telop-standard-copy,.event-popup-message,.job-dialogue-text,.bf-copy,.boss-opening-copy,.bridge-mugging-copy,#rewardMessage,.dp-guide-copy,.battle-log-text,.hatataki-summary,.guidebook-intro,.ponzi-payout-rows';
     const records = new Map(), hostStates = new Map(), observed = new Set(), dirty = new Set();
     let pending = 0;
-    const matches = node => /^次へ[▶►]?$/.test(node.textContent.replace(/\s/g, ''));
+    const matches = node => /^次へ[▶►]?$/.test(node.textContent.replace(/[\s\uFE0E\uFE0F]/g, ''));
+    function useTextArrow(node) {
+        const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+        while (walker.nextNode()) {
+            const text = walker.currentNode, value = text.nodeValue.replace(/▶[\uFE0E\uFE0F]?/g, '▶\uFE0E');
+            if (value !== text.nodeValue) text.nodeValue = value;
+        }
+    }
     const set = (node, name, value) => { if (node.style.getPropertyValue(name) !== value) node.style.setProperty(name, value); };
     const resize = new ResizeObserver(() => schedule());
     function schedule(root) {
@@ -17,7 +24,10 @@
         if (root.nodeType !== Node.ELEMENT_NODE) root = root.parentElement;
         if (!root) return;
         const nodes = root.matches(candidates) ? [root, ...root.querySelectorAll(candidates)] : root.querySelectorAll(candidates);
-        for (const node of nodes) if (matches(node) && !records.has(node)) records.set(node, {});
+        for (const node of nodes) if (matches(node)) {
+            useTextArrow(node);
+            if (!records.has(node)) records.set(node, {});
+        }
     }
     function clearHost(host, state) {
         host.classList.remove('game-next-relative-host', 'game-next-short-host');
