@@ -29,7 +29,36 @@
     let transferFade = null;
     let immunitySound;
     let menuPlaceholder, menuNode, hudPlaceholder, hudNode, returnButtonState;
-    let stopOfferTracking;
+    let stopOfferTracking, stopSaleTracking;
+    function placeSaleFrame(panel, caption) {
+        const screen = document.querySelector('.game-screen'), hud = screen?.querySelector('.game-hud');
+        if (!panel || !caption || !screen || !hud) return;
+        const update = () => {
+            if (!panel.isConnected || root.hidden) return;
+            const header = hud.getBoundingClientRect(), telop = caption.getBoundingClientRect();
+            if (!header.width || !telop.height) return;
+            const top = header.bottom + 8;
+            // Match the job frame horizontally, ending six pixels above AN02.
+            Object.assign(panel.style, { position: 'fixed', left: header.left + 'px', top: top + 'px',
+                right: 'auto', bottom: 'auto', width: header.width + 'px', height: Math.max(0, telop.top - 6 - top) + 'px' });
+        };
+        let pending = 0;
+        const schedule = () => { if (!pending) pending = requestAnimationFrame(() => { pending = 0; update(); }); };
+        const observer = new ResizeObserver(schedule);
+        [screen, hud, caption].forEach(element => observer.observe(element));
+        window.addEventListener('resize', schedule, { passive: true });
+        window.visualViewport?.addEventListener('resize', schedule, { passive: true });
+        window.visualViewport?.addEventListener('scroll', schedule, { passive: true });
+        stopSaleTracking = () => {
+            observer.disconnect();
+            window.removeEventListener('resize', schedule);
+            window.visualViewport?.removeEventListener('resize', schedule);
+            window.visualViewport?.removeEventListener('scroll', schedule);
+            if (pending) cancelAnimationFrame(pending);
+            stopSaleTracking = null;
+        };
+        update();
+    }
     function placeOfferChoices(scene, caption) {
         const cards = scene?.querySelector('.ug-options');
         if (!cards || !caption) return;
@@ -346,6 +375,7 @@
         generation++;
         busy = false;
         stopOfferTracking?.();
+        stopSaleTracking?.();
         cancelAnimationFrame(frame);
         clearTimeout(timer);
         restoreMenu();
@@ -466,6 +496,7 @@
         const telop = root.querySelector('.ug-caption');
         window.TelopStandard?.apply(telop, { message: telop?.querySelector('p'), portrait: telop?.querySelector('img'),
             next: telop?.querySelector('.ug-next'), speaker: telop?.querySelector('.ug-speaker') });
+        if (sale) placeSaleFrame(root.querySelector('.ug-sale'), telop);
         const sceneFrame = root.querySelector('.ug-scene');
         if (sceneFrame) {
             window.Plane02Layout?.apply(sceneFrame, { once: true });
@@ -589,6 +620,7 @@
 
     function suspend() {
         stopOfferTracking?.();
+        stopSaleTracking?.();
         generation++;
         clearTimeout(timer);
         cancelAnimationFrame(frame);
