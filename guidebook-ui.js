@@ -164,6 +164,7 @@
         const root = layer = make('section', 'guidebook-layer');
         root.dataset.view = kind;
         if (kind === 'choice') root.id = 'guidebookChoicePopup';
+        if (kind === 'offers') root.id = 'guidebookOffersPopup';
         root.setAttribute('role', 'dialog');
         root.setAttribute('aria-label', kind === 'immunity-expired' ? '無敵の加護' : '攻略本');
         root.tabIndex = -1;
@@ -265,15 +266,15 @@
             const seller = book.ownerIndex;
             const heading = make('header', 'guidebook-heading');
             heading.append(make('h2', '', '攻略本の購入申請'));
-            const route = make('div', 'mt-route');
-            const person = (index, role) => {
-                const block = make('div', 'mt-person');
-                block.append(image(icon(index)), make('span', '', role), make('b', '', players[index].name), make('strong', '', formatGold(players[index].money)));
-                return block;
+            const route = make('div', 'guidebook-offer-route');
+            const person = index => {
+                const portrait = image(icon(index));
+                portrait.className = 'guidebook-offer-icon';
+                return portrait;
             };
             const arrow = image('images/ui/icons/interface/yajirushi.webp');
             arrow.className = 'mt-arrow';
-            route.append(person(active, '買い手'), arrow, person(seller, '売り手'));
+            route.append(person(active), arrow, person(seller));
             const form = make('form', 'mt-form'), controls = make('div', 'mt-amount-controls');
             const { MIN_PRICE, PRICE_STEP, maxPrice } = GuidebookRules;
             const max = maxPrice(players[active]);
@@ -355,12 +356,12 @@
         document.body.append(root);
         if (kind !== 'intro') styleBanner(banner);
         if (kind === 'choice') stopChoiceTracking = placeChoiceCards(root, panel);
-        if ((kind === 'reading' || kind === 'intro') && !panel.hidden) {
+        if (['reading', 'intro', 'offer', 'offers'].includes(kind) && !panel.hidden) {
             window.Plane02Layout?.apply(panel, { once: true });
             stopFrameTracking = window.Plane02Layout?.apply(panel);
             if (kind === 'reading') stopReadingTracking = fitReadingArt(root, panel);
         }
-        if (kind === 'offer' || kind === 'offers') window.PlayerCardSize?.watch(root);
+        if (kind === 'offers') window.PlayerCardSize?.refresh();
         const screen = document.querySelector('.game-screen');
         const hud = screen?.querySelector('.game-hud');
         if (hud && !panel.hidden) stopHudTracking = trackHud(root, hud);
