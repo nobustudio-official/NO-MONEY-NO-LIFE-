@@ -3279,6 +3279,39 @@ playSharedSE(buttonSound)
     const otherTitleConfirmYes = document.getElementById("otherTitleConfirmYes");
     const otherTitleConfirmNo = document.getElementById("otherTitleConfirmNo");
 
+    function positionOtherTitleConfirm(gameScreen) {
+        if (!otherTitleConfirm || otherTitleConfirm.hidden) return;
+        const parent = otherTitleConfirm.offsetParent;
+        if (!parent) return;
+        const screen = gameScreen.getBoundingClientRect(), bounds = parent.getBoundingClientRect();
+        const scaleX = parent.offsetWidth ? bounds.width / parent.offsetWidth : 1;
+        const scaleY = parent.offsetHeight ? bounds.height / parent.offsetHeight : 1;
+        if (!scaleX || !scaleY) return;
+        const originLeft = bounds.left + parent.clientLeft * scaleX;
+        const originTop = bounds.top + parent.clientTop * scaleY;
+        otherTitleConfirm.style.width = "";
+        otherTitleConfirm.style.transform = "none";
+        const menu = otherMenuPopup.getBoundingClientRect();
+        const preferredWidth = otherTitleConfirm.getBoundingClientRect().width;
+        const available = Math.max(0, screen.right - menu.left - 12);
+        // Keep both choices visible when the viewport cannot fit their normal widths.
+        const width = Math.min(preferredWidth, Math.max(0, (available - 10) * .55));
+        const menuWidth = Math.min(menu.width, Math.max(0, available - 10 - width));
+        const menuParent = otherMenuPopup.offsetParent;
+        const menuParentBounds = menuParent?.getBoundingClientRect();
+        const menuScale = menuParent?.offsetWidth ? menuParentBounds.width / menuParent.offsetWidth : 1;
+        otherMenuPopup.style.width = (menuWidth / menuScale) + "px";
+        otherTitleConfirm.style.width = (width / scaleX) + "px";
+        const maxHeight = Math.max(0, (screen.height - 24) / scaleY);
+        otherTitleConfirm.style.minHeight = Math.min(180, maxHeight) + "px";
+        otherTitleConfirm.style.maxHeight = maxHeight + "px";
+        const anchor = otherMenuPopup.getBoundingClientRect();
+        const height = otherTitleConfirm.getBoundingClientRect().height;
+        const top = Math.max(screen.top + 12, Math.min(anchor.top, screen.bottom - height - 12));
+        otherTitleConfirm.style.left = ((anchor.right + 10 - originLeft) / scaleX) + "px";
+        otherTitleConfirm.style.top = ((top - originTop) / scaleY) + "px";
+    }
+
     window.positionOtherMenuPopup = function () {
         if (!otherMenuPopup || !otherButton) return;
         const gameScreen = otherButton.closest(".game-screen");
@@ -3302,6 +3335,7 @@ playSharedSE(buttonSound)
         otherMenuPopup.style.maxHeight = Math.max(0, gameScreen.clientHeight - top - 12) + "px";
         otherMenuPopup.style.boxSizing = "border-box";
         otherMenuPopup.style.transform = "none";
+        positionOtherTitleConfirm(gameScreen);
     };
 
     const repositionVisibleOtherMenu = function () {
@@ -3401,11 +3435,13 @@ playSharedSE(buttonSound)
     otherTitleButton?.addEventListener("click", function () {
         if (!otherTitleConfirm) return;
         otherTitleConfirm.hidden = false;
+        window.positionOtherMenuPopup();
         otherTitleConfirmNo?.focus();
     });
 
     otherTitleConfirmNo?.addEventListener("click", function () {
         if (otherTitleConfirm) otherTitleConfirm.hidden = true;
+        window.positionOtherMenuPopup();
         otherTitleButton?.focus();
     });
 

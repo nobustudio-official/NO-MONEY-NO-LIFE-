@@ -5090,6 +5090,7 @@ GAME OVER
     }
 
     .other-title-confirm {
+        container-type: inline-size;
         position: absolute;
         top: 55%;
         left: 48%;
@@ -5109,6 +5110,7 @@ GAME OVER
         box-shadow: 0 10px 28px rgba(0, 0, 0, .5), inset 0 0 18px rgba(255, 211, 97, .12);
         color: #fff;
         text-align: center;
+        overflow-y: auto;
     }
 
     .other-title-confirm[hidden] {
@@ -5142,6 +5144,11 @@ GAME OVER
 
     .other-title-confirm-actions button:hover {
         filter: brightness(1.12);
+    }
+
+    @container (max-width: 180px) {
+        .other-title-confirm-actions { flex-direction: column; gap: 8px; }
+        .other-title-confirm-actions button { min-width: 0; width: 100%; }
     }
 
     @media (max-width: 700px) and (orientation: portrait) {

@@ -1,0 +1,56 @@
+<!doctype html><meta charset="utf-8"><title>Title return dialog beside Other menu</title>
+<style>html,body{margin:0}iframe{display:block;border:0}#report{display:none}</style>
+<pre id="report">RUNNING</pre><iframe id="game" style="width:852px;height:393px"></iframe>
+<script>
+(async()=>{
+ const frame=document.getElementById('game'),results=[],failures=[];
+ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+ const check=(yes,message)=>{if(!yes)throw Error(message)};
+ const capture=async name=>{window.__captureRequest={name};await new Promise(resolve=>window.__continueCapture=resolve)};
+ const rect=e=>{const r=e.getBoundingClientRect();return[r.x,r.y,r.width,r.height]};
+ let stage='setup';
+ try{
+  await new Promise(resolve=>{frame.onload=resolve;frame.src='../index.html?other-title-confirm-test=1'});
+  const w=frame.contentWindow;let d=w.document;
+  w.HTMLMediaElement.prototype.play=()=>Promise.resolve();w.waitForGameAssets=()=>Promise.resolve();
+  await w.localMatchRecoveryReady;await w.loadMapData();await w.selectBossSquare();
+  w.players=[{name:'プレイヤー1',money:100000,magicPower:1000,bossDamage:0,position:139,characterId:1,inventory:[],assets:[],magic:[],jobTurnsRemaining:0,jobReward:0}];
+  w.OfflineDividends.reset(w.players);w.gameOpeningComplete=true;w.showGameScreen(w.players,30);await delay(120);
+  let menu=d.getElementById('otherMenuPopup'),dialog=d.getElementById('otherTitleConfirm'),screen=d.querySelector('.game-screen');
+  const open=async()=>{d.getElementById('otherButton').click();await delay(50);check(w.getComputedStyle(menu).display!=='none','Other menu did not open');const width=menu.getBoundingClientRect().width;d.getElementById('otherTitleButton').click();await delay(70);check(!dialog.hidden,'confirmation did not open');return width};
+  const verify=()=>{
+   const m=menu.getBoundingClientRect(),c=dialog.getBoundingClientRect(),s=screen.getBoundingClientRect();
+   check(Math.abs(c.left-m.right-10)<.8,'dialog gap differs from 10px '+JSON.stringify({menu:rect(menu),dialog:rect(dialog),screen:rect(screen)}));
+   check(c.right<=s.right-10&&c.top>=s.top+10&&c.bottom<=s.bottom-10,'dialog clipped outside screen '+JSON.stringify({dialog:rect(dialog),screen:rect(screen)}));
+   for(const button of dialog.querySelectorAll('button')){
+    const b=button.getBoundingClientRect();check(b.left>=c.left&&b.right<=c.right&&b.top>=c.top&&b.bottom<=c.bottom,'confirmation button clipped');
+    const hit=d.elementFromPoint(b.x+b.width/2,b.y+b.height/2);
+    check(hit?.closest('button')===button,'confirmation button covered '+JSON.stringify({button:button.id,hit:hit?.outerHTML.slice(0,200)}));
+   }
+   check(d.activeElement===d.getElementById('otherTitleConfirmNo'),'initial focus not on No');
+  };
+  for(const [width,height] of [[1280,720],[852,393],[740,360],[665,307],[640,320],[600,320],[393,852]]){
+   stage='layout '+width+'x'+height;frame.style.width=width+'px';frame.style.height=height+'px';await capture(null);await delay(100);
+   const oldWidth=await open();verify();
+   if(width===852)await capture('other-title-confirm-852x393.png');
+   if(width===640)await capture('other-title-confirm-640x320.png');
+   if(width===393)await capture('other-title-confirm-393x852.png');
+   frame.style.width=(width-24)+'px';await capture(null);await delay(100);verify();
+   frame.style.width=width+'px';await capture(null);await delay(100);verify();
+   d.getElementById('otherTitleConfirmNo').click();await delay(40);
+   check(dialog.hidden&&w.getComputedStyle(menu).display!=='none','No did not return to Other menu');
+   check(Math.abs(menu.getBoundingClientRect().width-oldWidth)<.8,'Other menu width not restored');
+   check(d.activeElement===d.getElementById('otherTitleButton'),'focus not restored after No');
+   d.getElementById('otherTitleButton').click();await delay(50);d.getElementById('otherMenuCloseButton').click();
+   check(dialog.hidden&&w.getComputedStyle(menu).display==='none','closing Other menu left confirmation visible');
+   results.push({viewport:[width,height],gap:'10px',resize:'passed',cancel:'passed',close:'passed'});
+  }
+  stage='scaled game screen';frame.style.width='852px';frame.style.height='393px';await capture(null);await delay(100);
+  screen.style.transform='scale(.8)';screen.style.transformOrigin='top left';await open();verify();
+  d.getElementById('otherTitleConfirmNo').click();d.getElementById('otherMenuCloseButton').click();screen.style.transform='';screen.style.transformOrigin='';
+  results.push({scaledScreen:'10px visual gap and bounds passed'});
+  stage='complete';
+ }catch(error){failures.push(error.stack||String(error))}
+ document.getElementById('report').textContent=JSON.stringify({stage,results,failures});document.body.dataset.complete='true';
+})();
+</script>
