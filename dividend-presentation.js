@@ -118,17 +118,23 @@
     const axisFont = Math.min(20, Math.max(14, window.innerWidth * .013));
     const height = Math.round(plot.getBoundingClientRect().height), right = 14, top = stage === 2 || stage === 3 ? 4 : 16;
     const bottom = stage === 3 ? axisFont + 10 : stage === 2 ? 4 : 28;
-    const values = data.flatMap(p => stage === 2 ? [p.property, p.cash < 0 ? p.cash : total(p)] : p.history);
-    const min = Math.min(0, ...values), max = Math.max(0, ...values);
-    const range = Math.max(1, max - min);
-    const magnitude = 10 ** Math.floor(Math.log10(range / 4));
-    const step = Math.max(1, Math.ceil(range / 4 / magnitude) * magnitude);
-    const upper = Math.max(step, Math.ceil(max * 1.12 / step) * step);
-    const lower = min < 0 ? Math.floor(min * 1.12 / step) * step : 0;
+    const barValues = data.flatMap(p => [p.property, p.cash < 0 ? p.cash : total(p)]);
+    const historyValues = data.flatMap(p => p.history);
+    const boundsFor = values => {
+      const min = Math.min(0, ...values), max = Math.max(0, ...values), range = Math.max(1, max - min);
+      const magnitude = 10 ** Math.floor(Math.log10(range / 4));
+      const step = Math.max(1, Math.ceil(range / 4 / magnitude) * magnitude);
+      return { step, upper: Math.max(step, Math.ceil(max * 1.12 / step) * step), lower: min < 0 ? Math.floor(min * 1.12 / step) * step : 0 };
+    };
+    const barBounds = boundsFor(barValues), historyBounds = boundsFor(historyValues);
+    const { step, upper, lower } = stage === 2 ? barBounds : historyBounds;
     const tickText = value => width < 420 ? `${value / 10000}万G` : `${format(value)}G`;
     const ruler = document.createElement('canvas').getContext('2d');
     ruler.font = `700 ${axisFont}px ${getComputedStyle(root).fontFamily}`;
-    const left = Math.ceil(Math.max(ruler.measureText(tickText(upper)).width, ruler.measureText(tickText(lower)).width)) + 18;
+    // Reserve the same left margin for both graphs, including different value ranges.
+    let labelWidth = 0;
+    for (const bounds of [barBounds, historyBounds]) for (let value = bounds.lower; value <= bounds.upper; value += bounds.step) labelWidth = Math.max(labelWidth, ruler.measureText(tickText(value)).width);
+    const left = Math.ceil(labelWidth) + 18;
     const chartWidth = width - left - right, chartHeight = height - top - bottom;
     const y = n => top + chartHeight * (upper - n) / (upper - lower);
     let markup = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${stages[stage]}。金額の単位はG。4人分を表示">`;

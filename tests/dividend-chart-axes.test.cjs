@@ -7,7 +7,7 @@ const start = source.indexOf('  function draw() {');
 const end = source.indexOf('  function fitLegendItems()', start);
 assert.ok(start >= 0 && end > start);
 
-function chart(stage, width = 700) {
+function chart(stage, width = 700, history = null) {
     const plot = {
         getBoundingClientRect: () => ({width, height: 240}),
         querySelectorAll: () => [], querySelector: () => null, innerHTML: ''
@@ -24,6 +24,7 @@ function chart(stage, width = 700) {
         format: n => String(n), total: p => p.property + p.cash,
         stackedBarMarkup: () => '', updateChart() {}, fitLegendItems() {}, performance: {now: () => 0}
     };
+    if (history) context.data.forEach((player, index) => { player.history = history[index]; });
     vm.runInNewContext(source.slice(start, end) + '\ndraw();', context);
     const attributes = tag => Object.fromEntries([...tag.matchAll(/([\w-]+)="([^"]*)"/g)].map(([, key, value]) => [key, value]));
     return {
@@ -51,6 +52,16 @@ test('stacked bars keep their zero axis and graph height when balances are negat
     assert.ok(Number(axes.find(axis => axis['data-axis'] === 'x').y1) < Number(axes.find(axis => axis['data-axis'] === 'y').y2));
     assert.equal(Number(axes.find(axis => axis['data-axis'] === 'y').y2), 236);
     assert.equal(ticks.length, 0);
+});
+
+test('bar and line graphs keep the same horizontal origin when history has a different range', () => {
+    for (const width of [360, 700]) {
+        const history = [[-1000000, 0, 100], [10, 100000000, 80]];
+        const bar = chart(2, width, history).axes.find(axis => axis['data-axis'] === 'y');
+        const line = chart(3, width, history).axes.find(axis => axis['data-axis'] === 'y');
+        assert.equal(bar.x1, line.x1);
+        assert.equal(bar.x2, line.x2);
+    }
 });
 
 test('opaque white axes are scoped to dividend and ending overlays', () => {

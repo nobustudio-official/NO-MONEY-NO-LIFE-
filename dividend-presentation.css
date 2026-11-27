@@ -60,7 +60,8 @@
     #nmnl-dividend-lab .dp-plot text{font-family:inherit;fill:var(--dp-ink);font-size:clamp(14px,1.3vw,20px);font-weight:700}
     #nmnl-dividend-lab .dp-axis-players{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:0 14px 0 var(--dp-axis-left,76px);gap:8px;align-content:start}
     @media(orientation:landscape){
-      :is(#dividendPresentationOverlay,#endingPresentationOverlay) #nmnl-dividend-lab .dp-screen[data-stage="2"] .dp-axis-players{column-gap:0}
+      :is(#dividendPresentationOverlay,#endingPresentationOverlay) #nmnl-dividend-lab .dp-screen:is([data-stage="2"],[data-stage="3"]) .dp-axis-players{column-gap:0}
+      :is(#dividendPresentationOverlay,#endingPresentationOverlay) #nmnl-dividend-lab .dp-screen:is([data-stage="2"],[data-stage="3"]) .dp-axis-head{height:calc(clamp(14px,2.2vh,22px) * 1.3)}
     }
     #nmnl-dividend-lab .dp-axis-player{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;text-align:center;font-size:clamp(16px,1.4vw,22px)}
     #nmnl-dividend-lab .dp-axis-player img{width:46px;height:46px;object-fit:contain}
