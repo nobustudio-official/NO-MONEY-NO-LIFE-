@@ -1,0 +1,119 @@
+<!doctype html><meta charset="utf-8"><title>Guidebook choice regression</title>
+<style>html,body{margin:0}#report{display:none}iframe{display:block;border:0}</style>
+<pre id="report">RUNNING</pre><iframe id="game" style="width:852px;height:393px"></iframe>
+<script>
+(async () => {
+    const frame=document.getElementById('game'),results=[],failures=[];
+    const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+    const check=(condition,message)=>{if(!condition)throw Error(message)};
+    const capture=async name=>{window.__captureRequest={name};await new Promise(resolve=>window.__continueCapture=resolve);};
+    const rect=element=>{const r=element.getBoundingClientRect();return [r.x,r.y,r.width,r.height]};
+    const same=(a,b)=>a.every((value,i)=>Math.abs(value-b[i])<.75);
+    let stage='load';
+    try{
+        await new Promise(resolve=>{frame.onload=resolve;frame.src='../index.html?guidebook-choice-test=1'});
+        const w=frame.contentWindow,d=w.document;
+        w.requestAnimationFrame=fn=>w.setTimeout(()=>fn(w.performance.now()),16);w.cancelAnimationFrame=id=>w.clearTimeout(id);
+        w.HTMLMediaElement.prototype.play=()=>Promise.resolve();
+        await w.localMatchRecoveryReady;
+        w.renderGameTemplate('mainGameTemplate',d.querySelector('.game-container'));
+        const players=w.players=[0,1].map(i=>({name:'プレイヤー'+(i+1),characterId:i+1,money:100000,inventory:[30],assets:[],magic:[]}));
+        const icon=i=>w.eval('PLAYER_CONTENTS')[i+1].icon;
+        let sequence=0;
+        const context=(online=false,control=true)=>({players,active:0,book:{remaining:0,withdrawals:[]},icon,online,control,
+            turnKey:'guidebook-layout-'+ ++sequence,dispatch:async()=>{},back(){}});
+        const styles=element=>{
+            const s=w.getComputedStyle(element);
+            return [s.fontFamily,s.fontSize,s.fontWeight,s.lineHeight,s.paddingTop,s.paddingRight,s.paddingBottom,s.paddingLeft,
+                s.color,s.backgroundColor,s.borderTopWidth,s.borderTopColor,s.borderRadius,s.boxShadow];
+        };
+        const job=d.getElementById('jobPopup');
+        const showJob=async()=>{
+            w.GuidebookUI.reset();
+            w.JobPresentation.releaseChoices({popup:job});w.Plane02Layout.release(job.querySelector('.job-scene'));
+            job.replaceChildren(d.getElementById('jobPopupContentTemplate').content.cloneNode(true));job.style.display='block';
+            const scene=job.querySelector('.job-scene'),staff=job.querySelector('.job-staff');
+            const data=w.eval('JOB_CONTENTS')[1],background=job.querySelector('.job-background');
+            staff.src=data.staffImage;background.src=data.backgroundImage;await Promise.all([staff.decode(),background.decode()]);
+            job.querySelector('.job-dialogue-box').style.display='none';job.querySelector('.job-choice-panel').hidden=false;
+            w.Plane02Layout.apply(scene);w.JobPresentation.paintChoices({popup:job,wage:job.querySelector('.job-wage')},10000);
+            w.JobPresentation.placeChoices({popup:job});await delay(80);
+            const buttons=[job.querySelector('.job-work-button'),job.querySelector('.job-none-button')];
+            return {cards:buttons.map(rect),styles:buttons.map(styles),caption:rect(job.querySelector('.job-choice-panel'))};
+        };
+        const hideJob=()=>{w.JobPresentation.releaseChoices({popup:job});w.Plane02Layout.release(job.querySelector('.job-scene'));job.style.display='none';};
+        let active=false;
+        for(const [width,height] of [[1920,1080],[1280,720],[852,393],[740,360],[640,320],[393,852]]){
+            stage='geometry '+width+'x'+height;
+            frame.style.width=width+'px';frame.style.height=height+'px';await delay(100);w.PlayerCardSize.refresh();
+            const reference=await showJob();
+            if(width===852)await capture('guidebook-job-reference-852x393.png');
+            hideJob();
+            for(const online of [false,true]){
+                const ctx=context(online);
+                if(active)w.GuidebookUI.reset();
+                w.GuidebookUI.render({kind:'choice'},ctx);active=true;await delay(80);
+                const buttons=[...d.querySelectorAll('.guidebook-choices button')],caption=d.querySelector('.guidebook-an02 .telop-standard-frame');
+                check(buttons.length===2,'choice buttons missing');
+                check(buttons.every((button,i)=>same(rect(button),reference.cards[i])),'card geometry differs: '+JSON.stringify({reference:reference.cards,actual:buttons.map(rect)}));
+                check(buttons.every((button,i)=>JSON.stringify(styles(button))===JSON.stringify(reference.styles[i])),'card styling differs from job');
+                check(buttons[0].dataset.frameId==='BT03-G'&&buttons[1].dataset.frameId==='BT03-S','gold/silver frame incorrect');
+                check(!buttons[1].classList.contains('item-exit-button'),'small exit button leaked into choice');
+                check(caption&&caption.getClientRects().length&&same(rect(caption),reference.caption),'AN02 bounds differ from job');
+                const copy=caption.querySelector('.telop-standard-copy'),expected='攻略本を開きますか？ '+(online?'他の冒険者からは中身は見えません。':'他の冒険者から画面が見えない位置で開いてください。');
+                check(copy.textContent===expected,'original announcement text differs');
+                check(caption.querySelector('img')?.getAttribute('src')===icon(0),'announcement portrait incorrect');
+                check(copy.scrollHeight<=copy.clientHeight,'announcement text clipped: '+JSON.stringify({viewport:[width,height],online,scroll:copy.scrollHeight,client:copy.clientHeight,font:w.getComputedStyle(copy).fontSize,max:w.getComputedStyle(copy).maxHeight,padding:w.getComputedStyle(copy).paddingRight,frame:rect(caption)}));
+                check(!d.querySelector('.guidebook-next'),'choice caption must not advance the turn');
+                const cards=buttons.map(button=>button.getBoundingClientRect()),book=d.querySelector('.guidebook-choice-book').getBoundingClientRect(),banner=caption.getBoundingClientRect();
+                check(cards.every(card=>card.bottom<=banner.top-6),'card overlaps AN02');
+                check(cards[0].right<book.left&&cards[1].left>book.right&&book.bottom<banner.top,'book overlaps choices or caption');
+                if(width===852)await capture('guidebook-choice-852x393-'+(online?'online':'local')+'.png');
+                if(width===640&&!online)await capture('guidebook-choice-640x320-local.png');
+                // A resize while the choice remains open must update both cards.
+                const changedWidth=width-24;frame.style.width=changedWidth+'px';
+                // Flush the parent iframe resize before waiting for child observers.
+                let childTick=false,resizeEvents=0;const resizedEvent=()=>resizeEvents++;
+                w.addEventListener('resize',resizedEvent);w.setTimeout(()=>childTick=true,16);
+                frame.getBoundingClientRect();void w.innerWidth;await capture(null);await delay(100);
+                w.removeEventListener('resize',resizedEvent);
+                const live={innerWidth:w.innerWidth,hidden:d.hidden,childTick,resizeEvents,hud:rect(d.querySelector('.game-hud')),panel:rect(d.querySelector('.guidebook-panel')),caption:rect(d.querySelector('.guidebook-an02 .telop-standard-frame')),style:d.querySelector('.guidebook-choices').style.cssText};
+                const resized=buttons.map(rect);w.GuidebookUI.reset();active=false;
+                const resizedReference=await showJob();hideJob();
+                check(resized.every((bounds,i)=>same(bounds,resizedReference.cards[i])),'live resize did not track job geometry: '+JSON.stringify({width:changedWidth,online,actual:resized,reference:resizedReference.cards,live}));
+                frame.style.width=width+'px';await delay(100);
+                results.push({viewport:[width,height],online,cards:reference.cards,caption:reference.caption,liveResize:'passed'});
+            }
+        }
+        stage='actions';frame.style.width='852px';frame.style.height='393px';await delay(100);
+        const actions=[];
+        w.GuidebookUI.render({kind:'choice'},{...context(),dispatch:async action=>{actions.push(action);await delay(30)}});
+        await delay(50);d.querySelector('.guidebook-an02').click();check(!actions.length,'caption click opened the book');
+        const open=d.querySelector('.guidebook-choice-button');open.click();open.click();await delay(60);
+        check(JSON.stringify(actions)==='["read"]','read dispatch duplicated');w.GuidebookUI.reset();
+        let backs=0;
+        w.GuidebookUI.render({kind:'choice'},{...context(),back:()=>{backs++;w.GuidebookUI.reset()}});
+        d.querySelector('.guidebook-choice-back').click();check(backs===1&&!d.querySelector('.guidebook-layer'),'back callback failed');
+        w.GuidebookUI.render({kind:'choice'},{...context(true,false),dispatch:async()=>actions.push('observer'),back:()=>backs++});
+        for(const button of d.querySelectorAll('.guidebook-choices button')){check(button.disabled,'observer button enabled');button.click();}
+        check(actions.length===1&&backs===1,'observer invoked action');w.GuidebookUI.reset();
+        check(!d.querySelector('.game-screen').inert,'screen remains inert after closing');
+        // Toggle only this patch's stylesheet against its baseline on other views.
+        stage='unrelated views';
+        const currentCss=[...d.querySelectorAll('link[rel="stylesheet"]')].find(link=>link.getAttribute('href').startsWith('guidebook-ui.css'));
+        const baselineCss=d.createElement('link');baselineCss.rel='stylesheet';baselineCss.href='/__guidebook_baseline.css';
+        await new Promise(resolve=>{baselineCss.onload=resolve;currentCss.before(baselineCss)});baselineCss.disabled=true;
+        for(const view of [{kind:'reading'},{kind:'intro'},{kind:'offer'},{kind:'offers'},{kind:'last-chance'},{kind:'expired',owner:0}]){
+            const ctx={...context(),book:{remaining:2,withdrawals:[],ownerIndex:1,offers:[]}};
+            w.GuidebookUI.render(view,ctx);await delay(50);
+            const snapshot=()=>[...d.querySelectorAll('.guidebook-layer .guidebook-panel,.guidebook-layer .telop-standard-frame,.guidebook-heading,.guidebook-spread,.guidebook-back')].map(element=>[...rect(element),...styles(element)]);
+            const modified=snapshot();currentCss.disabled=true;baselineCss.disabled=false;await delay(50);
+            check(JSON.stringify(snapshot())===JSON.stringify(modified),'unrelated view changed: '+view.kind);
+            baselineCss.disabled=true;currentCss.disabled=false;w.GuidebookUI.reset();
+        }
+        results.push({actions:'read/back/observer passed',otherViews:'reading, intro, offer, offers, last-chance, expired unchanged'});
+    }catch(error){failures.push(error.stack||String(error))}
+    if(!failures.length)stage='complete';
+    document.getElementById('report').textContent=JSON.stringify({stage,results,failures});document.body.dataset.complete='true';
+})();
+</script>

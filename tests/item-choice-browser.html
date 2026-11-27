@@ -46,7 +46,8 @@
                 closeAll();w.SpecialItemUI.show({itemId:id,stage:view,destination:'town',players,actorIndex:0,icon,observer:true});noTelop('#specialItemPopup');cases++;
             }
             closeAll();w.DuplicateItemUI.show({player:players[0],useIndex:2,observer:true});noTelop('.duplicate-item-overlay');cases++;
-            closeAll();w.GuidebookUI.render({kind:'choice'},ctx);noTelop('.guidebook-layer');cases++;
+            closeAll();w.GuidebookUI.render({kind:'choice'},ctx);await delay(50);
+            check(visible(d.querySelector('.guidebook-an02 .telop-standard-frame')),'guidebook choice AN02 missing');cases++;
             const bookCards=[...d.querySelectorAll('.guidebook-choices button')];
             check(bookCards.length===2,'guidebook choices missing');
             for (const button of bookCards) {
@@ -55,14 +56,19 @@
                 check(label&&label.scrollWidth<=label.clientWidth&&label.scrollHeight<button.clientHeight,'guidebook label clipped at '+width);
             }
             const bookStyles=bookCards.map(cardStyle);
+            const bookRects=bookCards.map(rect);
             closeAll();
             const job=d.getElementById('jobPopup');job.replaceChildren(d.getElementById('jobPopupContentTemplate').content.cloneNode(true));job.style.display='flex';
             const jobScene=job.querySelector('.job-scene');w.Plane02Layout.apply(jobScene,{once:true});
             job.querySelector('.job-choice-panel').hidden=false;job.querySelector('.job-dialogue-box').style.display='none';
+            const staff=job.querySelector('.job-staff');staff.src=w.eval('JOB_CONTENTS')[1].staffImage;await staff.decode();
             w.JobPresentation.paintChoices({popup:job,wage:job.querySelector('.job-wage')},10000);
+            w.JobPresentation.placeChoices({popup:job});await delay(50);
             const jobStyles=[job.querySelector('.job-work-button'),job.querySelector('.job-none-button')].map(cardStyle);
             check(JSON.stringify(bookStyles)===JSON.stringify(jobStyles),'guidebook choice appearance differs from job cards at '+width+': '+JSON.stringify({bookStyles,jobStyles}));
-            const reference=rect(jobScene);job.style.display='none';
+            const jobRects=[job.querySelector('.job-work-button'),job.querySelector('.job-none-button')].map(rect);
+            check(bookRects.every((bounds,index)=>sameRect(bounds,jobRects[index])),'guidebook choice geometry differs from job at '+width+': '+JSON.stringify({bookRects,jobRects}));
+            const reference=rect(jobScene);w.JobPresentation.releaseChoices({popup:job});job.style.display='none';
             w.HatatakiHakenUI.render({destroyedItems:[],status:'attack',targetIndex:1,targetName:players[1].name,targetIcon:icon(1)});await delay(50);
             noTelop('.hatataki-overlay');check(sameRect(rect(d.querySelector('.hatataki-panel')),reference),'hatataki frame differs from job at '+width);cases++;
             closeAll();w.FukubukuroUI.show(fukuEvent,players[0],{owner:false});await delay(50);

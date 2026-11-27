@@ -19,7 +19,7 @@
         rejected: '申請を却下した！',
         expired: '攻略本は消失した！もう手に入らない！'
     };
-    let layer, key, gameScreen, stopHudTracking, pending = false, withdrawalTimer, withdrawalBanner, currentWithdrawal;
+    let layer, key, gameScreen, stopHudTracking, stopChoiceTracking, pending = false, withdrawalTimer, withdrawalBanner, currentWithdrawal;
     const withdrawals = [];
     const formatGold = amount => amount.toLocaleString('ja-JP') + 'G';
     const make = (tag, cls, value) => {
@@ -36,11 +36,46 @@
     };
     function close() {
         window.PlayerCardSize?.release(layer);
+        stopChoiceTracking?.();
+        stopChoiceTracking = null;
         stopHudTracking?.();
         stopHudTracking = null;
         layer?.remove();
         layer = key = null;
         if (gameScreen) { gameScreen.inert = false; gameScreen = null; }
+    }
+    function placeChoiceCards(root, panel) {
+        const cards = panel.querySelector('.guidebook-choices'), book = panel.querySelector('.guidebook-choice-book');
+        const caption = root.querySelector('.guidebook-an02 .telop-standard-frame') || root.querySelector('.guidebook-an02');
+        if (!cards || !book || !caption) return null;
+        window.Plane02Layout?.apply(panel, { once: true });
+        window.Plane02Layout?.apply(panel);
+        // Match the job scene's artwork center and eight-pixel caption gap.
+        // All writes stay inside this guidebook choice view.
+        const update = () => {
+            if (layer !== root || !root.isConnected) return;
+            const frame = panel.getBoundingClientRect(), art = book.getBoundingClientRect(), telop = caption.getBoundingClientRect();
+            if (!frame.height || !art.height || !telop.height) return;
+            const center = (art.top + art.bottom) / 2, bottom = telop.top - 8;
+            const height = Math.max(48, 2 * (bottom - center));
+            Object.assign(cards.style, { left: (telop.left - frame.left) + 'px', right: (frame.right - telop.right) + 'px',
+                top: (bottom - height - frame.top) + 'px', height: height + 'px' });
+        };
+        let frameId = 0;
+        const schedule = () => { if (!frameId) frameId = requestAnimationFrame(() => { frameId = 0; update(); }); };
+        const observer = new ResizeObserver(schedule);
+        [panel, book, caption].forEach(element => observer.observe(element));
+        window.addEventListener('resize', schedule, { passive: true });
+        window.visualViewport?.addEventListener('resize', schedule, { passive: true });
+        window.visualViewport?.addEventListener('scroll', schedule, { passive: true });
+        update();
+        return () => {
+            observer.disconnect(); cancelAnimationFrame(frameId);
+            window.removeEventListener('resize', schedule);
+            window.visualViewport?.removeEventListener('resize', schedule);
+            window.visualViewport?.removeEventListener('scroll', schedule);
+            window.Plane02Layout?.release(panel);
+        };
     }
     function trackHud(root, hud) {
         const update = () => {
@@ -107,6 +142,7 @@
         key = viewKey;
         const root = layer = make('section', 'guidebook-layer');
         root.dataset.view = kind;
+        if (kind === 'choice') root.id = 'guidebookChoicePopup';
         root.setAttribute('role', 'dialog');
         root.setAttribute('aria-label', kind === 'immunity-expired' ? '無敵の加護' : '攻略本');
         root.tabIndex = -1;
@@ -159,17 +195,21 @@
         }
         if (kind === 'choice') {
             const choices = make('div', 'guidebook-choices br-choices');
-            const open = make('div', 'br-card-slot'), restore = make('div', 'guidebook-back-slot');
+            const open = make('div', 'br-card-slot'), restore = make('div', 'br-card-slot');
             const openButton = button('開く', () => go('read'), 'guidebook-choice-button');
             openButton.dataset.reward = 'money';
             openButton.dataset.frameId = 'BT03-G';
-            const backButton = button('戻る', back, 'guidebook-choice-back item-exit-button');
-            openButton.replaceChildren(make('span', 'br-card-front', openButton.textContent));
+            const backButton = button('戻る', back, 'guidebook-choice-button guidebook-choice-back');
+            backButton.dataset.frameId = 'BT03-S';
+            for (const card of [openButton, backButton]) card.replaceChildren(make('span', 'br-card-front', card.textContent));
             open.append(openButton);
             restore.append(backButton);
             if (book.remaining) panel.append(make('p', 'guidebook-expiry', '消失まであと ' + GuidebookRules.remainingTurns(book) + 'ターン'));
-            choices.append(open, image(closedBook, '閉じた攻略本'), restore);
-            panel.append(choices);
+            const bookImage = image(closedBook, '閉じた攻略本');
+            bookImage.className = 'guidebook-choice-book';
+            choices.append(open, restore);
+            panel.append(bookImage, choices);
+            announce('攻略本を開きますか？ ' + (online ? '他の冒険者からは中身は見えません。' : '他の冒険者から画面が見えない位置で開いてください。'), active);
         } else if (kind === 'reading') {
             if (control) {
                 const heading = make('header', 'guidebook-heading');
@@ -285,15 +325,11 @@
             next();
         }
         panel.hidden = panel.hidden || !panel.childNodes.length;
-        if (kind === 'choice') {
-            panel.append(notice);
-            root.append(panel);
-        } else {
-            if (banner.childNodes.length) banner.append(notice);
-            root.append(panel, banner);
-        }
+        if (banner.childNodes.length) banner.append(notice);
+        root.append(panel, banner);
         document.body.append(root);
-        if (kind !== 'choice') styleBanner(banner);
+        styleBanner(banner);
+        if (kind === 'choice') stopChoiceTracking = placeChoiceCards(root, panel);
         if (kind === 'offer' || kind === 'offers') window.PlayerCardSize?.watch(root);
         const screen = document.querySelector('.game-screen');
         const hud = screen?.querySelector('.game-hud');
