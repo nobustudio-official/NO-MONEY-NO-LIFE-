@@ -1,25 +1,24 @@
 .fukubukuro-layer{position:fixed;inset:0;z-index:12500;display:block;pointer-events:none;font-family:"Yu Gothic",Meiryo,sans-serif;color:#fcfcfc}
 .fukubukuro-sp04{position:absolute;inset:92px 8px 8px;width:auto;min-height:0;overflow:auto;container-type:inline-size;box-sizing:border-box;display:flex;flex-direction:column;gap:10px;padding:20px 24px;border:1px solid #ccae7b;border-radius:18px;background:linear-gradient(135deg,#102b40f2,#0b2033ed);box-shadow:0 16px 48px #0008;pointer-events:auto}
-.fukubukuro-title{flex:none;margin:0;padding:0 0 12px;border-bottom:1px solid #ccae7b;color:#fcfcfc;font-size:clamp(18px,2vw,30px);font-weight:700;text-align:center}
-.fukubukuro-dice-stage{position:relative;display:flex;min-height:0;flex:1;align-items:center;justify-content:center}
-.fukubukuro-dice{display:block;width:min(740px,calc(100% - 160px));height:auto;max-height:100%;min-height:0;aspect-ratio:2.3 / 1;flex:none;object-fit:contain}
+.fukubukuro-heading{flex:none;min-width:0}
+.fukubukuro-heading .gp-heading{display:grid;grid-template-columns:68px minmax(0,1fr) 68px;gap:8px;padding-bottom:12px;border-bottom:1px solid #ccae7b}
+.fukubukuro-title{grid-column:2;min-width:0;margin:0;padding:0;color:#fcfcfc;font-size:clamp(18px,2vw,30px);font-weight:700;line-height:30px;text-align:center;white-space:nowrap;overflow:hidden}
+.fukubukuro-finish{grid-column:3}
+.fukubukuro-dice-stage{position:relative;display:flex;min-height:72px;flex:1 1 0;align-items:center;justify-content:center}
+.fukubukuro-dice{display:block;width:min(740px,calc(100% - 160px));height:100%;min-height:0;flex:none}
 .fukubukuro-roll{position:absolute;right:0;top:50%;width:128px;height:44px;transform:translateY(-50%);border:1px solid #ccae7b;border-radius:8px;background:#294b68;color:#fcfcfc;font-size:14px;white-space:nowrap;cursor:pointer}
 .fukubukuro-roll:disabled{opacity:.6;cursor:wait}
-.fukubukuro-card-row{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:clamp(4px,.65vw,10px);width:100%;flex:none}
+.fukubukuro-card-row{--fuku-card-gap:clamp(4px,.65vw,10px);display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:var(--fuku-card-gap);width:100%;flex:none}
 .fukubukuro-card-slot{min-width:0}
 .fukubukuro-card{--fuku-accent:#c4ccd4;position:relative;box-sizing:border-box;display:flex;min-width:0;height:clamp(112px,16vh,160px);flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:25px 5px;overflow:hidden;border:2px solid var(--fuku-accent);border-radius:13px;background:rgba(16,25,35,.95);box-shadow:0 8px 16px #071c344d,inset 0 0 0 4px #101923,inset 0 0 0 5px color-mix(in srgb,var(--fuku-accent) 20%,transparent);text-align:center}
 .fukubukuro-card[data-frame-id="BT03-G"]{--fuku-accent:#f2d58d}
 .fukubukuro-card:before,.fukubukuro-card:after{position:absolute;left:50%;width:58%;height:6px;content:"";background:var(--fuku-accent);transform:translateX(-50%);clip-path:polygon(0 50%,5% 0,10% 40%,90% 40%,95% 0,100% 50%,95% 100%,90% 60%,10% 60%,5% 100%)}
 .fukubukuro-card:before{top:10px}.fukubukuro-card:after{bottom:10px}
 .fukubukuro-card-number{color:var(--fuku-accent);font-size:clamp(16px,2vw,24px);font-weight:800;line-height:1}
-.fukubukuro-card-name{max-width:100%;font-size:clamp(6px,calc(2.08cqw - 2.25px),14px);font-weight:700;line-height:1.35;overflow-wrap:anywhere;word-break:break-all}
+.fukubukuro-card-name{display:block;width:100%;min-width:0;max-width:100%;font-size:clamp(10px,1.65vw,14px);font-weight:700;line-height:1.35;white-space:nowrap;overflow:hidden}
 .fukubukuro-card-row.is-result .fukubukuro-card-slot:nth-child(1){grid-column:2}
-.fukubukuro-card-row.is-result .fukubukuro-card-slot:nth-child(2){grid-column:3/span 2;width:calc(50% - 5px);justify-self:center}
+.fukubukuro-card-row.is-result .fukubukuro-card-slot:nth-child(2){grid-column:3/span 2;width:calc((100% - var(--fuku-card-gap))/2);justify-self:center}
 .fukubukuro-card-row.is-result .fukubukuro-card-slot:nth-child(3){grid-column:5}
-.fukubukuro-sp04:has(.fukubukuro-roll[hidden]){cursor:pointer}
-@media(max-width:1000px){.fukubukuro-sp04{padding:14px}.fukubukuro-card{height:clamp(76px,14dvh,112px);border-radius:8px;padding:16px 3px}.fukubukuro-card:before{top:7px}.fukubukuro-card:after{bottom:7px}}
-@media(max-height:600px){.fukubukuro-dice-stage{min-height:50px}}
-@media(max-width:700px){.fukubukuro-sp04{padding:10px;gap:7px}.fukubukuro-title{font-size:17px}.fukubukuro-card-name{font-size:clamp(6px,2.2vw,10px)}.fukubukuro-dice{width:calc(100% - 138px)}.fukubukuro-roll{width:118px;height:42px;font-size:12px}}
-
-.fukubukuro-status { flex:none; margin:0; color:#f2d58d; font-size:18px; font-weight:700; text-align:center; }
-.fukubukuro-status:empty { display:none; }
+@media(max-width:1000px){.fukubukuro-sp04{padding:14px}.fukubukuro-card{height:clamp(86px,14dvh,112px);border-radius:8px;padding:16px 3px}.fukubukuro-card:before{top:7px}.fukubukuro-card:after{bottom:7px}}
+@media(max-height:600px){.fukubukuro-sp04{padding:10px;gap:7px}.fukubukuro-heading .gp-heading{padding-bottom:8px}}
+@media(max-width:700px){.fukubukuro-sp04{padding:10px;gap:7px}.fukubukuro-title{font-size:17px}.fukubukuro-dice{width:calc(100% - 138px)}.fukubukuro-roll{width:118px;height:42px;font-size:12px}}

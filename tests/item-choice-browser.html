@@ -91,8 +91,8 @@
         w.FukubukuroUI.show({...fukuEvent,eventId:'fuku-flow'},players[0],{owner:true,onStart:async()=>{start++},
             onStop:async()=>{stop++;return {...fukuEvent,eventId:'fuku-flow',status:'result',rolls:[1,2,1]}},onFinish:async()=>{finish++;w.FukubukuroUI.close()}});
         d.querySelector('.fukubukuro-roll').click();await delay(50);d.querySelector('.fukubukuro-roll').click();await delay(2200);
-        check(d.querySelector('.fukubukuro-status').textContent.includes('入手した'),'fukubukuro result lost');
-        const panel=d.querySelector('.fukubukuro-sp04');panel.click();panel.click();await delay(20);
+        check(d.querySelector('.fukubukuro-title').textContent==='以下のアイテムを入手！','fukubukuro result lost');
+        const finishButton=d.querySelector('.fukubukuro-finish');finishButton.click();finishButton.click();await delay(20);
         check(start===1&&stop===1&&finish===1&&!w.FukubukuroUI.isOpen(),'fukubukuro progression failed');
         results.push('intro/result telops and guidebook, hatataki, fukubukuro progression remain functional');
     } catch(error) {failures.push(error.stack||String(error))}
