@@ -146,3 +146,39 @@
 
 
 .dp-player-summary{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-width:0;color:#fcfcfc;text-align:center;font:700 clamp(20px,2.8vw,34px) "Yu Gothic","Hiragino Kaku Gothic ProN",sans-serif}
+
+/* Fit four receipt rows into the phone landscape table area only. */
+@media (orientation: landscape) and (max-height: 610px) {
+    #dividendPresentationOverlay #nmnl-dividend-lab .dp-screen[data-stage="1"]:has(.dp-receipt:nth-child(4)) > .dp-body {
+        container-type: size;
+        scrollbar-width: none;
+    }
+    #dividendPresentationOverlay #nmnl-dividend-lab .dp-screen[data-stage="1"]:has(.dp-receipt:nth-child(4)) > .dp-body::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+    }
+    #dividendPresentationOverlay #nmnl-dividend-lab .dp-screen[data-stage="1"]:has(.dp-receipt:nth-child(4)) .dp-receipts {
+        --dp-row-size: clamp(12px, 5cqh, 22px);
+        --dp-receipt-head-height: clamp(30px, 12cqh, 44px);
+        --dp-receipt-row-height: max(44px, calc((100cqh - var(--dp-receipt-head-height) - 1px) / 4));
+    }
+    #dividendPresentationOverlay #nmnl-dividend-lab .dp-screen[data-stage="1"]:has(.dp-receipt:nth-child(4)) .dp-receipts thead tr {
+        height: var(--dp-receipt-head-height);
+    }
+    #dividendPresentationOverlay #nmnl-dividend-lab .dp-screen[data-stage="1"]:has(.dp-receipt:nth-child(4)) .dp-receipts thead th,
+    #dividendPresentationOverlay #nmnl-dividend-lab .dp-screen[data-stage="1"]:has(.dp-receipt:nth-child(4)) .dp-receipt :is(th, td) {
+        padding: 4px 6px;
+        line-height: 1.2;
+    }
+    #dividendPresentationOverlay #nmnl-dividend-lab .dp-screen[data-stage="1"]:has(.dp-receipt:nth-child(4)) .dp-receipt {
+        height: var(--dp-receipt-row-height);
+    }
+    #dividendPresentationOverlay #nmnl-dividend-lab .dp-screen[data-stage="1"]:has(.dp-receipt:nth-child(4)) .dp-person img {
+        width: clamp(30px, 10cqh, 42px);
+        height: clamp(30px, 10cqh, 42px);
+    }
+    #dividendPresentationOverlay #nmnl-dividend-lab .dp-screen[data-stage="1"]:has(.dp-receipt:nth-child(4)) .dp-income {
+        font-size: clamp(20px, 8cqh, 34px);
+    }
+}
