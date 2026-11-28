@@ -134,6 +134,13 @@
                 group.style.right=(bounds.right-target)+'px';
             });
         }
+        if(v.id==='assetPurchasePopup'&&v.config.headerAction){
+            const action=v.body.querySelector('.gp-action .gp-button');
+            const heading=v.title.parentElement.getBoundingClientRect();
+            const right=action?.getBoundingClientRect().right??v.table.getBoundingClientRect().right-18;
+            // The adjacent exit button follows this margin through the header's flex layout.
+            v.headerAction.style.marginRight=Math.max(0,heading.right-right)+'px';
+        }
         if(String(v.config.kind||'').startsWith('sale-')){
             const action=v.body.querySelector('.gp-action .gp-button');
             const heading=v.title.parentElement.getBoundingClientRect();
