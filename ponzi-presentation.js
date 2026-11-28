@@ -33,7 +33,7 @@
  function close(notify=true){if(!session)return;stopChoiceLayout?.();stopPageAdvance?.();stopPageAdvance=null;const old=session;session=null;root.hidden=true;window.Plane02Layout?.release(el('.ponzi-frame'));const game=document.querySelector('.game-container');if(game&&previousInert!==null)game.inert=previousInert;previousInert=null;resumeRevealBGM?.();resumeRevealBGM=null;if(notify)old.sync?.('close');}
  function stageForPhase(ponzi, stage) {
   if (ponzi.phase === 'payout') {
-   if (stage === 'payout' || (stage === 'payoutGreeting' && !ponzi.payout.failed)) return stage;
+   if (stage === 'payout') return stage;
    return 'report';
   }
   if (ponzi.phase === 'choices') {
@@ -60,8 +60,7 @@
   const go=stage=>{s.stage=stage;s.line=0;render();};
   if(s.stage==='intro'){text.textContent=intro[s.line];advance(()=>{if(++s.line>=intro.length)go('offer');else render();});}
   else if(s.stage==='greeting'){text.textContent=`${player.name}さん、こんにちは。出資についてご案内します。`;advance(()=>go('offer'));}
-  else if(s.stage==='report'){text.textContent='事業成果レポートをお持ちしました。レポートをご覧ください。';const button=el('.ponzi-report-view');button.disabled=s.observer||s.busy;button.onclick=()=>{window.GameSE?.play?.('confirm',{shared:true}).catch(error=>console.warn('[SE] 画面送り音を再生できません:',error));go(p.payout?.failed?'payout':'payoutGreeting');};}
-  else if(s.stage==='payoutGreeting'){text.textContent='こんにちは。配当金をお渡ししにきました。';advance(()=>go('payout'));}
+  else if(s.stage==='report'){text.textContent='こんにちは。配当金をお渡ししにきました。';const button=el('.ponzi-report-view');button.disabled=s.observer||s.busy;button.onclick=()=>{window.GameSE?.play?.('confirm',{shared:true}).catch(error=>console.warn('[SE] 画面送り音を再生できません:',error));go('payout');};}
   else if(s.stage==='offer'&&p.cancelled?.[state.activePlayerIndex]){text.textContent='解約済みのため、再出資はできません。';advance(()=>submit('decline'));}
   else if(s.stage==='offer'){text.textContent=p.round===0?`${player.name}さん、出資しますか？`:`${player.name}さん、追加出資または解約を選べます。`;buttons(p.round===0?[['出資する',()=>go('amount')],['見送る',()=>submit('decline')]]:[['追加・解約',()=>go('choice')],['断る',()=>submit('decline')]]);}
   else if(s.stage==='choice'){text.textContent='追加出資または解約を選んでください。';buttons([['追加出資',()=>go('amount')],['解約',()=>go('confirm')]]);el('.ponzi-choice-back').onclick=()=>go('offer');}
