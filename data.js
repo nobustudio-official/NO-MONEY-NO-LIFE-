@@ -1405,8 +1405,7 @@ const JOB_CONTENTS = {
         backgroundImage: "images/characters/npc/jobs/ギルド.webp",
         staffImage: "images/characters/npc/jobs/ギルド-店員.webp",
         staffExpressions: {
-        disappointed: "images/characters/npc/jobs/ギルド-店員-悲しみ.webp"
-        },  
+        disappointed: "images/characters/npc/jobs/ギルド-店員-悲しみ.webp"},  
         refusalVoice: "sounds/voices/バイト/ギルド店員3.mp3",
         jobtext: (playerName) => [
             { text: `こんにちは、${playerName}さん`,
@@ -1422,9 +1421,12 @@ const JOB_CONTENTS = {
         backgroundImage: "images/characters/npc/jobs/エリア別/草原-背景.webp",
         staffImage: "images/characters/npc/jobs/エリア別/草原-通常.webp",
         staffExpressions: { disappointed: "images/characters/npc/jobs/エリア別/草原-断り-リアクション.webp" },
+         refusalVoice: "sounds/voices/バイト/牧場店員3.mp3",
         jobtext: (playerName) => [
-            { text: `こんにちは、${playerName}さん！　牧場へようこそ！` },
-            { text: "干し草を束ねるの手伝ってくれませんか？" }
+            { text: `こんにちは、${playerName}さん！　牧場へようこそ！`,
+           　 voice: "sounds/voices/バイト/牧場店員1.mp3" },
+            { text: "干し草を束ねるの手伝ってくれませんか？", 
+              voice: "sounds/voices/バイト/牧場店員2.mp3"}
         ]
     },
     7: {
@@ -1433,9 +1435,12 @@ const JOB_CONTENTS = {
         backgroundImage: "images/characters/npc/jobs/エリア別/森林-背景.webp",
         staffImage: "images/characters/npc/jobs/エリア別/森林-通常.webp",
         staffExpressions: { disappointed: "images/characters/npc/jobs/エリア別/森林-断り-リアクション.webp" },
+        refusalVoice: "sounds/voices/バイト/薪割り店員3.mp3",
         jobtext: (playerName) => [
-            { text: `やあ、${playerName}さん！　ちょうどいいところに！` },
-            { text: "たまった薪を、一緒に割ってくれない？" }
+            { text: `やあ、${playerName}さん！　ちょうどいいところに！`,
+              voice: "sounds/voices/バイト/薪割り店員1.mp3" },
+            { text: "たまった薪を、一緒に割ってくれない？", 
+              voice: "sounds/voices/バイト/薪割り店員2.mp3"}
         ]
     },
     8: {
@@ -1444,9 +1449,12 @@ const JOB_CONTENTS = {
         backgroundImage: "images/characters/npc/jobs/エリア別/湖-背景.webp",
         staffImage: "images/characters/npc/jobs/エリア別/湖-通常.webp",
         staffExpressions: { disappointed: "images/characters/npc/jobs/エリア別/湖-断り-修正.webp" },
+        refusalVoice: "sounds/voices/バイト/釣り店員3.mp3",
         jobtext: (playerName) => [
-            { text: `おっ、${playerName}さん！　釣り日和だな！` },
-            { text: "一緒に魚を釣ってくれないか？" }
+            { text: `やあ、${playerName}さん！　今日は釣り日和だな！`,
+              voice: "sounds/voices/バイト/釣り店員1.mp3"  },
+            { text: "一緒に魚を釣ってくれないか？",
+              voice: "sounds/voices/バイト/釣り店員2.mp3"}
         ]
     },
     9: {
@@ -1458,9 +1466,9 @@ const JOB_CONTENTS = {
         refusalVoice: "sounds/voices/バイト/ラクダ店員3.mp3",
         jobtext: (playerName) => [
             { text: `こんにちは、${playerName}さん！　旅の途中ですか？`,
-             voice: "sounds/voices/バイト/ラクダ店員1.mp3" },
+            　voice: "sounds/voices/バイト/ラクダ店員1.mp3" },
             { text: "ラクダたちのお世話を手伝ってくれませんか？" ,
-                 voice: "sounds/voices/バイト/ラクダ店員1.mp3" },
+            　voice: "sounds/voices/バイト/ラクダ店員2.mp3" },
         ]
     },
     10: {
@@ -1469,9 +1477,10 @@ const JOB_CONTENTS = {
         backgroundImage: "images/characters/npc/jobs/エリア別/雪山-背景.webp",
         staffImage: "images/characters/npc/jobs/エリア別/雪山-通常-修正.webp",
         staffExpressions: { disappointed: "images/characters/npc/jobs/エリア別/雪山-断り-修正2.webp" },
+        refusalVoice: "sounds/voices/バイト/雪男店員3.mp3",
         jobtext: (playerName) => [
-            { text: `わあ、${playerName}さんだ！　こんにちは！` },
-            { text: "ぼくと一緒に雪だるま作ろう！" }
+            { text: `わあ、${playerName}さんだ！　こんにちは！`, voice: "sounds/voices/バイト/雪男店員1.mp3" },
+            { text: "ぼくと一緒に雪だるま作ろう！", voice: "sounds/voices/バイト/雪男店員2.mp3" }
         ]
     },
     11: {
@@ -1480,9 +1489,10 @@ const JOB_CONTENTS = {
         backgroundImage: "images/characters/npc/jobs/エリア別/古代遺跡-背景.webp",
         staffImage: "images/characters/npc/jobs/エリア別/古代遺跡-通常.webp",
         staffExpressions: { disappointed: "images/characters/npc/jobs/エリア別/古代遺跡-断り.webp" },
+        refusalVoice: "sounds/voices/バイト/探検店員3.mp3",
         jobtext: (playerName) => [
-            { text: `こんにちは、${playerName}さん！　` },
-            { text: "遺跡の発掘品整理を手伝ってくれませんか？" }
+            { text: `こんにちは、${playerName}さん！　`, voice: "sounds/voices/バイト/探検店員1.mp3" },
+            { text: "遺跡の発掘品整理を手伝ってくれませんか？", voice: "sounds/voices/バイト/探検店員2.mp3" }
         ]
     },
     12: {
@@ -1491,9 +1501,10 @@ const JOB_CONTENTS = {
         backgroundImage: "images/characters/npc/jobs/エリア別/火山-背景-修正.webp",
         staffImage: "images/characters/npc/jobs/エリア別/火山-通常.webp",
         staffExpressions: { disappointed: "images/characters/npc/jobs/エリア別/火山-断り-リアクション.webp" },
+        refusalVoice: "sounds/voices/バイト/鍛冶店員3.mp3",
         jobtext: (playerName) => [
-            { text: `おう、${playerName}！　よく来たな！` },
-            { text: "鍛冶の材料運びを手伝ってくれんか？" }
+            { text: `おう、${playerName}！　よく来たな！`, voice: "sounds/voices/バイト/鍛冶店員1.mp3" },
+            { text: "鍛冶の材料運びを手伝ってくれんか？", voice: "sounds/voices/バイト/鍛冶店員2.mp3" }
         ]
     }
 
