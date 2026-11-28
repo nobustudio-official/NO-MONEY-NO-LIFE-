@@ -106,7 +106,7 @@ async function childMain() {
             if (entry.name === 'ponzi') {
                 for (const stage of ['payout', 'report']) {
                     q('#ponzi-preview').dataset.stage = stage;
-                    assert(getComputedStyle(q('.ponzi-panel')).display === 'none', 'ponzi ' + stage + ': hidden caption became visible');
+                    assert((getComputedStyle(q('.ponzi-panel')).display === 'none') === (stage === 'payout'), 'ponzi ' + stage + ': unexpected caption visibility');
                 }
             }
             checks.push(entry.name);

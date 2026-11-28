@@ -18,18 +18,6 @@
 .ponzi-next{position:absolute;right:20px;bottom:12px;color:#f2d58d;font-size:14px}
 .ponzi-choice-back{position:absolute;left:3%;bottom:calc(3% + 170px);z-index:4;padding:9px 18px;border:1px solid #ccae7b;border-radius:8px;background:#234b68;color:#fff;cursor:pointer}.ponzi-choice-back[hidden]{display:none}
 
-/* ポンジ配当レポート導入画面：BT03-Gの装飾と縦長カード */
-#ponzi-preview[data-stage='report'] .ponzi-character,#ponzi-preview[data-stage='report'] .ponzi-panel{display:none}
-#ponzi-preview .ponzi-report{position:absolute;z-index:5;left:19%;right:19%;top:4%;bottom:4%;box-sizing:border-box;padding:28px 32px;border:1px solid #ccae7b;border-radius:16px;background:linear-gradient(145deg,#102b40f2,#0b2033f5);color:#fcfcfc;box-shadow:0 10px 34px #0008}
-#ponzi-preview .ponzi-report[hidden]{display:none}
-#ponzi-preview .ponzi-report h2{margin:0;padding:0 0 14px;border-bottom:1px solid #ccae7b;text-align:left;font-size:clamp(24px,2vw,34px);color:#fcfcfc}
-#ponzi-preview .ponzi-report-choice{position:absolute;inset:20% 0 4%;display:flex;justify-content:center;align-items:center}
-#ponzi-preview .ponzi-report-choice .br-card-slot{width:280px;height:310px}
-#ponzi-preview .ponzi-report-view{position:relative;display:flex;align-items:center;justify-content:center;width:280px;height:310px;padding:28px 18px;border:2px solid #f2d58d;border-radius:20px;background:#101923f2;box-shadow:inset 0 0 0 5px #101923,inset 0 0 0 6px #f2d58d33,0 10px 20px #071c344d;color:#fcfcfc;font:600 30px 'Yu Gothic','Meiryo',sans-serif;white-space:nowrap;cursor:pointer}
-#ponzi-preview .ponzi-report-view::before,#ponzi-preview .ponzi-report-view::after{position:absolute;left:0;right:0;color:#f2d58d;font-size:14px;text-align:center;white-space:nowrap;pointer-events:none}
-#ponzi-preview .ponzi-report-view::before{content:'◆ ───── ◆';top:16px}
-#ponzi-preview .ponzi-report-view::after{content:'◆ ───── ◆';bottom:16px}
-#ponzi-preview .ponzi-report-view:hover:not(:disabled),#ponzi-preview .ponzi-report-view:focus-visible{outline:2px solid #fff1b9;outline-offset:3px;background:rgba(33,53,68,.98)}
 
 
 /* 本体ではイベント枠の外側に通常のゲーム画面を見せる。 */
@@ -48,6 +36,17 @@
 #ponzi-preview .ponzi-actions button:is(:hover,:focus-visible,:active){background:rgba(16,25,35,.95)}
 #ponzi-preview .ponzi-actions button[data-choice='decline']:is(:hover,:focus-visible){outline-color:#c4ccd4}
 #ponzi-preview .ponzi-actions button:disabled{cursor:default}
+#ponzi-preview .ponzi-actions.br-choices[hidden]{display:none}
+
+/* The report introduction has one stationary job-sized card on the left. */
+#ponzi-preview[data-stage='report'] .ponzi-panel.telop-standard-frame{display:grid}
+#ponzi-preview .ponzi-report{position:absolute;inset:0;z-index:3;padding:0;border:0;background:none;box-shadow:none;pointer-events:none}
+#ponzi-preview .ponzi-report[hidden]{display:none}
+#ponzi-preview .ponzi-report-choice.br-choices{position:absolute;inset:auto;width:auto;display:grid;grid-template-columns:18.5% 1fr 18.5%;gap:0;margin:0;transform:none;pointer-events:none}
+#ponzi-preview .ponzi-report-choice .br-card-slot{grid-column:1;height:100%;animation:none;translate:none;transform:none}
+#ponzi-preview .ponzi-report-view{--reward-accent:#f2d58d;width:100%;height:100%;min-height:0;padding:0 6px;border:2px solid var(--reward-accent);border-radius:20px;background:rgba(16,25,35,.95);box-shadow:0 10px 20px #071c344d,inset 0 0 0 5px #101923,inset 0 0 0 6px #bfddff33;color:#fcfcfc;font:600 clamp(12px,1.7vw,22px)/1.1 "Yu Gothic","Meiryo",sans-serif;white-space:nowrap;pointer-events:auto;animation:none;translate:none;transform:none;scale:1;transition:none}
+#ponzi-preview .ponzi-report-view .br-card-front{display:block;width:100%;font:inherit;color:inherit;margin:0;white-space:nowrap}
+#ponzi-preview .ponzi-report-view:disabled{cursor:default}
 #ponzi-preview .ponzi-choice-back{left:auto;right:12px;top:10px;bottom:auto}
 
 #ponzi-preview .ponzi-amount-panel{position:absolute;z-index:4;left:50%;transform:translate(-50%,-100%);box-sizing:border-box;padding:12px 14px;border:1px solid #ccae7b;border-radius:12px;background:linear-gradient(125deg,#18384ff2,#10293cf5);color:#fcfcfc}
@@ -62,3 +61,20 @@
 #ponzi-preview .ponzi-amount-slider::-moz-range-thumb{width:14px;height:14px;border:0;border-radius:50%;background:#fcfcfc}
 #ponzi-preview .ponzi-amount-slider:focus-visible{outline:2px solid #f2d58d;outline-offset:2px}
 #ponzi-preview .ponzi-amount-panel :disabled{opacity:.5;cursor:default}
+
+/* Ponzi-only payout table: shared column widths, single-line names and amounts. */
+#ponzi-preview .ponzi-sp04{inset:0;padding:clamp(12px,2vw,24px) clamp(12px,2vw,28px) 48px;display:grid;grid-template-rows:auto auto minmax(0,1fr);border:0;border-radius:0;background:linear-gradient(#102d4ed9,#102d4ee8);box-shadow:none;overflow:hidden}
+#ponzi-preview .ponzi-sp04 h2{margin:0;padding:0 0 10px;border:0;color:#f2cf76;text-align:center;font-size:clamp(18px,2.6vw,30px);line-height:1.3}
+#ponzi-preview :is(.ponzi-payout-head,.ponzi-payout-row){display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) minmax(64px,.7fr);align-items:center;gap:12px;box-sizing:border-box;padding:10px 8px;font-size:clamp(13px,1.8vh,18px);font-variant-numeric:tabular-nums}
+#ponzi-preview .ponzi-payout-head{border-bottom:1px solid #ccae7b;color:#fcfcfc;font-weight:700}
+#ponzi-preview .ponzi-payout-rows{display:block;min-height:0;overflow-x:hidden;overflow-y:auto;scrollbar-width:none;overscroll-behavior:contain}
+#ponzi-preview .ponzi-payout-rows::-webkit-scrollbar{display:none}
+#ponzi-preview .ponzi-payout-row{min-height:clamp(60px,12vh,88px);border-bottom:1px solid #ccae7b66}
+#ponzi-preview .ponzi-payout-name{display:flex;align-items:center;gap:8px;min-width:0;font-size:clamp(14px,2vh,18px);font-weight:700}
+#ponzi-preview .ponzi-payout-name img{flex:none;width:clamp(30px,8vh,42px);height:clamp(30px,8vh,42px);object-fit:contain}
+#ponzi-preview .ponzi-payout-name span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ponzi-preview .ponzi-payout-row>span:not(.ponzi-payout-name){min-width:0;font-size:clamp(13px,2vh,18px);white-space:nowrap}
+#ponzi-preview .ponzi-payout-row>strong{min-width:0;font-size:clamp(20px,3.1vw,32px);line-height:1.2;white-space:nowrap;color:#f2cf76}
+#ponzi-preview .ponzi-payout-footer{position:absolute;right:0;bottom:0;z-index:6;width:100px;height:40px}
+#ponzi-preview .ponzi-payout-footer[hidden]{display:none}
+#ponzi-preview .ponzi-payout-next{position:absolute;right:10px;bottom:6px;width:auto;min-width:44px;height:auto;min-height:27px;margin:0;padding:0;border:0;border-radius:0;background:transparent;color:#fcfcfc;font:600 clamp(14px,2.1vh,22px)/1.5 "Yu Gothic",sans-serif}
