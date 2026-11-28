@@ -689,6 +689,11 @@
     column-gap: 5px;
 }
 
+/* This cue advances through the battle screen, so reserve only its visible width. */
+#battleMainPopup.battle-motion-mode .battle-log-next.game-next-indicator {
+    min-width: 0 !important;
+}
+
 /* The fixed HUD already fits the next control; do not grow its inner log. */
 #battleMainPopup.battle-motion-mode .battle-new-message.game-next-short-host {
     min-height: 0 !important;
