@@ -1046,7 +1046,7 @@ function showBossDestinationPopup(
 
 // =========================
 // 凱旋BGMが流れている場合だけ
-// 冒険BGMを最初から再生
+// 現在地のエリアBGMへ復帰
 // =========================
 
 if (
@@ -1054,9 +1054,7 @@ if (
     bossVictoryBGM.currentTime > 0
 ) {
 
-    stopAllBGM();
-
-    setupAdventureBGM();
+    resumeMapBGM();
 
 }
 
@@ -6859,8 +6857,7 @@ inventoryButton.disabled =
                 const button = document.getElementById("eventPopupButton");
                 if (button) button.disabled = false;
                 if (wasBossDestination && (!bossVictoryBGM.paused || bossVictoryBGM.currentTime > 0)) {
-                    stopAllBGM();
-                    setupAdventureBGM();
+                    resumeMapBGM();
                 }
                 return;
             }

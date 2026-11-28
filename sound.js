@@ -561,6 +561,16 @@ function transitionAreaBGM(key, duration = 1400, {resume = false} = {}) {
     else requestAnimationFrame(tick);
 }
 
+// End battle/ceremony music and return directly to the active player's region.
+function resumeMapBGM() {
+    stopAllBGM();
+    const index = window.getCurrentPlayerIndex?.() ?? window.onlineGame?.sync?.state?.activePlayerIndex ?? 0;
+    const player = window.players?.[index];
+    if (player?.underground) transitionAreaBGM('underground', 0);
+    else if (player && window.MapAreaAudio?.updateForPlayer) window.MapAreaAudio.updateForPlayer(player, { immediate: true });
+    else setupAdventureBGM();
+}
+
 // =========================
 // すべてのBGMの音量を設定
 // =========================

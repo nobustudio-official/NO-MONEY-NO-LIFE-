@@ -1287,8 +1287,7 @@ BOSS_CONTENTS[
 
         fadeMaouBGM();
 
-        stopAllBGM();
-        setupAdventureBGM();
+        resumeMapBGM();
 
 
         // =====================================================

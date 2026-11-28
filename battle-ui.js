@@ -3293,8 +3293,7 @@ async function showOfflineBossAftermath(player, boss) {
         await BossOpening.show({ boss:BOSS_CONTENTS[currentBossId], square, squares:window.mapData,
             regionData:window.MapRegionData, overview:window.MapOverviewRasterData,
             background, nextBoss:true, winnerName:player.name });
-        stopAllBGM();
-        setupAdventureBGM();
+        resumeMapBGM();
         window.finishTurn(player);
     } catch (error) {
         console.error('[boss-aftermath] 進行できません:', error);
@@ -3570,8 +3569,7 @@ showBattleMessage(
                     nextBoss:true, winnerName:player.name,
                     syncKey:`next:${Number(syncState.bossDefeatedCount) || 0}:${bossId}:${squareId}`, canAdvance })
                     .then(() => {
-                        stopAllBGM();
-                        setupAdventureBGM();
+                        resumeMapBGM();
                         if (!observer) {
                             activeBattle = null;
                             window.finishTurn(player);

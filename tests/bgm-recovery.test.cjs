@@ -44,7 +44,8 @@ function runtime(protocol = 'https:') {
         console: { warn: (...args) => warnings.push(args) }, performance: { now: () => now },
         requestAnimationFrame: callback => frames.push(callback),
         player: { position: 7 }, currentBossSquareId: 7,
-        showBossChallengePopup() { context.gateShown = true; } };
+        // The live challenge popup now owns starting the boss-arrival music.
+        showBossChallengePopup() { context.gateShown = true; context.setupBossBattleBGM(); } };
     context.window = context;
     vm.createContext(context);
     vm.runInContext(sound, context, { filename: 'sound.js' });
@@ -216,4 +217,83 @@ test('file playback can retry without creating a Web Audio context', async () =>
     assert.equal(boss.paused, false);
     assert.equal(f.contexts.length, 0);
     assert.equal(boss.volume, .1);
+});
+
+function mapAudio(f, regions = ['grassland']) {
+    Object.assign(f.context, {
+        gameOpeningComplete: true,
+        players: regions.map((_, i) => ({ position: i + 1 })),
+        getCurrentPlayerIndex: () => 0,
+        mapData: regions.map((_, i) => ({ id: i + 1, x: i + 1, y: 0 })),
+        MapRegionRules: { regionAt: (_, x) => ({ id: regions[x - 1] }) }
+    });
+    f.run(read('map-area-audio.js'));
+}
+
+test('returning from boss music plays the active region directly and a map refresh does not restart it', async () => {
+    const tracks = { grassland: '草原', town: '街', desert: '砂漠', volcano: '火山', forest: '森', snow: '雪山', ruins: '古代遺跡' };
+    for (const [region, name] of Object.entries(tracks)) {
+        const f = runtime(); mapAudio(f, [region]);
+        f.run('setupBGM(bossVictoryBGM, bossVictoryBGMGain, setBossVictoryBGMGain); resumeMapBGM();');
+        await flush();
+        assert.equal(f.track('凱旋').paused, true);
+        assert.equal(f.track('冒険').attempts, 0);
+        assert.equal(f.track(name).paused, false);
+        assert.equal(f.track(name).gain.value, .1);
+        f.track(name).currentTime = 12;
+        f.run('MapAreaAudio.updateForPlayer(players[0]);');
+        await flush();
+        assert.equal(f.track(name).attempts, 1);
+        assert.equal(f.track(name).currentTime, 12);
+    }
+});
+
+test('the shared return follows the current player or online owner instead of the defeated boss location', async () => {
+    for (const online of [false, true]) {
+        const f = runtime(); mapAudio(f, ['grassland', 'forest']);
+        if (online) {
+            delete f.context.getCurrentPlayerIndex;
+            f.context.onlineGame = { sync: { state: { activePlayerIndex: 1 } } };
+        } else f.context.getCurrentPlayerIndex = () => 1;
+        f.run('setupBGM(bossVictoryBGM, bossVictoryBGMGain, setBossVictoryBGMGain); resumeMapBGM();');
+        await flush();
+        assert.equal(f.track('森').paused, false);
+        assert.equal(f.track('草原').attempts, 0);
+        assert.equal(f.track('冒険').attempts, 0);
+    }
+});
+
+test('map return preserves the underground track and the intentional adventure fallback', async () => {
+    const underground = runtime(); mapAudio(underground);
+    underground.context.players[0].underground = {};
+    underground.run('resumeMapBGM()');
+    await flush();
+    assert.equal(underground.track('地下').paused, false);
+    assert.equal(underground.track('冒険').attempts, 0);
+    const fallback = runtime(); mapAudio(fallback, ['capital']);
+    fallback.run('resumeMapBGM()');
+    await flush();
+    assert.equal(fallback.track('冒険').paused, false);
+});
+
+test('the actual offline boss aftermath returns straight to grassland before handing off the turn', async () => {
+    const f = runtime(); mapAudio(f);
+    const battle = read('battle-ui.js');
+    f.context.document.querySelector = () => null;
+    Object.assign(f.context, {
+        bossDefeatedCount: 1, currentBossId: 1, bossFirstPlayer: null, bossRewardGiven: false,
+        activeBattle: {}, previousBossSquareId: null,
+        BOSS_CONTENTS: { 1: { hp: 100 }, 2: { hp: 200 } },
+        getCurrentBossRewards: () => [], BossCeremonyRules: { farthestPlayer: () => null },
+        BossAftermath: { show: () => Promise.resolve() }, BossOpening: { show: () => Promise.resolve() },
+        selectBossSquare: () => Promise.resolve({ id: 8 }), renderMap() {}, hideLayer() {},
+        finishTurn() { f.context.turnFinished = true; }
+    });
+    f.run(battle.slice(battle.indexOf('async function showOfflineBossAftermath('), battle.indexOf('function startSharedBattle(')));
+    await f.run('showOfflineBossAftermath(players[0], BOSS_CONTENTS[1])');
+    await flush();
+    assert.equal(f.context.turnFinished, true);
+    assert.equal(f.track('冒険').attempts, 0);
+    assert.equal(f.track('草原').attempts, 1);
+    assert.equal(f.track('凱旋').paused, true);
 });
