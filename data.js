@@ -529,7 +529,7 @@ const ITEM_CONTENTS = {
     28: { name:'6しか勝たん', price:150000, category:'special', effect:'次に振るサイコロの目が全て6になる', effectType:'nextRollAllSix', effectTarget:'self', effectDuration:'nextRoll', rank:2 },
     29: { name:'お楽しみ福袋', price:120000, category:'special', effect:'アイテムをランダムで3つ入手できる', effectType:'fukubukuro', effectTarget:'self', effectDuration:'instant', rank:1 },
     30: { name:'この世界の攻略本', price:0, category:'special', effect:'この世界で資産を格段に増やすノウハウが詰め込まれている。他冒険者は閲覧不可。', effectType:'guidebook', effectTarget:'self', effectDuration:'instant', rank:99, duplicable:false },
-    31: { name:'無敵の加護', price:200000, category:'special', effect:'次の自分のターン開始まで、あらゆる不利益を受けない。', effectType:'disadvantageImmunity', effectTarget:'self', effectDuration:'nextTurnStart', rank:2 },
+    31: { name:'無敵の加護', price:200000, category:'special', effect:'次の自分のターン開始まであらゆる不利益を受けない', effectType:'disadvantageImmunity', effectTarget:'self', effectDuration:'nextTurnStart', rank:2 },
     32: { name:'複製さん', price:200000, category:'special', effect:'自分の所持アイテムを一つ複製できる', effectType:'duplicateItem', effectTarget:'self', effectDuration:'instant', rank:2 },
     33: { name:'攻略本2', price:0, category:'special', effect:'特別なアイテム', effectType:'specialRewardBook', effectTarget:'self', effectDuration:'instant', rank:99, duplicable:false },
 
