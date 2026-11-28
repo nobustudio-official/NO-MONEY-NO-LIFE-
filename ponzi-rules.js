@@ -11,8 +11,14 @@
   const failed=totalInvestment>=collapseThreshold
    || p.declinedThisRound?.length===state.players.length&&p.declinedThisRound.every(Boolean);
   const amounts=p.investments.map(n=>failed?0:Math.floor(n*config.payoutRate));
-  amounts.forEach((amount,i)=>{state.players[i].money=Number(state.players[i].money)+amount;});
-  p.payout={investments:p.investments.slice(),amounts,failed};p.phase='payout';
+  p.payout={investments:p.investments.slice(),amounts,failed,settled:failed};p.phase='payout';
+ }
+ function settlePayout(state){
+  const payout=state.ponzi.payout;
+  // Older saves without this flag have already paid during prepare().
+  if(!payout||payout.failed||payout.settled!==false)return;
+  payout.amounts.forEach((amount,i)=>{state.players[i].money=Number(state.players[i].money)+amount;});
+  payout.settled=true;
  }
  function pending(state){const p=state?.ponzi;if(!p)return false;return ['choices','thanks'].includes(p.phase)&&Number(p.nextIndex)===Number(state.activePlayerIndex)||(['payout','ending','departed'].includes(p.phase)&&Number(state.activePlayerIndex)===0);}
  function advanceChoice(state){const p=state.ponzi;p.nextIndex++;if(p.nextIndex>=state.players.length){p.nextIndex=0;p.phase='waiting';p.nextPayoutTurn=Number(state.currentTurn)+config.payoutInterval;}else p.phase='choices';}
@@ -27,7 +33,10 @@
    advanceChoice(state);
   }else if(p.phase==='thanks'&&action==='acknowledge'){
    advanceChoice(state);
+  }else if(p.phase==='payout'&&action==='receive'){
+   settlePayout(state);
   }else if(p.phase==='payout'&&action==='continue'){
+   settlePayout(state);
    if(p.payout.failed){p.phase='ending';}else{p.phase='choices';p.round++;p.nextIndex=0;p.payout=null;p.declinedThisRound=state.players.map(()=>false);}
   }else if(['ending','departed'].includes(p.phase)&&action==='finish'){p.investments=p.investments.map(()=>0);p.phase='finished';}
   else return '選択内容が不正です。';

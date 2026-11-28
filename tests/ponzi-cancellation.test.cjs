@@ -132,3 +132,56 @@ test('declining additional investment while money remains invested still uses th
     assert.equal(s.ponzi.payout.failed, true);
     assert.deepEqual(s.ponzi.payout.investments, [20000, 30000]);
 });
+
+function payoutState(investments = [20000, 30000]) {
+    const s = state();
+    s.ponzi.phase = 'waiting';
+    s.ponzi.nextPayoutTurn = s.currentTurn;
+    s.ponzi.investments = investments;
+    rules.prepare(s);
+    return s;
+}
+
+test('successful dividends pay all players when the report opens, once across retries and saved recovery', () => {
+    let s = payoutState();
+    assert.equal(s.ponzi.phase, 'payout');
+    assert.equal(s.ponzi.payout.settled, false);
+    assert.deepEqual(s.players.map(p => p.money), [200000, 200000]);
+    assert.deepEqual(s.ponzi.payout.amounts, [6000, 9000]);
+    assert.equal(rules.act(s, 'receive'), null);
+    assert.deepEqual(s.players.map(p => p.money), [206000, 209000]);
+    assert.equal(s.ponzi.payout.settled, true);
+    assert.equal(rules.act(s, 'receive'), null);
+    s = JSON.parse(JSON.stringify(s));
+    assert.equal(rules.act(s, 'receive'), null);
+    assert.deepEqual(s.players.map(p => p.money), [206000, 209000]);
+    assert.equal(rules.act(s, 'continue'), null);
+    assert.deepEqual(s.players.map(p => p.money), [206000, 209000]);
+});
+
+test('failed payouts and already-paid legacy saves never add gold again', () => {
+    const failed = payoutState([60000, 60000]);
+    assert.equal(failed.ponzi.payout.failed, true);
+    assert.equal(rules.act(failed, 'receive'), null);
+    assert.equal(rules.act(failed, 'continue'), null);
+    assert.deepEqual(failed.players.map(p => p.money), [200000, 200000]);
+    assert.equal(failed.ponzi.phase, 'ending');
+    const legacy = payoutState();
+    legacy.players[0].money += 6000; legacy.players[1].money += 9000;
+    delete legacy.ponzi.payout.settled;
+    assert.equal(rules.act(legacy, 'receive'), null);
+    assert.equal(rules.act(legacy, 'continue'), null);
+    assert.deepEqual(legacy.players.map(p => p.money), [206000, 209000]);
+});
+
+test('only the current event owner can receive; continuing without the new screen action stays compatible', () => {
+    const s = payoutState();
+    s.activePlayerIndex = 1;
+    const before = JSON.stringify(s);
+    assert.equal(typeof rules.act(s, 'receive'), 'string');
+    assert.equal(JSON.stringify(s), before);
+    s.activePlayerIndex = 0;
+    assert.equal(rules.act(s, 'continue'), null);
+    assert.deepEqual(s.players.map(p => p.money), [206000, 209000]);
+    assert.equal(s.ponzi.phase, 'choices');
+});

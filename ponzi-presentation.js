@@ -69,7 +69,7 @@
   const go=stage=>{s.stage=stage;s.line=0;render();};
   if(s.stage==='intro'){text.textContent=intro[s.line];advance(()=>{if(++s.line>=intro.length)go('offer');else render();});}
   else if(s.stage==='greeting'){text.textContent=`${player.name}さん、こんにちは。出資についてご案内します。`;advance(()=>go('offer'));}
-  else if(s.stage==='report'){text.textContent=absentReport?'':'こんにちは。配当金をお渡ししにきました。';const button=el('.ponzi-report-view');button.disabled=s.observer||s.busy;button.onclick=()=>{window.GameSE?.play?.('confirm',{shared:true}).catch(error=>console.warn('[SE] 画面送り音を再生できません:',error));go('payout');};}
+  else if(s.stage==='report'){text.textContent=absentReport?'':'こんにちは。配当金をお渡ししにきました。';const button=el('.ponzi-report-view');button.disabled=s.observer||s.busy;button.onclick=()=>{if(s.busy||s.observer)return;window.GameSE?.play?.('confirm',{shared:true}).catch(error=>console.warn('[SE] 画面送り音を再生できません:',error));if(p.payout?.settled===false&&!p.payout.failed)submit('receive');else go('payout');};}
   else if(s.stage==='offer'&&p.cancelled?.[state.activePlayerIndex]){text.textContent='解約済みのため、再出資はできません。';advance(()=>submit('decline'));}
   else if(s.stage==='offer'){text.textContent=p.round===0?`${player.name}さん、出資しますか？`:`${player.name}さん、追加出資または解約を選べます。`;buttons(p.round===0?[['出資する',()=>go('amount')],['見送る',()=>go('declined')]]:[['追加・解約',()=>go('choice')],['断る',()=>go('declined')]]);}
   else if(s.stage==='declined'){speaker.textContent='';text.textContent='出資を見送った！';advance(()=>submit('decline'));}
@@ -110,6 +110,7 @@
  async function submit(action,amount){
   const s=session;if(!s||s.busy||s.observer)return;
   const refund=action==='cancel'?Number(s.state.ponzi.investments[s.state.activePlayerIndex])||0:0;
+  const receiving=action==='receive'&&s.state.ponzi.payout?.settled===false&&!s.state.ponzi.payout.failed;
   s.busy=true;
   try{
    const next=await s.submit(action,amount);if(session!==s)return;
@@ -119,6 +120,7 @@
    s.state=next;s.busy=false;
    if(!window.PonziRules.pending(next)){const done=s.done;close();done?.();return;}
    s.stage=['payout','ending','thanks','departed'].includes(next.ponzi.phase)?next.ponzi.phase:'offer';s.line=0;render();
+   if(receiving&&next.ponzi.payout?.settled===true&&!s.payoutSoundPlayed){s.payoutSoundPlayed=true;window.GameSE?.play?.('moneyDisplay',{shared:true}).catch(error=>console.warn('[SE] 配当の取得音を再生できません:',error));}
   }catch(error){s.busy=false;alert(error.message||'イベント操作を確定できませんでした。');render();}
  }
  function open(state,options){mount();if(session&&!session.observer)return;const p=state.ponzi;session={state,observer:false,submit:options.submit,sync:options.sync,done:options.done,busy:false,line:0,stage:p.phase==='payout'?'report':['ending','thanks','departed'].includes(p.phase)?p.phase:p.round===0&&state.activePlayerIndex===0?'intro':'greeting'};render();}
