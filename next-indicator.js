@@ -6,7 +6,11 @@
     const copies = '.telop-standard-copy,.event-popup-message,.job-dialogue-text,.bf-copy,.boss-opening-copy,.bridge-mugging-copy,#rewardMessage,.dp-guide-copy,.battle-log-text,.hatataki-summary,.guidebook-intro,.ponzi-payout-rows';
     const records = new Map(), hostStates = new Map(), observed = new Set(), dirty = new Set();
     let pending = 0;
-    const matches = node => /^次へ[▶►]?$/.test(node.textContent.replace(/[\s\uFE0E\uFE0F]/g, ''));
+    const matches = node => {
+        const label = node.textContent.replace(/[\s\uFE0E\uFE0F]/g, '');
+        return /^次へ[▶►]?$/.test(label)
+            || (node.matches('.boss-opening-start .boss-opening-next') && /^マップへ[▶►]?$/.test(label));
+    };
     function useTextArrow(node) {
         const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
         while (walker.nextNode()) {
