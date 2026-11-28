@@ -40,6 +40,8 @@
 
 /* The report introduction has one stationary job-sized card on the left. */
 #ponzi-preview[data-stage='report'] .ponzi-panel.telop-standard-frame{display:grid}
+/* Keep caption geometry for the report card placement when the dealer has fled. */
+#ponzi-preview[data-stage='report'][data-report-absent] :is(.ponzi-character,.ponzi-panel){visibility:hidden;pointer-events:none}
 #ponzi-preview .ponzi-report{position:absolute;inset:0;z-index:3;padding:0;border:0;background:none;box-shadow:none;pointer-events:none}
 #ponzi-preview .ponzi-report[hidden]{display:none}
 #ponzi-preview .ponzi-report-choice.br-choices{position:absolute;inset:auto;width:auto;display:grid;grid-template-columns:18.5% 1fr 18.5%;gap:0;margin:0;transform:none;pointer-events:none}

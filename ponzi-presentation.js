@@ -56,11 +56,16 @@
   if(p.cancelled?.[state.activePlayerIndex]&&['choice','amount','confirm'].includes(s.stage))s.stage='offer';
   if(root.hidden){const game=document.querySelector('.game-container');if(game){previousInert=game.inert;game.inert=true;}}root.hidden=false;window.Plane02Layout?.apply(el('.ponzi-frame'));root.dataset.stage=s.stage;el('[data-player]').textContent=player.name;el('[data-gold]').textContent=fmt(player.money);el('[data-invest]').textContent=fmt(p.investments[state.activePlayerIndex]);
   const panel=el('.ponzi-panel'),text=el('.ponzi-text'),speaker=el('.ponzi-speaker');panel.onclick=null;panel.onkeydown=null;el('.ponzi-next').hidden=true;el('.ponzi-actions').hidden=true;el('.ponzi-choice-back').hidden=s.stage!=='choice'||s.observer;el('.ponzi-amount-panel').hidden=s.stage!=='amount';el('.ponzi-sp04').hidden=s.stage!=='payout';el('.ponzi-payout-footer').hidden=s.stage!=='payout';el('.ponzi-report').hidden=s.stage!=='report';speaker.textContent=s.stage==='ending'?'':'エリート不動産屋';
+  const absentReport=s.stage==='report'&&Boolean(p.payout?.failed);
+  root.toggleAttribute('data-report-absent',absentReport);
+  panel.setAttribute('aria-hidden',String(absentReport));
+  el('.ponzi-character').setAttribute('aria-hidden',String(absentReport));
+  if(absentReport)speaker.textContent='';
   const advance=fn=>{el('.ponzi-next').hidden=false;if(!s.observer){const advancePage=()=>{if(session!==s||s.busy)return;window.GameSE?.play?.('confirm',{shared:true}).catch(error=>console.warn('[SE] 画面送り音を再生できません:',error));fn();};panel.onclick=advancePage;panel.onkeydown=e=>{if((e.key==='Enter'||e.key===' ')&&!e.repeat){e.preventDefault();advancePage();}};stopPageAdvance=window.CommonAnnouncements?.bindPageAdvance(root,advancePage);}};
   const go=stage=>{s.stage=stage;s.line=0;render();};
   if(s.stage==='intro'){text.textContent=intro[s.line];advance(()=>{if(++s.line>=intro.length)go('offer');else render();});}
   else if(s.stage==='greeting'){text.textContent=`${player.name}さん、こんにちは。出資についてご案内します。`;advance(()=>go('offer'));}
-  else if(s.stage==='report'){text.textContent='こんにちは。配当金をお渡ししにきました。';const button=el('.ponzi-report-view');button.disabled=s.observer||s.busy;button.onclick=()=>{window.GameSE?.play?.('confirm',{shared:true}).catch(error=>console.warn('[SE] 画面送り音を再生できません:',error));go('payout');};}
+  else if(s.stage==='report'){text.textContent=absentReport?'':'こんにちは。配当金をお渡ししにきました。';const button=el('.ponzi-report-view');button.disabled=s.observer||s.busy;button.onclick=()=>{window.GameSE?.play?.('confirm',{shared:true}).catch(error=>console.warn('[SE] 画面送り音を再生できません:',error));go('payout');};}
   else if(s.stage==='offer'&&p.cancelled?.[state.activePlayerIndex]){text.textContent='解約済みのため、再出資はできません。';advance(()=>submit('decline'));}
   else if(s.stage==='offer'){text.textContent=p.round===0?`${player.name}さん、出資しますか？`:`${player.name}さん、追加出資または解約を選べます。`;buttons(p.round===0?[['出資する',()=>go('amount')],['見送る',()=>submit('decline')]]:[['追加・解約',()=>go('choice')],['断る',()=>submit('decline')]]);}
   else if(s.stage==='choice'){text.textContent='追加出資または解約を選んでください。';buttons([['追加出資',()=>go('amount')],['解約',()=>go('confirm')]]);el('.ponzi-choice-back').onclick=()=>go('offer');}
