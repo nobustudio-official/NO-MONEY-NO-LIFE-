@@ -1,15 +1,17 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.PonziRules=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
- const config=Object.freeze({minimumTotalAssetToAppear:100000,investmentUnit:10000,payoutInterval:3,payoutRate:0.3});
+ const config=Object.freeze({minimumTotalAssetToAppear:500000,maximumInvestmentPerPlayer:200000,investmentUnit:10000,payoutInterval:3,payoutRate:0.3});
  function prepare(state,totalAssetValue=player=>Number(player?.money)||0){
   if(!state||!Array.isArray(state.players)||!state.players.length)return;
-  if(!state.ponzi&&state.activePlayerIndex===0&&state.players.every(p=>Number(totalAssetValue(p))>config.minimumTotalAssetToAppear))state.ponzi={phase:'choices',round:0,investments:state.players.map(()=>0),declinedThisRound:state.players.map(()=>false),nextIndex:0,nextPayoutTurn:null,payout:null};
+  const inflationStart=Number(state.marketStartedTurn);
+  const appearanceTurn=state.marketKind==='boom'&&['normal','boom'].includes(state.marketPreviousKind)&&inflationStart>0&&Number(state.currentTurn)===inflationStart+1;
+  if(!state.ponzi&&state.activePlayerIndex===0&&appearanceTurn&&state.players.every(p=>Number(totalAssetValue(p))>config.minimumTotalAssetToAppear))state.ponzi={phase:'choices',round:0,investments:state.players.map(()=>0),declinedThisRound:state.players.map(()=>false),nextIndex:0,nextPayoutTurn:null,payout:null};
   const p=state.ponzi;if(!p||p.phase!=='waiting'||state.activePlayerIndex!==0||state.currentTurn<p.nextPayoutTurn)return;
-  const collapseThreshold=(config.minimumTotalAssetToAppear/2)*state.players.length;
+  const collapseThreshold=config.maximumInvestmentPerPlayer*state.players.length;
   const totalInvestment=p.investments.reduce((sum,n)=>sum+Number(n||0),0);
   if(totalInvestment===0){p.phase='departed';p.payout=null;return;}
-  const failed=totalInvestment>=collapseThreshold
-   || p.declinedThisRound?.length===state.players.length&&p.declinedThisRound.every(Boolean);
+  const everyoneStopped=state.players.every((_,i)=>p.cancelled?.[i]||p.declinedThisRound?.[i]);
+  const failed=totalInvestment>collapseThreshold||everyoneStopped;
   const amounts=p.investments.map(n=>failed?0:Math.floor(n*config.payoutRate));
   p.payout={investments:p.investments.slice(),amounts,failed,settled:failed};p.phase='payout';
  }

@@ -9,6 +9,8 @@
         history() { return state?.wealthHistory || []; },
         marketExponent() { return state?.marketExponent ?? 0; },
         marketKind() { return state?.marketKind ?? 'normal'; },
+        marketStartedTurn() { return state?.marketStartedTurn ?? null; },
+        marketPreviousKind() { return state?.marketPreviousKind ?? null; },
         marketOutcomeAt18() { return state?.marketOutcomeAt18 ?? null; },
         marketEventTurn() { return state?.marketEventTurn ?? null; },
         resetMarket() { if (state) resetMarketSeason(state); },

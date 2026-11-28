@@ -46,6 +46,8 @@ function resetMarketSeason(state) {
     state.marketExponent = 0;
     state.marketKind = 'normal';
     state.marketStreak = 0;
+    state.marketStartedTurn = null;
+    state.marketPreviousKind = null;
 }
 
 function advanceMarketSeason(state, completedTurn, isFinal, random = Math.random) {
@@ -66,6 +68,9 @@ function advanceMarketSeason(state, completedTurn, isFinal, random = Math.random
     const season = drawScheduledMarketSeason(previousExponent, completedTurn, random, state.marketOutcomeAt18, firstEventTurn, excludedKind);
     state.marketExponent = season.exponent;
     state.marketKind = season.kind;
+    // A season announced after turn N is active starting on turn N + 1.
+    state.marketStartedTurn = Number(completedTurn) + 1;
+    state.marketPreviousKind = previousKind;
     state.marketStreak = season.kind === 'normal' ? 0 : season.kind === previousKind ? previousStreak + 1 : 1;
     return season.kind === 'normal' && previousKind === 'normal' ? null : season;
 }

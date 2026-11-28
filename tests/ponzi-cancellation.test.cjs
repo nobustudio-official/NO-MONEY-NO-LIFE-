@@ -168,7 +168,7 @@ test('successful dividends pay all players when the report opens, once across re
 });
 
 test('failed payouts and already-paid legacy saves never add gold again', () => {
-    const failed = payoutState([60000, 60000]);
+    const failed = payoutState([200000, 210000]);
     assert.equal(failed.ponzi.payout.failed, true);
     assert.equal(rules.act(failed, 'receive'), null);
     assert.equal(rules.act(failed, 'continue'), null);

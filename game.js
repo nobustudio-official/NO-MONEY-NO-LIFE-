@@ -9893,7 +9893,12 @@ window.startPonziTurn = function (player, done) {
     if (online && (!isLocalOnlineTurn() || sync?.state?.activePlayerIndex !== currentPlayer || sync.state.matchPhase !== "playing")) return false;
     if (presentation.isOpen()) return true;
 
-    const state = sync ? sync.state : { players, activePlayerIndex: currentPlayer, currentTurn, ponzi: offlinePonzi };
+    const state = sync ? sync.state : {
+        players, activePlayerIndex: currentPlayer, currentTurn, ponzi: offlinePonzi,
+        marketKind: window.OfflineDividends?.marketKind?.(),
+        marketStartedTurn: window.OfflineDividends?.marketStartedTurn?.(),
+        marketPreviousKind: window.OfflineDividends?.marketPreviousKind?.()
+    };
     if (!sync) {
         rules.prepare(state, calculateTotalAssetValue);
         offlinePonzi = state.ponzi;
