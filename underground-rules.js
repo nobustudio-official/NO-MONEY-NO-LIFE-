@@ -225,6 +225,7 @@
         if (flow.stage === 'returnImmunity') {
             if (action !== 'immunitySoundComplete') return false;
             player.disadvantageImmunityActive = true;
+            player.disadvantageImmunityTurnKey = key(state);
             setStage(flow, 'returnImmunityNotice');
             return true;
         }
