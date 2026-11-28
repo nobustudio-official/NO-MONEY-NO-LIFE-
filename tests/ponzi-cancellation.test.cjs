@@ -209,3 +209,24 @@ test('the refund notice survives saved recovery and acknowledges without refundi
     assert.equal(s.ponzi.nextIndex, 1);
     assert.equal(rules.pending(s), false);
 });
+
+test('the investment notice records this payment, survives recovery and clears after the follow-up', () => {
+    for (const round of [0, 1]) {
+        let s = state();
+        s.ponzi.round = round;
+        s.ponzi.investments[0] = round ? 20000 : 0;
+        assert.equal(rules.act(s, 'invest', 40000), null);
+        assert.equal(s.ponzi.phase, 'thanks');
+        assert.deepEqual(s.ponzi.investmentNotice, { playerIndex: 0, amount: 40000 });
+        assert.equal(s.players[0].money, 160000);
+        assert.equal(s.ponzi.investments[0], round ? 60000 : 40000);
+        s = JSON.parse(JSON.stringify(s));
+        const before = JSON.stringify(s);
+        assert.equal(typeof rules.act(s, 'invest', 40000), 'string');
+        assert.equal(JSON.stringify(s), before);
+        assert.equal(rules.act(s, 'acknowledge'), null);
+        assert.equal(s.ponzi.investmentNotice, undefined);
+        assert.equal(s.ponzi.nextIndex, 1);
+        assert.equal(s.players[0].money, 160000);
+    }
+});

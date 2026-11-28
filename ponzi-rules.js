@@ -26,13 +26,14 @@
   const p=state?.ponzi;if(!pending(state))return 'イベント操作の順番が違います。';
   if(p.phase==='choices'){
    const i=state.activePlayerIndex,player=state.players[i];
-   if(action==='invest') {if(p.cancelled?.[i])return '解約済みのため、再出資はできません。';const value=Number(amount);if(!Number.isSafeInteger(value)||value<config.investmentUnit||value%config.investmentUnit||value>player.money)return '出資額が不正です。';player.money-=value;p.investments[i]+=value;p.declinedThisRound[i]=false;p.phase='thanks';return null;}
+   if(action==='invest') {if(p.cancelled?.[i])return '解約済みのため、再出資はできません。';const value=Number(amount);if(!Number.isSafeInteger(value)||value<config.investmentUnit||value%config.investmentUnit||value>player.money)return '出資額が不正です。';player.money-=value;p.investments[i]+=value;p.declinedThisRound[i]=false;p.investmentNotice={playerIndex:i,amount:value};p.phase='thanks';return null;}
    else if(action==='cancel'&&p.round>0){if(p.cancelled?.[i])return 'すでに解約しています。';const refund=p.investments[i];player.money+=refund;p.investments[i]=0;p.declinedThisRound[i]=false;p.cancelled||=state.players.map(()=>false);p.cancelled[i]=true;p.refund={playerIndex:i,amount:refund};p.phase='refunded';return null;}
    else if(action==='decline')p.declinedThisRound[i]=true;
    else return '選択内容が不正です。';
    advanceChoice(state);
   }else if(['thanks','refunded'].includes(p.phase)&&action==='acknowledge'){
    delete p.refund;
+   delete p.investmentNotice;
    advanceChoice(state);
   }else if(p.phase==='payout'&&action==='receive'){
    settlePayout(state);
