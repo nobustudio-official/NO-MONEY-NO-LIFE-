@@ -9697,7 +9697,8 @@ function showPassiveEffectAnnouncements(
                     title: "✨ パッシブ効果発動！",
                     message:
                         `${effect.itemName}の恩恵を受けた！ ` +
-                        `<strong>${formatG(gain)}G</strong> ゲット！`
+                        `<strong>${formatG(gain)}G</strong> ゲット！`,
+                    sound: Number(effect.itemId) === 11 ? "moneyDisplay" : undefined
                 });
 
             } else if (gain < 0) {
