@@ -20,18 +20,19 @@
   payout.amounts.forEach((amount,i)=>{state.players[i].money=Number(state.players[i].money)+amount;});
   payout.settled=true;
  }
- function pending(state){const p=state?.ponzi;if(!p)return false;return ['choices','thanks'].includes(p.phase)&&Number(p.nextIndex)===Number(state.activePlayerIndex)||(['payout','ending','departed'].includes(p.phase)&&Number(state.activePlayerIndex)===0);}
+ function pending(state){const p=state?.ponzi;if(!p)return false;return ['choices','thanks','refunded'].includes(p.phase)&&Number(p.nextIndex)===Number(state.activePlayerIndex)||(['payout','ending','departed'].includes(p.phase)&&Number(state.activePlayerIndex)===0);}
  function advanceChoice(state){const p=state.ponzi;p.nextIndex++;if(p.nextIndex>=state.players.length){p.nextIndex=0;p.phase='waiting';p.nextPayoutTurn=Number(state.currentTurn)+config.payoutInterval;}else p.phase='choices';}
  function act(state,action,amount){
   const p=state?.ponzi;if(!pending(state))return 'イベント操作の順番が違います。';
   if(p.phase==='choices'){
    const i=state.activePlayerIndex,player=state.players[i];
    if(action==='invest') {if(p.cancelled?.[i])return '解約済みのため、再出資はできません。';const value=Number(amount);if(!Number.isSafeInteger(value)||value<config.investmentUnit||value%config.investmentUnit||value>player.money)return '出資額が不正です。';player.money-=value;p.investments[i]+=value;p.declinedThisRound[i]=false;p.phase='thanks';return null;}
-   else if(action==='cancel'&&p.round>0){if(p.cancelled?.[i])return 'すでに解約しています。';player.money+=p.investments[i];p.investments[i]=0;p.declinedThisRound[i]=false;p.cancelled||=state.players.map(()=>false);p.cancelled[i]=true;}
+   else if(action==='cancel'&&p.round>0){if(p.cancelled?.[i])return 'すでに解約しています。';const refund=p.investments[i];player.money+=refund;p.investments[i]=0;p.declinedThisRound[i]=false;p.cancelled||=state.players.map(()=>false);p.cancelled[i]=true;p.refund={playerIndex:i,amount:refund};p.phase='refunded';return null;}
    else if(action==='decline')p.declinedThisRound[i]=true;
    else return '選択内容が不正です。';
    advanceChoice(state);
-  }else if(p.phase==='thanks'&&action==='acknowledge'){
+  }else if(['thanks','refunded'].includes(p.phase)&&action==='acknowledge'){
+   delete p.refund;
    advanceChoice(state);
   }else if(p.phase==='payout'&&action==='receive'){
    settlePayout(state);

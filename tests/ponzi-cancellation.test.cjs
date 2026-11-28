@@ -17,7 +17,13 @@ test('cancellation refunds once and permanently records only the cancelling play
     assert.equal(s.players[0].money, 220000);
     assert.deepEqual(s.ponzi.investments, [0, 30000]);
     assert.deepEqual(s.ponzi.cancelled, [true, false]);
+    assert.equal(s.ponzi.nextIndex, 0);
+    assert.equal(s.ponzi.phase, 'refunded');
+    assert.deepEqual(s.ponzi.refund, { playerIndex: 0, amount: 20000 });
+    assert.equal(rules.pending(s), true);
+    assert.equal(rules.act(s, 'acknowledge'), null);
     assert.equal(s.ponzi.nextIndex, 1);
+    assert.equal(s.ponzi.refund, undefined);
     s.ponzi.nextIndex = 0;
     for (const [action, amount] of [['cancel'], ['invest', 10000]]) {
         const before = JSON.stringify(s);
@@ -29,6 +35,7 @@ test('cancellation refunds once and permanently records only the cancelling play
 test('the cancellation lock survives saving and the next successful payout', () => {
     let s = state();
     rules.act(s, 'cancel');
+    assert.equal(rules.act(s, 'acknowledge'), null);
     s.activePlayerIndex = 1;
     assert.equal(rules.act(s, 'invest', 10000), null);
     assert.equal(rules.act(s, 'acknowledge'), null);
@@ -112,6 +119,7 @@ test('everyone cancelling, or cancellation followed by declining, ends with the 
         for (const [index, action] of [[0, 'cancel'], [1, secondAction]]) {
             s.activePlayerIndex = index;
             assert.equal(rules.act(s, action), null);
+            if (action === 'cancel') assert.equal(rules.act(s, 'acknowledge'), null);
         }
         assert.deepEqual(s.ponzi.investments, [0, 0]);
         assert.equal(s.players[0].money, 220000);
@@ -184,4 +192,20 @@ test('only the current event owner can receive; continuing without the new scree
     assert.equal(rules.act(s, 'continue'), null);
     assert.deepEqual(s.players.map(p => p.money), [206000, 209000]);
     assert.equal(s.ponzi.phase, 'choices');
+});
+
+test('the refund notice survives saved recovery and acknowledges without refunding twice', () => {
+    let s = state();
+    assert.equal(rules.act(s, 'cancel'), null);
+    s = JSON.parse(JSON.stringify(s));
+    assert.equal(s.ponzi.phase, 'refunded');
+    assert.equal(s.ponzi.refund.amount, 20000);
+    assert.equal(rules.pending(s), true);
+    const before = JSON.stringify(s);
+    assert.equal(typeof rules.act(s, 'cancel'), 'string');
+    assert.equal(JSON.stringify(s), before);
+    assert.equal(rules.act(s, 'acknowledge'), null);
+    assert.equal(s.players[0].money, 220000);
+    assert.equal(s.ponzi.nextIndex, 1);
+    assert.equal(rules.pending(s), false);
 });
