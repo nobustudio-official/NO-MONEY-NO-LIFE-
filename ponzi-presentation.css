@@ -68,6 +68,12 @@
 #ponzi-preview .ponzi-sp04{--ponzi-payout-font-size:clamp(20px,3.1vw,32px);inset:0;padding:clamp(12px,2vw,24px) clamp(12px,2vw,28px) 48px;display:grid;grid-template-rows:auto auto minmax(0,1fr);border:0;border-radius:0;background:linear-gradient(#102d4ed9,#102d4ee8);box-shadow:none;overflow:hidden}
 #ponzi-preview .ponzi-sp04 h2{margin:0;padding:0 0 10px;border:0;color:#f2cf76;text-align:center;font-size:clamp(18px,2.6vw,30px);line-height:1.3}
 #ponzi-preview :is(.ponzi-payout-head,.ponzi-payout-row){display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.55fr) minmax(0,1.6fr) minmax(64px,.7fr);align-items:center;gap:12px;box-sizing:border-box;padding:10px 8px;font-size:clamp(13px,1.8vh,18px);font-variant-numeric:tabular-nums}
+/* Keep the outer columns fixed; place the numeric columns at one-third intervals. */
+#ponzi-preview :is(.ponzi-payout-head,.ponzi-payout-row){position:relative}
+#ponzi-preview :is(.ponzi-payout-head,.ponzi-payout-row)>:is(:nth-child(2),:nth-child(3)){position:absolute;top:50%;transform:translateY(-50%)}
+#ponzi-preview :is(.ponzi-payout-head,.ponzi-payout-row)>:nth-child(2){right:calc(8px + (100% - 16px) * 2 / 3)}
+#ponzi-preview :is(.ponzi-payout-head,.ponzi-payout-row)>:nth-child(3){right:calc(8px + (100% - 16px) / 3)}
+#ponzi-preview :is(.ponzi-payout-head,.ponzi-payout-row)>:last-child{grid-column:4}
 #ponzi-preview .ponzi-payout-head{border-bottom:1px solid #ccae7b;color:#fcfcfc;font-weight:700}
 #ponzi-preview .ponzi-payout-rows{display:block;min-height:0;overflow-x:hidden;overflow-y:auto;scrollbar-width:none;overscroll-behavior:contain}
 #ponzi-preview .ponzi-payout-rows::-webkit-scrollbar{display:none}
