@@ -466,45 +466,89 @@
     }
 
     function showSecondBook(players, active, icon) {
+        showSecondBookView('choice', players, active, icon);
+    }
+
+    function showSecondBookView(kind, players, active, icon) {
         close();
         const root = layer = make('section', 'guidebook-layer');
-        root.dataset.view = 'reading';
+        root.dataset.view = kind;
+        if (kind === 'choice') root.id = 'guidebookChoicePopup';
         root.setAttribute('role', 'dialog');
         root.setAttribute('aria-label', '攻略本2');
         root.tabIndex = -1;
         const panel = make('div', 'guidebook-panel');
         panel.dataset.frameId = 'SP04';
-        const heading = make('header', 'guidebook-heading');
-        const dismiss = make('button', 'guidebook-next item-exit-button', '閉じる');
-        dismiss.type = 'button';
-        dismiss.onclick = () => close();
-        heading.append(make('h2', '', '攻略本2'), dismiss);
-        const spread = make('div', 'guidebook-spread');
-        const copy = make('div', 'guidebook-copy');
-        [
-            'この攻略本は詐欺アイテムです。',
-            'まずは満足気なリアクションを取って、',
-            '有益な情報が書いてあった「ふり」をしましょう。',
-            'そしてこの中身のないアイテムを誰かに売るのです。',
-            'あなたの演技力が、他冒険者の購買力を掻き立てます。'
-        ].forEach(line => copy.append(make('p', '', line)));
-        spread.append(image(openBook, '開いた攻略本2'));
-        spread.append(copy);
-        const body = make('div', 'guidebook-reading-body');
-        body.append(spread);
-        panel.append(heading, body);
         const banner = make('div', 'guidebook-an02');
         banner.dataset.frameId = 'AN02';
         banner.setAttribute('aria-live', 'polite');
-        banner.append(image(icon(active)), make('p', '', ITEM_CONTENTS[33].name + 'を使用した！'));
-        const next = make('button', 'guidebook-next', '次へ▶');
-        next.type = 'button';
-        next.onclick = () => close();
-        banner.append(next);
+        banner.append(image(icon(active)));
+        if (kind === 'choice') {
+            const choices = make('div', 'guidebook-choices br-choices');
+            const open = make('div', 'br-card-slot'), restore = make('div', 'br-card-slot');
+            const openButton = make('button', 'guidebook-choice-button');
+            openButton.type = 'button';
+            openButton.dataset.reward = 'money';
+            openButton.dataset.frameId = 'BT03-G';
+            openButton.append(make('span', 'br-card-front', '開く'));
+            openButton.onclick = () => showSecondBookView('reading', players, active, icon);
+            const backButton = make('button', 'guidebook-choice-button guidebook-choice-back');
+            backButton.type = 'button';
+            backButton.dataset.frameId = 'BT03-S';
+            backButton.append(make('span', 'br-card-front', '戻る'));
+            backButton.onclick = () => close();
+            open.append(openButton);
+            restore.append(backButton);
+            const bookImage = image(closedBook, '閉じた攻略本2');
+            bookImage.className = 'guidebook-choice-book';
+            choices.append(open, restore);
+            panel.append(bookImage, choices);
+            banner.append(make('p', '', '攻略本2を開きますか？ 他の冒険者から画面が見えない位置で開いてください。'));
+        } else {
+            const heading = make('header', 'guidebook-heading');
+            const dismiss = make('button', 'mt-button item-exit-button', '閉じる');
+            dismiss.type = 'button';
+            dismiss.onclick = () => close();
+            heading.append(make('h2', '', '攻略本2'), dismiss);
+            const spread = make('div', 'guidebook-spread');
+            const copy = make('div', 'guidebook-copy');
+            [
+                'この攻略本は詐欺アイテムです。',
+                'まずは満足気なリアクションを取って、',
+                '有益な情報が書いてあった「ふり」をしましょう。',
+                'そしてこの中身のないアイテムを誰かに売るのです。',
+                'あなたの演技力が、他冒険者の購買力を掻き立てます。'
+            ].forEach(line => copy.append(make('p', '', line)));
+            spread.append(image(openBook, '開いた攻略本2'));
+            spread.append(copy);
+            const body = make('div', 'guidebook-reading-body');
+            body.append(spread);
+            panel.append(heading, body);
+            banner.append(make('p', '', ITEM_CONTENTS[33].name + 'を使用した！'));
+            const next = make('button', 'guidebook-next', '次へ▶');
+            next.type = 'button';
+            next.onclick = () => close();
+            banner.append(next);
+            root.onclick = event => { if (!event.target.closest('button,input,select,textarea')) close(); };
+            root.onkeydown = event => {
+                if (event.target === root && (event.key === 'Enter' || event.key === ' ')) {
+                    event.preventDefault();
+                    close();
+                }
+            };
+        }
         root.append(panel, banner);
         document.body.append(root);
         styleBanner(banner);
+        if (kind === 'choice') stopChoiceTracking = placeChoiceCards(root, panel);
+        else {
+            window.Plane02Layout?.apply(panel, { once: true });
+            stopFrameTracking = window.Plane02Layout?.apply(panel);
+            stopReadingTracking = fitReadingArt(root, panel);
+        }
         const screen = document.querySelector('.game-screen');
+        const hud = screen?.querySelector('.game-hud');
+        if (hud) stopHudTracking = trackHud(root, hud);
         if (screen && !screen.inert) { screen.inert = true; gameScreen = screen; }
         root.focus?.({ preventScroll: true });
     }
