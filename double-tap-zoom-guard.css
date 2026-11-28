@@ -15,3 +15,9 @@ html[data-game-zoom-lock] .game-container,
 html[data-game-zoom-lock] #gameViewportFrame {
     touch-action: pan-x pan-y;
 }
+
+/* Detail panes scroll independently, so their contents need the lock too. */
+html[data-game-zoom-lock] :is(#inventoryPopup, #shopPopup, #squareDetailPanel),
+html[data-game-zoom-lock] :is(#inventoryPopup, #shopPopup, #squareDetailPanel) * {
+    touch-action: pan-x pan-y;
+}
