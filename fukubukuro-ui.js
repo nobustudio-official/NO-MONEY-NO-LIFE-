@@ -69,6 +69,11 @@
             current.finishButton.disabled=!current.owner;
             current.phase='result';
             fitLabels(current);
+            if(current.owner){
+                current.obtainSoundTimers=Array.from({length:3},(_,index)=>window.setTimeout(()=>{
+                    if(view===current&&current.phase==='result')window.GameSE?.play('itemObtain',{shared:true})?.catch(()=>{});
+                },index*700));
+            }
         };
         draw(now);
     }
@@ -144,6 +149,6 @@
         if(event.status==='rolling')beginRoll(event.eventId);
         if(event.status==='result')showResult(event);
     }
-    function close(){if(!view)return;cancelAnimationFrame(view.raf);cancelAnimationFrame(view.layoutFrame);view.resizeObserver?.disconnect();stopAudio();window.Plane02Layout?.release(view.layer.querySelector('.fukubukuro-sp04'));if(view.gameScreen)view.gameScreen.inert=false;view.layer.remove();view=null;}
+    function close(){if(!view)return;cancelAnimationFrame(view.raf);cancelAnimationFrame(view.layoutFrame);(view.obtainSoundTimers||[]).forEach(window.clearTimeout);view.resizeObserver?.disconnect();stopAudio();window.Plane02Layout?.release(view.layer.querySelector('.fukubukuro-sp04'));if(view.gameScreen)view.gameScreen.inert=false;view.layer.remove();view=null;}
     window.FukubukuroUI=Object.freeze({show,close,isOpen:()=>Boolean(view)});
 })();
