@@ -1455,9 +1455,12 @@ const JOB_CONTENTS = {
         backgroundImage: "images/characters/npc/jobs/エリア別/砂漠-背景.webp",
         staffImage: "images/characters/npc/jobs/エリア別/砂漠-通常.webp",
         staffExpressions: { disappointed: "images/characters/npc/jobs/エリア別/砂漠-断り-修正.webp" },
+        refusalVoice: "sounds/voices/バイト/ラクダ店員3.mp3",
         jobtext: (playerName) => [
-            { text: `こんにちは、${playerName}さん！　旅の途中ですか？` },
-            { text: "ラクダたちのお世話を手伝ってくれませんか？" }
+            { text: `こんにちは、${playerName}さん！　旅の途中ですか？`,
+             voice: "sounds/voices/バイト/ラクダ店員1.mp3" },
+            { text: "ラクダたちのお世話を手伝ってくれませんか？" ,
+                 voice: "sounds/voices/バイト/ラクダ店員1.mp3" },
         ]
     },
     10: {
