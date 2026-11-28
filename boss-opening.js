@@ -261,7 +261,7 @@
                 if (stage === 'boss' && isNext) {
                     stage = 'finalGuide'; main.replaceChildren(); root.classList.add('boss-opening-intro-scene');
                     copy.textContent = '次の活躍にも期待しています！頑張ってくださいね。';
-                    next.textContent = '次のプレイヤーへ▶'; playGuide('討伐アナウンス2');
+                    next.textContent = '次へ▶'; playGuide('討伐アナウンス2');
                     return;
                 }
                 if (stage === 'finalGuide') {
