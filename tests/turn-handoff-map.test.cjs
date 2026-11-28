@@ -179,7 +179,7 @@ test('real handoff stays black until the instant camera jump and visible backgro
     const f = runtime(.8); await f.fallback(); await f.loadAll();
     f.run(read('turn-handoff.js'));
     const game = read('game.js');
-    f.run(game.slice(game.indexOf('function updateNextPlayerView()'), game.indexOf('window.updateNextPlayerView =')));
+    f.run(game.slice(game.indexOf('function updateNextPlayerView('), game.indexOf('window.updateNextPlayerView =')));
     f.context.TurnHandoff.run(() => f.run('updateNextPlayerView()'));
     await f.until(() => f.cameraCalls.length > 0 && f.requests.includes('target'));
     assert.deepEqual(f.cameraCalls, [{ index: 1, behavior: 'instant' }]);
@@ -198,6 +198,61 @@ test('a handoff without a map board completes normally', async () => {
     f.context.TurnHandoff.run(() => { applied = true; });
     await f.until(() => !f.context.TurnHandoff.isActive());
     assert.equal(applied, true);
+});
+
+test('Ponzi uses the standard instant handoff and opens after player sprites and camera are ready', async () => {
+    const f = runtime(.8), game = read('game.js');
+    let backgroundReady;
+    const background = new Promise(resolve => { backgroundReady = resolve; });
+    f.context.MapDetailLevel = { beginCameraJump: () => ({ finish: () => background }) };
+    f.run(read('turn-handoff.js'));
+    f.run(read('ponzi-rules.js'));
+    f.run(game.slice(game.indexOf('function updateNextPlayerView('), game.indexOf('window.updateNextPlayerView =')));
+    f.run(game.slice(game.indexOf('let offlinePonzi ='), game.indexOf('function beginPlayerTurn(')));
+    Object.assign(f.context, { currentTurn: 7, localSave: null, calculateTotalAssetValue: p => p.money });
+    f.context.players.forEach(p => { p.money = 200000; });
+    f.run("offlinePonzi = {phase:'choices',round:1,nextIndex:1,investments:[20000,30000]};");
+    let spritesReady, opened = 0;
+    const sprites = new Promise(resolve => { spritesReady = resolve; });
+    f.context.preloadPlayerDirectionSprites = () => sprites;
+    f.context.PonziPresentation = { isOpen: () => false, open() {
+        opened++;
+        assert.equal(f.context.TurnHandoff.isBlack(), true);
+        assert.deepEqual(f.cameraCalls, [{ index: 1, behavior: 'instant' }]);
+        assert.equal(f.area.scrollLeft, 3050 * .8 - 50);
+    } };
+    f.context.TurnHandoff.run(() => {
+        assert.equal(f.context.startPonziTurn(f.context.players[1]), true);
+        assert.equal(f.context.startPonziTurn(f.context.players[1]), true);
+    });
+    await f.until(() => f.context.TurnHandoff.isBlack());
+    for (let i = 0; i < 5; i++) await f.step();
+    assert.equal(opened, 0);
+    assert.equal(f.cameraCalls.length, 0);
+    spritesReady();
+    await f.until(() => opened === 1);
+    assert.equal(f.context.TurnHandoff.isBlack(), true);
+    for (let i = 0; i < 5; i++) await f.step();
+    assert.equal(f.context.TurnHandoff.isBlack(), true);
+    backgroundReady();
+    await f.until(() => !f.context.TurnHandoff.isActive());
+    assert.equal(opened, 1);
+});
+
+test('standard player focus outside a handoff still pans and runs its continuation on arrival', async () => {
+    const f = runtime(), game = read('game.js');
+    f.run(game.slice(game.indexOf('function updateNextPlayerView('), game.indexOf('window.updateNextPlayerView =')));
+    let arrived = 0, finish;
+    f.context.centerPlayerOnMap = (index, behavior, done, allowDuringMovement) => {
+        assert.equal(index, 1); assert.equal(behavior, 'smooth'); assert.equal(allowDuringMovement, true);
+        finish = done;
+    };
+    f.context.afterFocus = () => arrived++;
+    f.run('updateNextPlayerView(afterFocus)');
+    await f.until(() => Boolean(finish));
+    assert.equal(arrived, 0);
+    finish();
+    assert.equal(arrived, 1);
 });
 
 test('cancelling the previous animated pan prevents it from overwriting the new camera position', async () => {

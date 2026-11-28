@@ -14,7 +14,7 @@
 #ponzi-preview .ponzi-sp04 h2{text-align:left}
 #ponzi-preview .ponzi-payout-head span:nth-child(2),#ponzi-preview .ponzi-payout-head span:nth-child(3),#ponzi-preview .ponzi-payout-row span:nth-child(2),#ponzi-preview .ponzi-payout-row strong{text-align:right;font-variant-numeric:tabular-nums}
 #ponzi-preview .ponzi-payout-head span:last-child,#ponzi-preview .ponzi-payout-row span:last-child{text-align:right;font-variant-numeric:tabular-nums}
-#ponzi-preview[data-stage='ending'] .ponzi-character,#ponzi-preview[data-stage='finished'] .ponzi-character{display:none}
+#ponzi-preview[data-stage='ending'] .ponzi-character,#ponzi-preview[data-stage='finished'] .ponzi-character,#ponzi-preview[data-stage='departed'] .ponzi-character{display:none}
 .ponzi-next{position:absolute;right:20px;bottom:12px;color:#f2d58d;font-size:14px}
 .ponzi-choice-back{position:absolute;left:3%;bottom:calc(3% + 170px);z-index:4;padding:9px 18px;border:1px solid #ccae7b;border-radius:8px;background:#234b68;color:#fff;cursor:pointer}.ponzi-choice-back[hidden]{display:none}
 

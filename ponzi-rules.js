@@ -7,14 +7,15 @@
   const p=state.ponzi;if(!p||p.phase!=='waiting'||state.activePlayerIndex!==0||state.currentTurn<p.nextPayoutTurn)return;
   const collapseThreshold=(config.minimumTotalAssetToAppear/2)*state.players.length;
   const totalInvestment=p.investments.reduce((sum,n)=>sum+Number(n||0),0);
+  if(totalInvestment===0){p.phase='departed';p.payout=null;return;}
   const failed=totalInvestment>=collapseThreshold
    || p.declinedThisRound?.length===state.players.length&&p.declinedThisRound.every(Boolean);
   const amounts=p.investments.map(n=>failed?0:Math.floor(n*config.payoutRate));
   amounts.forEach((amount,i)=>{state.players[i].money=Number(state.players[i].money)+amount;});
   p.payout={investments:p.investments.slice(),amounts,failed};p.phase='payout';
  }
- function pending(state){const p=state?.ponzi;if(!p)return false;return ['choices','thanks'].includes(p.phase)&&Number(p.nextIndex)===Number(state.activePlayerIndex)||(['payout','ending'].includes(p.phase)&&Number(state.activePlayerIndex)===0);}
- function advanceChoice(state){const p=state.ponzi;p.nextIndex++;if(p.nextIndex>=state.players.length){p.nextIndex=0;if(p.round===0&&p.investments.every(n=>n<=0)){p.phase='finished';return;}p.phase='waiting';p.nextPayoutTurn=Number(state.currentTurn)+config.payoutInterval;}else p.phase='choices';}
+ function pending(state){const p=state?.ponzi;if(!p)return false;return ['choices','thanks'].includes(p.phase)&&Number(p.nextIndex)===Number(state.activePlayerIndex)||(['payout','ending','departed'].includes(p.phase)&&Number(state.activePlayerIndex)===0);}
+ function advanceChoice(state){const p=state.ponzi;p.nextIndex++;if(p.nextIndex>=state.players.length){p.nextIndex=0;p.phase='waiting';p.nextPayoutTurn=Number(state.currentTurn)+config.payoutInterval;}else p.phase='choices';}
  function act(state,action,amount){
   const p=state?.ponzi;if(!pending(state))return 'イベント操作の順番が違います。';
   if(p.phase==='choices'){
@@ -28,7 +29,7 @@
    advanceChoice(state);
   }else if(p.phase==='payout'&&action==='continue'){
    if(p.payout.failed){p.phase='ending';}else{p.phase='choices';p.round++;p.nextIndex=0;p.payout=null;p.declinedThisRound=state.players.map(()=>false);}
-  }else if(p.phase==='ending'&&action==='finish'){p.investments=p.investments.map(()=>0);p.phase='finished';}
+  }else if(['ending','departed'].includes(p.phase)&&action==='finish'){p.investments=p.investments.map(()=>0);p.phase='finished';}
   else return '選択内容が不正です。';
   return null;
  }

@@ -37,7 +37,7 @@
    return 'report';
   }
   if (ponzi.phase === 'choices') {
-   return ['intro', 'greeting', 'offer', 'choice', 'amount', 'confirm'].includes(stage) ? stage : 'offer';
+   return ['intro', 'greeting', 'offer', 'choice', 'amount', 'confirm', 'declined'].includes(stage) ? stage : 'offer';
   }
   return ponzi.phase;
  }
@@ -57,17 +57,23 @@
   if(root.hidden){const game=document.querySelector('.game-container');if(game){previousInert=game.inert;game.inert=true;}}root.hidden=false;window.Plane02Layout?.apply(el('.ponzi-frame'));root.dataset.stage=s.stage;el('[data-player]').textContent=player.name;el('[data-gold]').textContent=fmt(player.money);el('[data-invest]').textContent=fmt(p.investments[state.activePlayerIndex]);
   const panel=el('.ponzi-panel'),text=el('.ponzi-text'),speaker=el('.ponzi-speaker');panel.onclick=null;panel.onkeydown=null;el('.ponzi-next').hidden=true;el('.ponzi-actions').hidden=true;el('.ponzi-choice-back').hidden=s.stage!=='choice'||s.observer;el('.ponzi-amount-panel').hidden=s.stage!=='amount';el('.ponzi-sp04').hidden=s.stage!=='payout';el('.ponzi-payout-footer').hidden=s.stage!=='payout';el('.ponzi-report').hidden=s.stage!=='report';speaker.textContent=s.stage==='ending'?'':'エリート不動産屋';
   const absentReport=s.stage==='report'&&Boolean(p.payout?.failed);
+  const portrait=el('.ponzi-player-portrait')||panel.insertBefore(document.createElement('img'),panel.firstChild);
+  portrait.classList.add('ponzi-player-portrait');
+  portrait.hidden=s.stage!=='declined';
+  if(!portrait.hidden){const src=window.getPlayerCharacterIcon?.(state.activePlayerIndex);portrait.hidden=!src;if(src){portrait.src=src;portrait.alt=player.name;}}
   root.toggleAttribute('data-report-absent',absentReport);
   panel.setAttribute('aria-hidden',String(absentReport));
   el('.ponzi-character').setAttribute('aria-hidden',String(absentReport));
-  if(absentReport)speaker.textContent='';
+  if(absentReport||s.stage==='departed')speaker.textContent='';
   const advance=fn=>{el('.ponzi-next').hidden=false;if(!s.observer){const advancePage=()=>{if(session!==s||s.busy)return;window.GameSE?.play?.('confirm',{shared:true}).catch(error=>console.warn('[SE] 画面送り音を再生できません:',error));fn();};panel.onclick=advancePage;panel.onkeydown=e=>{if((e.key==='Enter'||e.key===' ')&&!e.repeat){e.preventDefault();advancePage();}};stopPageAdvance=window.CommonAnnouncements?.bindPageAdvance(root,advancePage);}};
   const go=stage=>{s.stage=stage;s.line=0;render();};
   if(s.stage==='intro'){text.textContent=intro[s.line];advance(()=>{if(++s.line>=intro.length)go('offer');else render();});}
   else if(s.stage==='greeting'){text.textContent=`${player.name}さん、こんにちは。出資についてご案内します。`;advance(()=>go('offer'));}
   else if(s.stage==='report'){text.textContent=absentReport?'':'こんにちは。配当金をお渡ししにきました。';const button=el('.ponzi-report-view');button.disabled=s.observer||s.busy;button.onclick=()=>{window.GameSE?.play?.('confirm',{shared:true}).catch(error=>console.warn('[SE] 画面送り音を再生できません:',error));go('payout');};}
   else if(s.stage==='offer'&&p.cancelled?.[state.activePlayerIndex]){text.textContent='解約済みのため、再出資はできません。';advance(()=>submit('decline'));}
-  else if(s.stage==='offer'){text.textContent=p.round===0?`${player.name}さん、出資しますか？`:`${player.name}さん、追加出資または解約を選べます。`;buttons(p.round===0?[['出資する',()=>go('amount')],['見送る',()=>submit('decline')]]:[['追加・解約',()=>go('choice')],['断る',()=>submit('decline')]]);}
+  else if(s.stage==='offer'){text.textContent=p.round===0?`${player.name}さん、出資しますか？`:`${player.name}さん、追加出資または解約を選べます。`;buttons(p.round===0?[['出資する',()=>go('amount')],['見送る',()=>go('declined')]]:[['追加・解約',()=>go('choice')],['断る',()=>go('declined')]]);}
+  else if(s.stage==='declined'){speaker.textContent='';text.textContent='出資を見送った！';advance(()=>submit('decline'));}
+  else if(s.stage==='departed'){text.textContent='エリート不動産はもう現れなくなったようだ';advance(()=>submit('finish'));}
   else if(s.stage==='choice'){text.textContent='追加出資または解約を選んでください。';buttons([['追加出資',()=>go('amount')],['解約',()=>go('confirm')]]);el('.ponzi-choice-back').onclick=()=>go('offer');}
   else if(s.stage==='amount'){
    text.textContent=`${player.name}さんの出資額を入力してください。`;
@@ -97,12 +103,25 @@
   }
   if(s.stage==='payout'&&!s.observer){const next=el('.ponzi-payout-next');stopPageAdvance=window.CommonAnnouncements?.bindPageAdvance(root,()=>{if(session===s&&!s.busy&&!next.disabled)next.onclick();});}
    if(panel.parentElement!==root)root.append(panel);
-   window.TelopStandard?.apply(panel,{message:text,next:el('.ponzi-next'),speaker});
+   window.TelopStandard?.apply(panel,{message:text,portrait,next:el('.ponzi-next'),speaker});
    placeChoiceCards();
    if(notify&&!s.observer)s.sync?.('open',{stage:s.stage,line:s.line});
  }
- async function submit(action,amount){const s=session;if(!s||s.busy||s.observer)return;s.busy=true;try{const next=await s.submit(action,amount);if(session!==s)return;if(!next)throw new Error('イベント操作を確定できませんでした。');if(action==='invest')window.GameSE?.play?.('payment').catch(error=>console.warn('[SE] 出資の支払い音を再生できません:',error));s.state=next;s.busy=false;if(!window.PonziRules.pending(next)){const done=s.done;close();done?.();return;}s.stage=next.ponzi.phase==='payout'?'payout':next.ponzi.phase==='ending'?'ending':next.ponzi.phase==='thanks'?'thanks':'offer';s.line=0;render();}catch(error){s.busy=false;alert(error.message||'イベント操作を確定できませんでした。');render();}}
- function open(state,options){mount();if(session&&!session.observer)return;const p=state.ponzi;session={state,observer:false,submit:options.submit,sync:options.sync,done:options.done,busy:false,line:0,stage:p.phase==='payout'?'report':p.phase==='ending'?'ending':p.phase==='thanks'?'thanks':p.round===0&&state.activePlayerIndex===0?'intro':'greeting'};render();}
+ async function submit(action,amount){
+  const s=session;if(!s||s.busy||s.observer)return;
+  const refund=action==='cancel'?Number(s.state.ponzi.investments[s.state.activePlayerIndex])||0:0;
+  s.busy=true;
+  try{
+   const next=await s.submit(action,amount);if(session!==s)return;
+   if(!next)throw new Error('イベント操作を確定できませんでした。');
+   if(action==='invest')window.GameSE?.play?.('payment').catch(error=>console.warn('[SE] 出資の支払い音を再生できません:',error));
+   if(action==='cancel'&&refund>0)window.GameSE?.play?.('moneyDisplay',{shared:true}).catch(error=>console.warn('[SE] 解約の返金音を再生できません:',error));
+   s.state=next;s.busy=false;
+   if(!window.PonziRules.pending(next)){const done=s.done;close();done?.();return;}
+   s.stage=['payout','ending','thanks','departed'].includes(next.ponzi.phase)?next.ponzi.phase:'offer';s.line=0;render();
+  }catch(error){s.busy=false;alert(error.message||'イベント操作を確定できませんでした。');render();}
+ }
+ function open(state,options){mount();if(session&&!session.observer)return;const p=state.ponzi;session={state,observer:false,submit:options.submit,sync:options.sync,done:options.done,busy:false,line:0,stage:p.phase==='payout'?'report':['ending','thanks','departed'].includes(p.phase)?p.phase:p.round===0&&state.activePlayerIndex===0?'intro':'greeting'};render();}
  function observe(state, data) {
   if (session && !session.observer) return;
   if (!window.PonziRules.pending(state)) { close(false); return; }

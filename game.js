@@ -9390,7 +9390,7 @@ function showAssetRankingPopup(callback, serverRanking = null, displayOptions = 
 // =========================
 
 let nextPlayerCameraRequest = 0;
-function updateNextPlayerView() {
+function updateNextPlayerView(onCentered) {
 
     // 資産店一覧は手番が切り替わるたびに先頭へ戻す。
     // 同じ手番中の購入処理ではこの関数を通らないため、スクロール位置は維持される。
@@ -9417,14 +9417,14 @@ function updateNextPlayerView() {
                     resolve();
                     return;
                 }
-                centerPlayerOnMap(focusIndex, 'instant', resolve, true);
+                centerPlayerOnMap(focusIndex, 'instant', () => { resolve(); onCentered?.(); }, true);
             }));
         }));
         window.TurnHandoff.waitFor(cameraReady);
     } else {
         requestAnimationFrame(() => requestAnimationFrame(() => {
             if (requestId !== nextPlayerCameraRequest || focusIndex !== currentPlayer) return;
-            centerPlayerOnMap(focusIndex, 'smooth', null, true);
+            centerPlayerOnMap(focusIndex, 'smooth', onCentered, true);
         }));
     }
 
@@ -9906,10 +9906,6 @@ window.startPonziTurn = function (player, done) {
     ponziCameraPendingKey = cameraKey;
 
     if (state.undergroundFlow) window.UndergroundUI?.suspend();
-    if (!sync) {
-        renderTurn();
-        renderPlayers();
-    }
     const openPresentation = () => {
         if (ponziCameraPendingKey !== cameraKey) return;
         ponziCameraPendingKey = null;
@@ -9935,8 +9931,7 @@ window.startPonziTurn = function (player, done) {
         }
         });
     };
-    if (typeof window.centerPlayerOnMap === 'function') window.centerPlayerOnMap(playerIndex, 'smooth', openPresentation);
-    else openPresentation();
+    updateNextPlayerView(openPresentation);
     return true;
 };
 
