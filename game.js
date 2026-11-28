@@ -8176,32 +8176,6 @@ rouletteSound.addEventListener(
 
 
 
-// =========================
-    // 新バトルUIへ接続
-    // =========================
-    // game.js はゲーム進行を担当し、
-    // 実際の通常モンスター戦UIは battle-ui.js に委譲します。
-    // battle-ui.js は game.js 読み込み後に読み込まれるため、
-    // 実行時には window.startMonsterBattle が新UI版になります。
-    // =========================
-
-    if (
-        typeof window.startMonsterBattle === "function" &&
-        window.startMonsterBattle !== startMonsterBattle
-    ) {
-
-        window.startMonsterBattle(
-            player
-        );
-
-        return;
-
-    }
-
-    console.error(
-        "新バトルUI（battle-ui.js）が読み込まれていません。"
-    );
-
 }
 
 // =========================
